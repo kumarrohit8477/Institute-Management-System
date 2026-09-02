@@ -1,0 +1,979 @@
+// ==============================================================================
+// INSTITUTE MANAGEMENT SYSTEM — PRISMA DATABASE SCHEMA
+// Full Scope: Multi-Tenant SaaS Architecture + Academics + CBT + Fees + Subscriptions
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------------------------
+
+enum InstituteStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  TRIAL
+  ARCHIVED
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  STUDENT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  PASSED_OUT
+  DROPPED
+}
+
+enum TeacherStatus {
+  ACTIVE
+  INACTIVE
+  RESIGNED
+}
+
+enum CourseStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum SubjectStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BatchStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum StudentBatchStatus {
+  ACTIVE
+  TRANSFERRED
+  COMPLETED
+  DROPPED
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum ScheduleStatus {
+  ACTIVE
+  CANCELLED
+  RESCHEDULED
+}
+
+enum ClassType {
+  OFFLINE
+  ONLINE
+  HYBRID
+}
+
+enum MaterialType {
+  PDF
+  DOC
+  VIDEO
+  LINK
+  IMAGE
+  OTHER
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  NUMERICAL
+  TRUE_FALSE
+  SUBJECTIVE
+}
+
+enum DifficultyLevel {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum TestStatus {
+  DRAFT
+  SCHEDULED
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  EVALUATED
+  ABANDONED
+}
+
+enum FeeStatus {
+  PENDING
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+  NET_BANKING
+  CHEQUE
+  OTHER
+}
+
+enum NotificationType {
+  ANNOUNCEMENT
+  ATTENDANCE
+  TEST
+  RESULT
+  FEE
+  TIMETABLE
+  SYSTEM
+}
+
+enum PlanTier {
+  FREE_TRIAL
+  STARTER
+  GROWTH
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// ------------------------------------------------------------------------------
+// 1. INSTITUTE (Multi-tenant Domain Entity)
+// ------------------------------------------------------------------------------
+
+model Institute {
+  id           String          @id @default(uuid()) @db.VarChar(36)
+  name         String          @db.VarChar(191)
+  code         String          @unique @db.VarChar(50)
+  customDomain String?         @unique @db.VarChar(191)
+  email        String          @db.VarChar(191)
+  phone        String          @db.VarChar(20)
+  address      String?         @db.Text
+  logoUrl      String?         @db.VarChar(500)
+  website      String?         @db.VarChar(255)
+  status       InstituteStatus @default(ACTIVE)
+  settings     Json?           @db.Json
+  createdAt    DateTime        @default(now()) @db.DateTime(3)
+  updatedAt    DateTime        @updatedAt @db.DateTime(3)
+
+  // SaaS Relations
+  subscription       Subscription?
+  platformInvoices   PlatformInvoice[]
+  tenantUsage        TenantUsage?
+
+  // Academic Domain Relations
+  users              User[]
+  students           Student[]
+  teachers           Teacher[]
+  courses            Course[]
+  subjects           Subject[]
+  batches            Batch[]
+  teacherAssignments TeacherAssignment[]
+  timetables         Timetable[]
+  studyMaterials     StudyMaterial[]
+  attendances        Attendance[]
+  questions          Question[]
+  tests              Test[]
+  results            Result[]
+  fees               Fee[]
+  notifications      Notification[]
+
+  @@map("institutes")
+}
+
+// ------------------------------------------------------------------------------
+// 2. SUBSCRIPTION_PLAN (SaaS Tier Catalog)
+// ------------------------------------------------------------------------------
+
+model SubscriptionPlan {
+  id                   String   @id @default(uuid()) @db.VarChar(36)
+  name                 String   @db.VarChar(100)
+  tier                 PlanTier @unique @default(STARTER)
+  description          String?  @db.Text
+  monthlyPrice         Decimal  @default(0.00) @db.Decimal(10, 2)
+  annualPrice          Decimal  @default(0.00) @db.Decimal(10, 2)
+  maxStudents          Int      @default(100)
+  maxCourses           Int      @default(10)
+  maxBatches           Int      @default(20)
+  maxStorageMB         Int      @default(5120) // 5 GB
+  hasOnlineCBT         Boolean  @default(true)
+  hasCustomDomain      Boolean  @default(false)
+  hasPushNotifications Boolean  @default(false)
+  hasApiAccess         Boolean  @default(false)
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now()) @db.DateTime(3)
+  updatedAt            DateTime @updatedAt @db.DateTime(3)
+
+  // Relations
+  subscriptions Subscription[]
+
+  @@map("subscription_plans")
+}
+
+// ------------------------------------------------------------------------------
+// 3. SUBSCRIPTION (Active Tenant Plan Instance)
+// ------------------------------------------------------------------------------
+
+model Subscription {
+  id           String             @id @default(uuid()) @db.VarChar(36)
+  instituteId  String             @unique @db.VarChar(36)
+  planId       String             @db.VarChar(36)
+  billingCycle BillingCycle       @default(MONTHLY)
+  status       SubscriptionStatus @default(TRIAL)
+  startDate    DateTime           @default(now()) @db.DateTime(3)
+  endDate      DateTime           @db.DateTime(3)
+  trialEndsAt  DateTime?          @db.DateTime(3)
+  autoRenew    Boolean            @default(true)
+  cancelledAt  DateTime?          @db.DateTime(3)
+  createdAt    DateTime           @default(now()) @db.DateTime(3)
+  updatedAt    DateTime           @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute        Institute         @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  plan             SubscriptionPlan  @relation(fields: [planId], references: [id])
+  platformInvoices PlatformInvoice[]
+
+  @@index([status, endDate])
+  @@map("subscriptions")
+}
+
+// ------------------------------------------------------------------------------
+// 4. PLATFORM_INVOICE (B2B SaaS Invoicing)
+// ------------------------------------------------------------------------------
+
+model PlatformInvoice {
+  id                 String        @id @default(uuid()) @db.VarChar(36)
+  invoiceNumber      String        @unique @db.VarChar(100)
+  instituteId        String        @db.VarChar(36)
+  subscriptionId     String?       @db.VarChar(36)
+  amount             Decimal       @db.Decimal(10, 2)
+  taxAmount          Decimal       @default(0.00) @db.Decimal(10, 2)
+  totalAmount        Decimal       @db.Decimal(10, 2)
+  status             InvoiceStatus @default(PENDING)
+  dueDate            DateTime      @db.Date
+  paidAt             DateTime?     @db.DateTime(3)
+  paymentMethod      String?       @db.VarChar(50)
+  paymentGatewayTxId String?       @db.VarChar(150)
+  invoicePdfUrl      String?       @db.VarChar(500)
+  createdAt          DateTime      @default(now()) @db.DateTime(3)
+
+  // Relations
+  institute    Institute     @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([instituteId, status])
+  @@map("platform_invoices")
+}
+
+// ------------------------------------------------------------------------------
+// 5. TENANT_USAGE (Real-time Resource Quota Tracker)
+// ------------------------------------------------------------------------------
+
+model TenantUsage {
+  id                    String   @id @default(uuid()) @db.VarChar(36)
+  instituteId           String   @unique @db.VarChar(36)
+  studentCount          Int      @default(0)
+  courseCount           Int      @default(0)
+  batchCount            Int      @default(0)
+  storageUsedMB         Decimal  @default(0.00) @db.Decimal(10, 2)
+  testsCreatedThisMonth Int      @default(0)
+  updatedAt             DateTime @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_usages")
+}
+
+// ------------------------------------------------------------------------------
+// 6. USER (Authentication & Credential Store)
+// ------------------------------------------------------------------------------
+
+model User {
+  id           String     @id @default(uuid()) @db.VarChar(36)
+  instituteId  String?    @db.VarChar(36) // Optional for global SUPER_ADMIN
+  email        String     @db.VarChar(191)
+  passwordHash String     @db.VarChar(255)
+  role         UserRole   @default(STUDENT)
+  status       UserStatus @default(ACTIVE)
+  lastLoginAt  DateTime?  @db.DateTime(3)
+  refreshToken String?    @db.Text
+  createdAt    DateTime   @default(now()) @db.DateTime(3)
+  updatedAt    DateTime   @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute           Institute?      @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  student             Student?
+  uploadedMaterials   StudyMaterial[]
+  recordedAttendances Attendance[]
+  collectedPayments   Payment[]
+  notifications       Notification[]
+
+  @@unique([instituteId, email])
+  @@index([instituteId, status])
+  @@index([role])
+  @@index([email])
+  @@map("users")
+}
+
+// ------------------------------------------------------------------------------
+// 7. STUDENT (Domain Profile for Enrolled Students)
+// ------------------------------------------------------------------------------
+
+model Student {
+  id              String        @id @default(uuid()) @db.VarChar(36)
+  instituteId     String        @db.VarChar(36)
+  userId          String        @unique @db.VarChar(36)
+  admissionNumber String        @db.VarChar(50)
+  firstName       String        @db.VarChar(100)
+  lastName        String        @db.VarChar(100)
+  email           String        @db.VarChar(191)
+  phone           String?       @db.VarChar(20)
+  dateOfBirth     DateTime?     @db.Date
+  gender          Gender?
+  address         String?       @db.Text
+  avatarUrl       String?       @db.VarChar(500)
+  guardianName    String?       @db.VarChar(150)
+  guardianPhone   String?       @db.VarChar(20)
+  guardianEmail   String?       @db.VarChar(191)
+  status          StudentStatus @default(ACTIVE)
+  admissionDate   DateTime      @default(now())
+  createdAt       DateTime      @default(now()) @db.DateTime(3)
+  updatedAt       DateTime      @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute    Institute      @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  batches      StudentBatch[]
+  attendances  Attendance[]
+  testAttempts TestAttempt[]
+  results      Result[]
+  fees         Fee[]
+
+  @@unique([instituteId, admissionNumber])
+  @@index([instituteId, status])
+  @@index([email])
+  @@map("students")
+}
+
+// ------------------------------------------------------------------------------
+// 8. TEACHER (Faculty Directory — No Login Account)
+// ------------------------------------------------------------------------------
+
+model Teacher {
+  id              String        @id @default(uuid()) @db.VarChar(36)
+  instituteId     String        @db.VarChar(36)
+  employeeCode    String        @db.VarChar(50)
+  firstName       String        @db.VarChar(100)
+  lastName        String        @db.VarChar(100)
+  email           String        @db.VarChar(191)
+  phone           String        @db.VarChar(20)
+  gender          Gender?
+  qualification   String?       @db.VarChar(255)
+  specialization  String?       @db.VarChar(255)
+  experienceYears Decimal       @default(0.0) @db.Decimal(4, 1)
+  avatarUrl       String?       @db.VarChar(500)
+  bio             String?       @db.Text
+  address         String?       @db.Text
+  status          TeacherStatus @default(ACTIVE)
+  joiningDate     DateTime      @default(now())
+  createdAt       DateTime      @default(now()) @db.DateTime(3)
+  updatedAt       DateTime      @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute   Institute           @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  subjects    TeacherSubject[]
+  assignments TeacherAssignment[]
+  timetables  Timetable[]
+
+  @@unique([instituteId, employeeCode])
+  @@index([instituteId, status])
+  @@index([email])
+  @@map("teachers")
+}
+
+// ------------------------------------------------------------------------------
+// 9. COURSE (Academic Curriculum)
+// ------------------------------------------------------------------------------
+
+model Course {
+  id             String       @id @default(uuid()) @db.VarChar(36)
+  instituteId    String       @db.VarChar(36)
+  name           String       @db.VarChar(191)
+  code           String       @db.VarChar(50)
+  description    String?      @db.Text
+  durationMonths Int?
+  status         CourseStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now()) @db.DateTime(3)
+  updatedAt      DateTime     @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute          Institute           @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  subjects           Subject[]
+  batches            Batch[]
+  teacherAssignments TeacherAssignment[]
+  studyMaterials     StudyMaterial[]
+
+  @@unique([instituteId, code])
+  @@index([instituteId, status])
+  @@map("courses")
+}
+
+// ------------------------------------------------------------------------------
+// 10. SUBJECT (Discipline under Course)
+// ------------------------------------------------------------------------------
+
+model Subject {
+  id          String        @id @default(uuid()) @db.VarChar(36)
+  instituteId String        @db.VarChar(36)
+  courseId    String        @db.VarChar(36)
+  name        String        @db.VarChar(191)
+  code        String        @db.VarChar(50)
+  description String?       @db.Text
+  status      SubjectStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now()) @db.DateTime(3)
+  updatedAt   DateTime      @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute          Institute           @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  course             Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  teachers           TeacherSubject[]
+  teacherAssignments TeacherAssignment[]
+  timetables         Timetable[]
+  studyMaterials     StudyMaterial[]
+  questions          Question[]
+  tests              Test[]
+
+  @@unique([courseId, code])
+  @@index([instituteId, status])
+  @@map("subjects")
+}
+
+// ------------------------------------------------------------------------------
+// 11. BATCH (Student Cohort under Course)
+// ------------------------------------------------------------------------------
+
+model Batch {
+  id          String      @id @default(uuid()) @db.VarChar(36)
+  instituteId String      @db.VarChar(36)
+  courseId    String      @db.VarChar(36)
+  name        String      @db.VarChar(191)
+  code        String      @db.VarChar(50)
+  startDate   DateTime    @db.Date
+  endDate     DateTime?   @db.Date
+  maxStrength Int         @default(60)
+  status      BatchStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now()) @db.DateTime(3)
+  updatedAt   DateTime    @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute          Institute           @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  course             Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  students           StudentBatch[]
+  teacherAssignments TeacherAssignment[]
+  timetables         Timetable[]
+  studyMaterials     StudyMaterial[]
+  attendances        Attendance[]
+  tests              Test[]
+  fees               Fee[]
+
+  @@unique([instituteId, code])
+  @@index([instituteId, status])
+  @@index([courseId])
+  @@map("batches")
+}
+
+// ------------------------------------------------------------------------------
+// 12. STUDENT_BATCH (Junction Entity: Student Enrolled in Batch)
+// ------------------------------------------------------------------------------
+
+model StudentBatch {
+  id         String             @id @default(uuid()) @db.VarChar(36)
+  studentId  String             @db.VarChar(36)
+  batchId    String             @db.VarChar(36)
+  rollNumber String?            @db.VarChar(50)
+  enrolledAt DateTime           @default(now())
+  status     StudentBatchStatus @default(ACTIVE)
+  createdAt  DateTime           @default(now()) @db.DateTime(3)
+  updatedAt  DateTime           @updatedAt @db.DateTime(3)
+
+  // Relations
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  batch   Batch   @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, batchId])
+  @@index([batchId, status])
+  @@map("student_batches")
+}
+
+// ------------------------------------------------------------------------------
+// 13. TEACHER_SUBJECT (Junction Entity: Teacher Qualified for Subject)
+// ------------------------------------------------------------------------------
+
+model TeacherSubject {
+  id        String   @id @default(uuid()) @db.VarChar(36)
+  teacherId String   @db.VarChar(36)
+  subjectId String   @db.VarChar(36)
+  createdAt DateTime @default(now()) @db.DateTime(3)
+
+  // Relations
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, subjectId])
+  @@map("teacher_subjects")
+}
+
+// ------------------------------------------------------------------------------
+// 14. TEACHER_ASSIGNMENT (Junction: Teacher assigned to Subject in Batch)
+// ------------------------------------------------------------------------------
+
+model TeacherAssignment {
+  id          String           @id @default(uuid()) @db.VarChar(36)
+  instituteId String           @db.VarChar(36)
+  teacherId   String           @db.VarChar(36)
+  courseId    String           @db.VarChar(36)
+  subjectId   String           @db.VarChar(36)
+  batchId     String           @db.VarChar(36)
+  status      AssignmentStatus @default(ACTIVE)
+  createdAt   DateTime         @default(now()) @db.DateTime(3)
+  updatedAt   DateTime         @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  teacher   Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  batch     Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, batchId, subjectId])
+  @@index([instituteId, status])
+  @@index([batchId])
+  @@map("teacher_assignments")
+}
+
+// ------------------------------------------------------------------------------
+// 15. TIMETABLE (Class Schedule Slots)
+// ------------------------------------------------------------------------------
+
+model Timetable {
+  id          String         @id @default(uuid()) @db.VarChar(36)
+  instituteId String         @db.VarChar(36)
+  batchId     String         @db.VarChar(36)
+  subjectId   String         @db.VarChar(36)
+  teacherId   String         @db.VarChar(36)
+  dayOfWeek   DayOfWeek
+  startTime   String         @db.VarChar(10)
+  endTime     String         @db.VarChar(10)
+  roomNumber  String?        @db.VarChar(50)
+  meetingLink String?        @db.VarChar(500)
+  classType   ClassType      @default(OFFLINE)
+  status      ScheduleStatus @default(ACTIVE)
+  createdAt   DateTime       @default(now()) @db.DateTime(3)
+  updatedAt   DateTime       @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  batch     Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher   Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([instituteId, batchId, dayOfWeek])
+  @@index([teacherId, dayOfWeek])
+  @@map("timetables")
+}
+
+// ------------------------------------------------------------------------------
+// 16. STUDY_MATERIAL (Notes, PDFs, Videos, Links)
+// ------------------------------------------------------------------------------
+
+model StudyMaterial {
+  id            String       @id @default(uuid()) @db.VarChar(36)
+  instituteId   String       @db.VarChar(36)
+  courseId      String       @db.VarChar(36)
+  subjectId     String       @db.VarChar(36)
+  batchId       String?      @db.VarChar(36)
+  title         String       @db.VarChar(255)
+  description   String?      @db.Text
+  fileUrl       String       @db.VarChar(500)
+  fileType      MaterialType @default(PDF)
+  fileSizeBytes BigInt?
+  uploadedById  String       @db.VarChar(36)
+  createdAt     DateTime     @default(now()) @db.DateTime(3)
+  updatedAt     DateTime     @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute  Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  course     Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  subject    Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  batch      Batch?    @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  uploadedBy User      @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@index([instituteId, courseId, subjectId])
+  @@index([batchId])
+  @@map("study_materials")
+}
+
+// ------------------------------------------------------------------------------
+// 17. ATTENDANCE (Student Daily Presence Logging)
+// ------------------------------------------------------------------------------
+
+model Attendance {
+  id           String           @id @default(uuid()) @db.VarChar(36)
+  instituteId  String           @db.VarChar(36)
+  batchId      String           @db.VarChar(36)
+  studentId    String           @db.VarChar(36)
+  date         DateTime         @db.Date
+  status       AttendanceStatus @default(PRESENT)
+  remarks      String?          @db.VarChar(255)
+  recordedById String           @db.VarChar(36)
+  createdAt    DateTime         @default(now()) @db.DateTime(3)
+  updatedAt    DateTime         @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute  Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  batch      Batch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  student    Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  recordedBy User      @relation(fields: [recordedById], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, studentId, date])
+  @@index([instituteId, batchId, date])
+  @@index([studentId, date])
+  @@map("attendances")
+}
+
+// ------------------------------------------------------------------------------
+// 18. QUESTION (Question Bank Repository)
+// ------------------------------------------------------------------------------
+
+model Question {
+  id                   String          @id @default(uuid()) @db.VarChar(36)
+  instituteId          String          @db.VarChar(36)
+  subjectId            String          @db.VarChar(36)
+  type                 QuestionType    @default(SINGLE_CHOICE)
+  difficulty           DifficultyLevel @default(MEDIUM)
+  questionText         String          @db.Text
+  explanation          String?         @db.Text
+  defaultMarks         Decimal         @default(4.00) @db.Decimal(5, 2)
+  defaultNegativeMarks Decimal         @default(1.00) @db.Decimal(5, 2)
+  numericalAnswer      String?         @db.VarChar(100)
+  createdAt            DateTime        @default(now()) @db.DateTime(3)
+  updatedAt            DateTime        @default(now()) @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute      Institute        @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  subject        Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  options        QuestionOption[]
+  testQuestions  TestQuestion[]
+  studentAnswers StudentAnswer[]
+
+  @@index([instituteId, subjectId, difficulty])
+  @@map("questions")
+}
+
+// ------------------------------------------------------------------------------
+// 19. QUESTION_OPTION (Options for MCQ / Multi-select / True-False)
+// ------------------------------------------------------------------------------
+
+model QuestionOption {
+  id         String   @id @default(uuid()) @db.VarChar(36)
+  questionId String   @db.VarChar(36)
+  optionText String   @db.Text
+  isCorrect  Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now()) @db.DateTime(3)
+
+  // Relations
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId, sortOrder])
+  @@map("question_options")
+}
+
+// ------------------------------------------------------------------------------
+// 20. TEST (Exams & Assessments)
+// ------------------------------------------------------------------------------
+
+model Test {
+  id              String     @id @default(uuid()) @db.VarChar(36)
+  instituteId     String     @db.VarChar(36)
+  batchId         String?    @db.VarChar(36)
+  subjectId       String?    @db.VarChar(36)
+  title           String     @db.VarChar(255)
+  description     String?    @db.Text
+  durationMinutes Int        @default(180)
+  totalMarks      Decimal    @default(300.00) @db.Decimal(6, 2)
+  passingMarks    Decimal    @default(100.00) @db.Decimal(6, 2)
+  startTime       DateTime   @db.DateTime(3)
+  endTime         DateTime   @db.DateTime(3)
+  isPublished     Boolean    @default(false)
+  status          TestStatus @default(DRAFT)
+  createdAt       DateTime   @default(now()) @db.DateTime(3)
+  updatedAt       DateTime   @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute     Institute      @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  batch         Batch?         @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  subject       Subject?       @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  testQuestions TestQuestion[]
+  testAttempts  TestAttempt[]
+  results       Result[]
+
+  @@index([instituteId, status])
+  @@index([batchId, startTime, endTime])
+  @@map("tests")
+}
+
+// ------------------------------------------------------------------------------
+// 21. TEST_QUESTION (Questions mapped to Test with custom marks override)
+// ------------------------------------------------------------------------------
+
+model TestQuestion {
+  id            String   @id @default(uuid()) @db.VarChar(36)
+  testId        String   @db.VarChar(36)
+  questionId    String   @db.VarChar(36)
+  sectionName   String?  @db.VarChar(100)
+  sortOrder     Int      @default(1)
+  marks         Decimal  @default(4.00) @db.Decimal(5, 2)
+  negativeMarks Decimal  @default(1.00) @db.Decimal(5, 2)
+  createdAt     DateTime @default(now()) @db.DateTime(3)
+
+  // Relations
+  test     Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, questionId])
+  @@index([testId, sortOrder])
+  @@map("test_questions")
+}
+
+// ------------------------------------------------------------------------------
+// 22. TEST_ATTEMPT (Student Exam Session)
+// ------------------------------------------------------------------------------
+
+model TestAttempt {
+  id              String        @id @default(uuid()) @db.VarChar(36)
+  testId          String        @db.VarChar(36)
+  studentId       String        @db.VarChar(36)
+  startedAt       DateTime      @default(now()) @db.DateTime(3)
+  submittedAt     DateTime?     @db.DateTime(3)
+  score           Decimal       @default(0.00) @db.Decimal(6, 2)
+  totalAttempted  Int           @default(0)
+  totalCorrect    Int           @default(0)
+  totalIncorrect  Int           @default(0)
+  status          AttemptStatus @default(IN_PROGRESS)
+  createdAt       DateTime      @default(now()) @db.DateTime(3)
+  updatedAt       DateTime      @updatedAt @db.DateTime(3)
+
+  // Relations
+  test           Test            @relation(fields: [testId], references: [id], onDelete: Cascade)
+  student        Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentAnswers StudentAnswer[]
+  result         Result?
+
+  @@unique([testId, studentId])
+  @@index([studentId, status])
+  @@map("test_attempts")
+}
+
+// ------------------------------------------------------------------------------
+// 23. STUDENT_ANSWER (Recorded answers per question in attempt)
+// ------------------------------------------------------------------------------
+
+model StudentAnswer {
+  id                String    @id @default(uuid()) @db.VarChar(36)
+  attemptId         String    @db.VarChar(36)
+  questionId        String    @db.VarChar(36)
+  selectedOptionIds Json?     @db.Json
+  textAnswer        String?   @db.Text
+  isCorrect         Boolean?
+  marksAwarded      Decimal   @default(0.00) @db.Decimal(5, 2)
+  timeSpentSeconds  Int       @default(0)
+  createdAt         DateTime  @default(now()) @db.DateTime(3)
+
+  // Relations
+  attempt  TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
+  @@map("student_answers")
+}
+
+// ------------------------------------------------------------------------------
+// 24. RESULT (Published Results, Rank & Performance Analytics)
+// ------------------------------------------------------------------------------
+
+model Result {
+  id                 String   @id @default(uuid()) @db.VarChar(36)
+  instituteId        String   @db.VarChar(36)
+  testId             String   @db.VarChar(36)
+  studentId          String   @db.VarChar(36)
+  attemptId          String   @unique @db.VarChar(36)
+  totalMarksObtained Decimal  @db.Decimal(6, 2)
+  percentage         Decimal  @db.Decimal(5, 2)
+  percentile         Decimal? @db.Decimal(5, 2)
+  rank               Int?
+  isPassed           Boolean
+  remarks            String?  @db.VarChar(255)
+  createdAt          DateTime @default(now()) @db.DateTime(3)
+  updatedAt          DateTime @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute Institute   @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  test      Test        @relation(fields: [testId], references: [id], onDelete: Cascade)
+  student   Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  attempt   TestAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([instituteId, testId, rank])
+  @@index([studentId])
+  @@map("results")
+}
+
+// ------------------------------------------------------------------------------
+// 25. FEE (Tuition / Course Fee Invoicing)
+// ------------------------------------------------------------------------------
+
+model Fee {
+  id             String    @id @default(uuid()) @db.VarChar(36)
+  instituteId    String    @db.VarChar(36)
+  studentId      String    @db.VarChar(36)
+  batchId        String?   @db.VarChar(36)
+  title          String    @db.VarChar(191)
+  totalAmount    Decimal   @db.Decimal(10, 2)
+  discountAmount Decimal   @default(0.00) @db.Decimal(10, 2)
+  finalAmount    Decimal   @db.Decimal(10, 2)
+  paidAmount     Decimal   @default(0.00) @db.Decimal(10, 2)
+  dueDate        DateTime  @db.Date
+  status         FeeStatus @default(PENDING)
+  createdAt      DateTime  @default(now()) @db.DateTime(3)
+  updatedAt      DateTime  @updatedAt @db.DateTime(3)
+
+  // Relations
+  institute Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  batch     Batch?    @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  payments  Payment[]
+
+  @@index([instituteId, status])
+  @@index([studentId, dueDate])
+  @@map("fees")
+}
+
+// ------------------------------------------------------------------------------
+// 26. PAYMENT (Financial Transaction Records & Receipts)
+// ------------------------------------------------------------------------------
+
+model Payment {
+  id                   String        @id @default(uuid()) @db.VarChar(36)
+  feeId                String        @db.VarChar(36)
+  receiptNumber        String        @unique @db.VarChar(100)
+  amount               Decimal       @db.Decimal(10, 2)
+  paymentMethod        PaymentMethod @default(CASH)
+  transactionReference String?       @db.VarChar(150)
+  paymentDate          DateTime      @default(now()) @db.DateTime(3)
+  receivedById         String        @db.VarChar(36)
+  remarks              String?       @db.VarChar(255)
+  createdAt            DateTime      @default(now()) @db.DateTime(3)
+
+  // Relations
+  fee        Fee  @relation(fields: [feeId], references: [id], onDelete: Cascade)
+  receivedBy User @relation(fields: [receivedById], references: [id], onDelete: Cascade)
+
+  @@index([feeId, paymentDate])
+  @@map("payments")
+}
+
+// ------------------------------------------------------------------------------
+// 27. NOTIFICATION (Broadcast Alerts, Announcements, Triggers)
+// ------------------------------------------------------------------------------
+
+model Notification {
+  id          String           @id @default(uuid()) @db.VarChar(36)
+  instituteId String           @db.VarChar(36)
+  recipientId String           @db.VarChar(36)
+  title       String           @db.VarChar(255)
+  message     String           @db.Text
+  type        NotificationType @default(ANNOUNCEMENT)
+  actionUrl   String?          @db.VarChar(500)
+  isRead      Boolean          @default(false)
+  readAt      DateTime?        @db.DateTime(3)
+  createdAt   DateTime         @default(now()) @db.DateTime(3)
+
+  // Relations
+  institute Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  recipient User      @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, isRead])
+  @@index([instituteId, createdAt])
+  @@map("notifications")
+}

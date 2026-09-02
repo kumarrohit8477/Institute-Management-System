@@ -1,0 +1,437 @@
+.student-navbar {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  width: 100%;
+  max-width: 100vw;
+  height: 72px;
+  padding: 0 1.75rem;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.student-navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.student-navbar__menu-button {
+  width: 38px;
+  height: 38px;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+
+  color: #475569;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.student-navbar__menu-button:hover {
+  background: #f1f5f9;
+}
+
+@media (max-width: 1023px) {
+  .student-navbar__menu-button {
+    display: flex;
+  }
+}
+
+.student-navbar__logo-image,
+.student-navbar__logo-fallback {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+
+  border-radius: 8px;
+}
+
+.student-navbar__logo-image {
+  object-fit: contain;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 2px;
+}
+
+.student-navbar__logo-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(135deg,
+      #1e3a8a,
+      #3b82f6);
+
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.student-navbar__brand-info {
+  min-width: 0;
+}
+
+.student-navbar__brand-title {
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-navbar__brand-subtitle {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.student-navbar__separator {
+  margin: 0 0.25rem;
+}
+
+.student-navbar__institute-code {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.student-navbar__actions {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.student-navbar__notification-wrapper {
+  position: relative;
+}
+
+.student-navbar__notification-button {
+  position: relative;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+
+  color: #475569;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.student-navbar__notification-button:hover,
+.student-navbar__notification-button--active {
+  background: #f1f5f9;
+}
+
+.student-navbar__notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+
+  width: 18px;
+  height: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #ef4444;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+
+  color: #ffffff;
+  font-size: 0.6rem;
+  font-weight: 800;
+}
+
+.student-navbar__notification-popover {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  z-index: 50;
+
+  width: 380px;
+  overflow: hidden;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  animation: student-navbar-fade-in 0.2s ease-out;
+}
+
+.student-navbar__popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 1rem 1.25rem;
+
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.student-navbar__popover-title {
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.student-navbar__mark-read-button {
+  padding: 0;
+
+  background: transparent;
+  border: none;
+
+  color: #3b82f6;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.student-navbar__notification-list {
+  display: flex;
+  flex-direction: column;
+
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.student-navbar__notification-item {
+  padding: 0.85rem 1.25rem;
+
+  border-bottom: 1px solid #f8fafc;
+
+  transition: background 0.15s ease;
+}
+
+.student-navbar__notification-item--unread {
+  background: #f8fafc;
+}
+
+.student-navbar__notification-item--read {
+  background: #ffffff;
+}
+
+.student-navbar__notification-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  margin-bottom: 0.3rem;
+}
+
+.student-navbar__notification-title {
+  color: #1e293b;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.student-navbar__notification-type {
+  flex-shrink: 0;
+
+  padding: 0.15rem 0.4rem;
+
+  background: #e0e7ff;
+  border-radius: 4px;
+
+  color: #4338ca;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.student-navbar__notification-message {
+  margin: 0;
+
+  color: #64748b;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.student-navbar__notification-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+
+  margin-top: 0.5rem;
+
+  color: #3b82f6;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.student-navbar__popover-footer {
+  padding: 0.75rem;
+
+  text-align: center;
+
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+}
+
+.student-navbar__view-all-link {
+  color: #3b82f6;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.student-navbar__user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  padding-left: 0.5rem;
+
+  border-left: 1px solid #e2e8f0;
+}
+
+.student-navbar__user-avatar {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(135deg,
+      #e0e7ff,
+      #c7d2fe);
+
+  border-radius: 50%;
+
+  color: #4338ca;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.student-navbar__user-info {
+  display: flex;
+  flex-direction: column;
+
+  text-align: left;
+}
+
+.student-navbar__user-name {
+  color: #0f172a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+
+  white-space: nowrap;
+}
+
+.student-navbar__user-admission {
+  margin-top: 2px;
+
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.student-navbar__logout-button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  padding: 0.5rem 0.85rem;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.student-navbar__logout-button:hover {
+  background: #fef2f2;
+}
+
+@keyframes student-navbar-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .student-navbar {
+    height: 64px;
+    padding: 0 1rem;
+  }
+
+  .student-navbar__brand-subtitle,
+  .student-navbar__user-info,
+  .student-navbar__logout-button span {
+    display: none;
+  }
+
+  .student-navbar__actions {
+    gap: 0.75rem;
+  }
+
+  .student-navbar__notification-popover {
+    position: fixed;
+    top: 72px;
+    right: 1rem;
+    left: 1rem;
+
+    width: auto;
+  }
+
+  .student-navbar__user-profile {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .student-navbar__logout-button {
+    padding: 0.55rem;
+  }
+}

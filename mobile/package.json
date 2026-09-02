@@ -1,0 +1,22 @@
+{
+  "name": "@ims/mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Student Mobile Application for Institute Management System",
+  "main": "src/App.tsx",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ims/common": "*",
+    "@ims/types": "*",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "typescript": "^5.4.5"
+  }
+}
