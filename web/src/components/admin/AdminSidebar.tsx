@@ -173,15 +173,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           </ul>
 
           {/* Quick System Badge Card */}
-          <div className="admin-sidebar__tenant-card">
-            <p className="admin-sidebar__tenant-card-desc">
-              Dedicated tenant isolation with academic quotas active.
-            </p>
-            <div className="admin-sidebar__tenant-card-status">
-              <Sparkles size={12} className="text-emerald-400" />
-              <span>Session 2026–2027 Active</span>
-            </div>
-          </div>
+          
         </nav>
 
         <div className="admin-sidebar__footer">
