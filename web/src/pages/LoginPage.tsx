@@ -38,6 +38,8 @@ export const LoginPage: React.FC = () => {
         navigate("/superadmin/dashboard", { replace: true });
       } else if (userRole === "ADMIN") {
         navigate("/admin/dashboard", { replace: true });
+      } else if (userRole === "TEACHER") {
+        navigate("/teacher/dashboard", { replace: true });
       } else if (userRole === "STUDENT") {
         navigate("/student/dashboard", { replace: true });
       } else {
@@ -205,6 +207,18 @@ export const LoginPage: React.FC = () => {
                   <strong>Institute Admin</strong>
                 </div>
                 <code className="login-demo__code">admin@institute.local (INST001)</code>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fillQuickCredentials("amit.sharma@apexacademy.local", "Teacher@123", "INST001")}
+                className="login-demo__item"
+              >
+                <div className="login-demo__role">
+                  <span>👨‍🏫</span>
+                  <strong>Faculty / Teacher</strong>
+                </div>
+                <code className="login-demo__code">amit.sharma@apexacademy.local (INST001)</code>
               </button>
 
               <button

@@ -19,6 +19,10 @@ import { notificationRoutes } from "./notification.routes";
 import { saasRoutes } from "./saas.routes";
 import { instituteRoutes } from "./institute.routes";
 
+import { batchSubjectRoutes } from "./batchSubject.routes";
+import { roomRoutes } from "./room.routes";
+import { teacherPortalRoutes } from "./teacherPortal.routes";
+
 const router = Router();
 
 // Routes registry
@@ -30,6 +34,9 @@ router.use("/teachers", teacherRoutes);
 router.use("/courses", courseRoutes);
 router.use("/subjects", subjectRoutes);
 router.use("/batches", batchRoutes);
+router.use("/", batchSubjectRoutes);
+router.use("/rooms", roomRoutes);
+router.use("/teacher-portal", teacherPortalRoutes);
 router.use("/assignments", assignmentRoutes);
 router.use("/timetable", timetableRoutes);
 router.use("/materials", materialRoutes);

@@ -5,6 +5,7 @@
 export enum UserRole {
   SUPER_ADMIN = "SUPER_ADMIN",
   ADMIN = "ADMIN",
+  TEACHER = "TEACHER",
   STUDENT = "STUDENT"
 }
 
@@ -43,6 +44,30 @@ export enum BatchStatus {
   ACTIVE = "ACTIVE",
   COMPLETED = "COMPLETED",
   CANCELLED = "CANCELLED"
+}
+
+export enum BatchSubjectStatus {
+  NOT_STARTED = "NOT_STARTED",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED"
+}
+
+export enum RoomType {
+  CLASSROOM = "CLASSROOM",
+  LAB = "LAB",
+  ONLINE = "ONLINE",
+  OTHER = "OTHER"
+}
+
+export enum RoomStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE"
+}
+
+export enum DurationUnit {
+  DAYS = "DAYS",
+  MONTHS = "MONTHS",
+  YEARS = "YEARS"
 }
 
 export enum AttendanceStatus {

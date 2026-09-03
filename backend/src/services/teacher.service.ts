@@ -4,11 +4,14 @@ import { HTTP_STATUS } from "@ims/common";
 import { Prisma } from "@prisma/client";
 import { CreateTeacherInput, UpdateTeacherInput, TeacherQueryParams } from "../validations/teacher.validation";
 
+import { PasswordUtil } from "../utils/password";
+import { UserRole, UserStatus } from "@prisma/client";
+
 export class TeacherService {
   /**
-   * Register a new teacher (No login credentials created)
+   * Register a new teacher (with optional login credentials)
    */
-  static async createTeacher(instituteId: string, input: CreateTeacherInput) {
+  static async createTeacher(instituteId: string, input: any) {
     const {
       firstName,
       lastName,
@@ -18,10 +21,13 @@ export class TeacherService {
       qualification,
       specialization,
       experienceYears = 0,
+      skills,
       avatarUrl,
       bio,
       address,
       joiningDate,
+      createUserAccount,
+      password,
       subjectIds = []
     } = input;
 
@@ -58,9 +64,34 @@ export class TeacherService {
       }
     }
 
+    // Optionally create User login account
+    let userId: string | null = null;
+    if (createUserAccount || password) {
+      const existingUser = await prisma.user.findFirst({
+        where: { email: email.toLowerCase(), instituteId }
+      });
+      if (existingUser) {
+        userId = existingUser.id;
+      } else {
+        const defaultPassword = password || "Teacher@123";
+        const passwordHash = await PasswordUtil.hash(defaultPassword);
+        const newUser = await prisma.user.create({
+          data: {
+            instituteId,
+            email: email.toLowerCase(),
+            passwordHash,
+            role: UserRole.TEACHER,
+            status: UserStatus.ACTIVE
+          }
+        });
+        userId = newUser.id;
+      }
+    }
+
     const teacher = await prisma.teacher.create({
       data: {
         instituteId,
+        userId,
         employeeCode: employeeCode!,
         firstName,
         lastName,
@@ -70,12 +101,13 @@ export class TeacherService {
         qualification,
         specialization,
         experienceYears,
+        skills: skills || null,
         avatarUrl,
         bio,
         address,
         joiningDate: joiningDate ? new Date(joiningDate) : new Date(),
         subjects: {
-          create: subjectIds.map((subjectId) => ({
+          create: subjectIds.map((subjectId: string) => ({
             subjectId
           }))
         }
@@ -85,7 +117,8 @@ export class TeacherService {
           include: {
             subject: true
           }
-        }
+        },
+        user: { select: { id: true, email: true, role: true, status: true } }
       }
     });
 
@@ -166,13 +199,20 @@ export class TeacherService {
             }
           }
         },
+        batchSubjects: {
+          include: {
+            batch: { select: { id: true, name: true, code: true, status: true, startDate: true, endDate: true } },
+            subject: { select: { id: true, name: true, code: true } }
+          }
+        },
         assignments: {
           include: {
             course: { select: { id: true, name: true, code: true } },
             subject: { select: { id: true, name: true, code: true } },
             batch: { select: { id: true, name: true, code: true, status: true } }
           }
-        }
+        },
+        user: { select: { id: true, email: true, role: true, status: true, lastLoginAt: true } }
       }
     });
 
@@ -204,6 +244,7 @@ export class TeacherService {
       qualification,
       specialization,
       experienceYears,
+      skills,
       avatarUrl,
       bio,
       address,
@@ -221,6 +262,7 @@ export class TeacherService {
         ...(qualification !== undefined ? { qualification } : {}),
         ...(specialization !== undefined ? { specialization } : {}),
         ...(experienceYears !== undefined ? { experienceYears } : {}),
+        ...(skills !== undefined ? { skills } : {}),
         ...(avatarUrl !== undefined ? { avatarUrl } : {}),
         ...(bio !== undefined ? { bio } : {}),
         ...(address !== undefined ? { address } : {}),
@@ -234,6 +276,80 @@ export class TeacherService {
     });
 
     return updated;
+  }
+
+  /**
+   * Retrieve academic scope for logged in Teacher (Batches, Subjects, Timetable)
+   */
+  static async getTeacherAcademicScope(userId: string, instituteId: string) {
+    const teacher = await prisma.teacher.findFirst({
+      where: { userId, instituteId },
+      include: {
+        batchSubjects: {
+          include: {
+            batch: {
+              include: {
+                course: { select: { id: true, name: true, code: true } },
+                _count: { select: { students: true } }
+              }
+            },
+            subject: true
+          }
+        },
+        assignments: {
+          include: {
+            batch: {
+              include: {
+                course: { select: { id: true, name: true, code: true } },
+                _count: { select: { students: true } }
+              }
+            },
+            subject: true
+          }
+        },
+        timetables: {
+          where: { status: "ACTIVE" },
+          orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
+          include: {
+            batch: { select: { id: true, name: true, code: true } },
+            subject: { select: { id: true, name: true, code: true } },
+            room: { select: { id: true, name: true, code: true } }
+          }
+        }
+      }
+    });
+
+    if (!teacher) {
+      throw new AppError("Teacher profile not linked to this account", HTTP_STATUS.NOT_FOUND);
+    }
+
+    // Consolidate assigned batches
+    const batchMap = new Map<string, any>();
+    for (const bs of teacher.batchSubjects) {
+      if (bs.batch) {
+        batchMap.set(bs.batch.id, bs.batch);
+      }
+    }
+    for (const a of teacher.assignments) {
+      if (a.batch && !batchMap.has(a.batch.id)) {
+        batchMap.set(a.batch.id, a.batch);
+      }
+    }
+
+    return {
+      teacher: {
+        id: teacher.id,
+        employeeCode: teacher.employeeCode,
+        name: `${teacher.firstName} ${teacher.lastName}`,
+        email: teacher.email,
+        phone: teacher.phone,
+        specialization: teacher.specialization,
+        skills: teacher.skills
+      },
+      assignedBatches: Array.from(batchMap.values()),
+      batchSubjects: teacher.batchSubjects,
+      timetables: teacher.timetables
+    };
   }
 
   /**

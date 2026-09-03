@@ -6,10 +6,52 @@ export const createBatchSchema = z.object({
     courseId: z.string({ required_error: "Course ID is required" }),
     name: z.string({ required_error: "Batch name is required" }).min(2),
     code: z.string({ required_error: "Batch code is required" }).min(2).toUpperCase(),
+    academicSession: z.string().optional().nullable(),
+    description: z.string().optional().nullable(),
     startDate: z.string({ required_error: "Start date is required" }),
     endDate: z.string().optional().nullable(),
     maxStrength: z.coerce.number().min(1).default(60),
     status: z.nativeEnum(BatchStatus).optional()
+  })
+});
+
+export const createBatchWizardSchema = z.object({
+  body: z.object({
+    // Step 1: Basic Info
+    courseId: z.string({ required_error: "Course ID is required" }),
+    name: z.string({ required_error: "Batch name is required" }).min(2),
+    code: z.string({ required_error: "Batch code is required" }).min(2).toUpperCase(),
+    academicSession: z.string().optional().nullable(),
+    description: z.string().optional().nullable(),
+    startDate: z.string({ required_error: "Start date is required" }),
+    endDate: z.string().optional().nullable(),
+    maxStrength: z.coerce.number().min(1).default(60),
+    status: z.nativeEnum(BatchStatus).optional().default(BatchStatus.ACTIVE),
+
+    // Step 2 & 3: Selected Subjects & Assigned Teachers
+    subjects: z.array(
+      z.object({
+        subjectId: z.string({ required_error: "Subject ID is required" }),
+        assignedTeacherId: z.string().optional().nullable(),
+        startDate: z.string().optional().nullable(),
+        expectedEndDate: z.string().optional().nullable(),
+        notes: z.string().optional().nullable()
+      })
+    ).optional().default([]),
+
+    // Step 4: Initial Timetable Schedules
+    schedules: z.array(
+      z.object({
+        subjectId: z.string({ required_error: "Subject ID is required" }),
+        teacherId: z.string({ required_error: "Teacher ID is required" }),
+        roomId: z.string().optional().nullable(),
+        dayOfWeek: z.enum(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]),
+        startTime: z.string({ required_error: "Start time is required" }),
+        endTime: z.string({ required_error: "End time is required" }),
+        meetingLink: z.string().optional().nullable(),
+        classType: z.enum(["OFFLINE", "ONLINE", "HYBRID"]).optional().default("OFFLINE")
+      })
+    ).optional().default([])
   })
 });
 
@@ -20,6 +62,8 @@ export const updateBatchSchema = z.object({
   body: z.object({
     name: z.string().min(2).optional(),
     code: z.string().min(2).toUpperCase().optional(),
+    academicSession: z.string().optional().nullable(),
+    description: z.string().optional().nullable(),
     startDate: z.string().optional(),
     endDate: z.string().optional().nullable(),
     maxStrength: z.coerce.number().min(1).optional(),
@@ -60,5 +104,6 @@ export const batchQuerySchema = z.object({
 });
 
 export type CreateBatchInput = z.infer<typeof createBatchSchema>["body"];
+export type CreateBatchWizardInput = z.infer<typeof createBatchWizardSchema>["body"];
 export type UpdateBatchInput = z.infer<typeof updateBatchSchema>["body"];
 export type AssignStudentBatchInput = z.infer<typeof assignStudentBatchSchema>["body"];

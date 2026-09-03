@@ -15,6 +15,7 @@ export const RoleRoute: React.FC<RoleRouteProps> = ({ allowedRole }) => {
   if (role !== allowedRole) {
     if (role === "SUPER_ADMIN") return <Navigate to="/superadmin/dashboard" replace />;
     if (role === "ADMIN") return <Navigate to="/admin/dashboard" replace />;
+    if (role === "TEACHER") return <Navigate to="/teacher/dashboard" replace />;
     if (role === "STUDENT") return <Navigate to="/student/dashboard" replace />;
     return <Navigate to="/unauthorized" replace />;
   }

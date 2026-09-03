@@ -36,6 +36,20 @@ export class TimetableController {
     return ResponseHandler.success(res, result, "Timetable slot deleted successfully");
   });
 
+  // Specific Batch Schedule
+  static getBatchSchedule = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const instituteId = req.instituteId as string;
+    const schedule = await TimetableService.getBatchSchedule(instituteId, req.params.batchId);
+    return ResponseHandler.success(res, schedule, "Batch schedule retrieved successfully");
+  });
+
+  // Specific Teacher Schedule
+  static getTeacherSchedule = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const instituteId = req.instituteId as string;
+    const schedule = await TimetableService.getTeacherSchedule(instituteId, req.params.teacherId);
+    return ResponseHandler.success(res, schedule, "Teacher schedule retrieved successfully");
+  });
+
   // Student Personalized Schedule
   static getMySchedule = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.user?.id as string;

@@ -59,23 +59,63 @@ export interface AdminTeacher {
   }[];
 }
 
+export interface AdminRoom {
+  id: string;
+  name: string;
+  code: string;
+  capacity: number;
+  type: "CLASSROOM" | "LAB" | "ONLINE" | "OTHER";
+  status: "ACTIVE" | "INACTIVE";
+  createdAt?: string;
+  _count?: { timetables: number };
+}
+
+export interface AdminCourseSubject {
+  id: string;
+  courseId: string;
+  subjectId: string;
+  displayOrder: number;
+  estimatedDuration?: string | null;
+  subject: AdminSubject;
+}
+
+export interface AdminBatchSubject {
+  id: string;
+  batchId: string;
+  subjectId: string;
+  assignedTeacherId?: string | null;
+  startDate?: string | null;
+  expectedEndDate?: string | null;
+  status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
+  progress: number;
+  notes?: string | null;
+  subject: AdminSubject;
+  assignedTeacher?: AdminTeacher | null;
+}
+
 export interface AdminCourse {
   id: string;
   name: string;
   code: string;
   description?: string | null;
-  durationMonths: number;
+  duration?: number;
+  durationUnit?: string;
+  durationMonths?: number;
+  totalFees?: number | string;
   status: string;
   createdAt?: string;
   subjects?: AdminSubject[];
+  courseSubjects?: AdminCourseSubject[];
   batches?: AdminBatch[];
-  _count?: { subjects: number; batches: number };
+  _count?: { subjects: number; courseSubjects?: number; batches: number };
 }
 
 export interface AdminBatch {
   id: string;
   name: string;
   code: string;
+  academicSession?: string | null;
+  description?: string | null;
   courseId: string;
   course?: { id: string; name: string; code: string };
   startDate: string;
@@ -84,7 +124,9 @@ export interface AdminBatch {
   maxStrength?: number;
   maxCapacity?: number;
   createdAt?: string;
-  _count?: { students: number; teacherAssignments?: number };
+  _count?: { students: number; batchSubjects?: number; timetables?: number; teacherAssignments?: number };
+  batchSubjects?: AdminBatchSubject[];
+  timetables?: AdminTimetableSlot[];
   students?: {
     id: string;
     studentId: string;
@@ -111,14 +153,17 @@ export interface AdminTimetableSlot {
   batchId: string;
   subjectId: string;
   teacherId: string;
+  roomId?: string | null;
+  batchSubjectId?: string | null;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
   roomNumber?: string | null;
   meetingLink?: string | null;
-  batch?: { name: string };
-  subject?: { name: string };
-  teacher?: { firstName: string; lastName: string };
+  batch?: { id?: string; name: string; code?: string };
+  subject?: { id?: string; name: string; code?: string };
+  teacher?: { id?: string; firstName: string; lastName: string; employeeCode?: string };
+  room?: { id?: string; name: string; code?: string; capacity?: number };
 }
 
 export interface AdminMaterial {
@@ -292,10 +337,24 @@ export class AdminApiService {
     });
   }
 
+  static async createBatchWizard(data: any): Promise<AdminBatch> {
+    return ApiService.request("/batches/wizard", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
   static async updateBatch(id: string, data: Partial<AdminBatch>): Promise<AdminBatch> {
     return ApiService.request(`/batches/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
+    });
+  }
+
+  static async updateBatchStatus(id: string, status: string): Promise<AdminBatch> {
+    return ApiService.request(`/batches/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
     });
   }
 
@@ -322,16 +381,144 @@ export class AdminApiService {
     return ApiService.request(`/batches/${batchId}/students`);
   }
 
-  // Timetables
-  static async getTimetables(): Promise<AdminTimetableSlot[]> {
-    const res = await ApiService.request<any>("/timetables");
-    return Array.isArray(res) ? res : res.timetables || [];
+  // --- COURSE CURRICULUM SUBJECTS ---
+  static async getCourseSubjects(courseId: string): Promise<AdminCourseSubject[]> {
+    const res = await ApiService.request<any>(`/courses/${courseId}/subjects`);
+    return Array.isArray(res) ? res : res.data || [];
+  }
+
+  static async addSubjectToCourse(courseId: string, data: { subjectId: string; displayOrder?: number; estimatedDuration?: string }): Promise<any> {
+    return ApiService.request(`/courses/${courseId}/subjects`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  static async updateCourseSubject(courseId: string, subjectId: string, data: { displayOrder?: number; estimatedDuration?: string }): Promise<any> {
+    return ApiService.request(`/courses/${courseId}/subjects/${subjectId}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  static async removeSubjectFromCourse(courseId: string, subjectId: string): Promise<any> {
+    return ApiService.request(`/courses/${courseId}/subjects/${subjectId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // --- BATCH ACADEMIC SUBJECTS ---
+  static async getBatchSubjects(batchId: string): Promise<AdminBatchSubject[]> {
+    const res = await ApiService.request<any>(`/batches/${batchId}/subjects`);
+    return Array.isArray(res) ? res : res.data || [];
+  }
+
+  static async addSubjectToBatch(batchId: string, data: any): Promise<AdminBatchSubject> {
+    const res = await ApiService.request<any>(`/batches/${batchId}/subjects`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return res.data || res;
+  }
+
+  static async updateBatchSubject(id: string, data: any): Promise<AdminBatchSubject> {
+    const res = await ApiService.request<any>(`/batch-subjects/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+    return res.data || res;
+  }
+
+  static async assignTeacherToBatchSubject(id: string, teacherId: string): Promise<any> {
+    return ApiService.request(`/batch-subjects/${id}/assign-teacher`, {
+      method: "POST",
+      body: JSON.stringify({ teacherId }),
+    });
+  }
+
+  static async removeBatchSubject(id: string): Promise<any> {
+    return ApiService.request(`/batch-subjects/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // --- CLASSROOMS / ROOMS ---
+  static async getRooms(params?: { search?: string; type?: string; status?: string }): Promise<AdminRoom[]> {
+    const query = new URLSearchParams();
+    if (params?.search) query.append("search", params.search);
+    if (params?.type) query.append("type", params.type);
+    if (params?.status) query.append("status", params.status);
+    const queryString = query.toString() ? `?${query.toString()}` : "";
+
+    const res = await ApiService.request<any>(`/rooms${queryString}`);
+    return Array.isArray(res) ? res : res.data?.rooms || res.rooms || [];
+  }
+
+  static async getRoomById(id: string): Promise<AdminRoom> {
+    const res = await ApiService.request<any>(`/rooms/${id}`);
+    return res.data || res;
+  }
+
+  static async createRoom(data: any): Promise<AdminRoom> {
+    const res = await ApiService.request<any>("/rooms", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return res.data || res;
+  }
+
+  static async updateRoom(id: string, data: any): Promise<AdminRoom> {
+    const res = await ApiService.request<any>(`/rooms/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+    return res.data || res;
+  }
+
+  static async deleteRoom(id: string): Promise<any> {
+    return ApiService.request(`/rooms/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // --- TIMETABLES ---
+  static async getTimetables(params?: { batchId?: string; teacherId?: string; roomId?: string; dayOfWeek?: string }): Promise<AdminTimetableSlot[]> {
+    const query = new URLSearchParams();
+    if (params?.batchId) query.append("batchId", params.batchId);
+    if (params?.teacherId) query.append("teacherId", params.teacherId);
+    if (params?.roomId) query.append("roomId", params.roomId);
+    if (params?.dayOfWeek) query.append("dayOfWeek", params.dayOfWeek);
+    const queryString = query.toString() ? `?${query.toString()}` : "";
+
+    const res = await ApiService.request<any>(`/timetable${queryString}`);
+    return Array.isArray(res) ? res : res.timetables || res.data || [];
+  }
+
+  static async getBatchSchedule(batchId: string): Promise<any> {
+    return ApiService.request(`/timetable/batch/${batchId}`);
+  }
+
+  static async getTeacherSchedule(teacherId: string): Promise<any> {
+    return ApiService.request(`/timetable/teacher/${teacherId}`);
   }
 
   static async createTimetableSlot(data: any): Promise<any> {
-    return ApiService.request("/timetables", {
+    return ApiService.request("/timetable", {
       method: "POST",
       body: JSON.stringify(data),
+    });
+  }
+
+  static async updateTimetableSlot(id: string, data: any): Promise<any> {
+    return ApiService.request(`/timetable/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  static async deleteTimetableSlot(id: string): Promise<any> {
+    return ApiService.request(`/timetable/${id}`, {
+      method: "DELETE",
     });
   }
 

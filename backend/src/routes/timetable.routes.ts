@@ -15,6 +15,10 @@ router.use(authenticate);
 // Student Endpoint: Personalized Schedule
 router.get("/my", authorize(UserRole.STUDENT), TimetableController.getMySchedule);
 
+// Specific Batch / Teacher Schedules
+router.get("/batch/:batchId", TimetableController.getBatchSchedule);
+router.get("/teacher/:teacherId", TimetableController.getTeacherSchedule);
+
 // Admin Endpoints
 router.post(
   "/",

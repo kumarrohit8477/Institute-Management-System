@@ -13,6 +13,18 @@ export class BatchController {
     return ResponseHandler.created(res, batch, "Batch created successfully");
   });
 
+  static createBatchWizard = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const instituteId = req.instituteId as string;
+    const batch = await BatchService.createBatchWithAcademics(instituteId, req.body);
+    return ResponseHandler.created(res, batch, "Batch with academic structure created successfully");
+  });
+
+  static updateBatchStatus = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const instituteId = req.instituteId as string;
+    const updated = await BatchService.updateBatchStatus(instituteId, req.params.id, req.body.status);
+    return ResponseHandler.success(res, updated, "Batch status updated successfully");
+  });
+
   static getBatches = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const instituteId = req.instituteId as string;
     const result = await BatchService.getBatches(instituteId, req.query as any);

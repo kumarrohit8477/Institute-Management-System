@@ -1,12 +1,20 @@
-export type UserRole = "SUPER_ADMIN" | "ADMIN" | "STUDENT";
+export type UserRole = "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT";
 export type UserStatus = "ACTIVE" | "INACTIVE" | "BLOCKED";
 
 export interface User {
   id: string;
+  name?: string;
   email: string;
   role: UserRole;
   status: UserStatus;
   lastLoginAt?: string | null;
+  teacher?: {
+    id: string;
+    employeeCode: string;
+    firstName: string;
+    lastName: string;
+    specialization?: string;
+  } | null;
 }
 
 export interface Institute {
@@ -34,6 +42,13 @@ export interface AuthResponse {
   user: User;
   institute?: Institute | null;
   student?: StudentProfile | null;
+  teacher?: {
+    id: string;
+    employeeCode: string;
+    firstName: string;
+    lastName: string;
+    specialization?: string;
+  } | null;
   tokens: {
     accessToken: string;
     refreshToken: string;

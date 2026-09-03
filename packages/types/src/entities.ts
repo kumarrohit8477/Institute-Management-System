@@ -15,7 +15,11 @@ import {
   PaymentMode,
   PaymentStatus,
   NotificationType,
-  NotificationChannel
+  NotificationChannel,
+  BatchSubjectStatus,
+  RoomType,
+  RoomStatus,
+  DurationUnit
 } from "./enums";
 
 export interface IBaseEntity {
@@ -73,6 +77,8 @@ export interface ITeacher extends ITenantEntity {
   qualification?: string | null;
   specialization?: string | null;
   experienceYears?: number;
+  skills?: string | null;
+  userId?: string | null;
   status: TeacherStatus;
 }
 
@@ -80,24 +86,57 @@ export interface ICourse extends ITenantEntity {
   name: string;
   code: string;
   description?: string | null;
+  duration?: number | null;
+  durationUnit?: DurationUnit | string | null;
   durationMonths?: number | null;
+  totalFees?: number | string | null;
   isActive: boolean;
 }
 
 export interface ISubject extends ITenantEntity {
-  courseId: string;
+  courseId?: string | null;
   name: string;
   code: string;
   description?: string | null;
   isActive: boolean;
 }
 
+export interface ICourseSubject extends IBaseEntity {
+  courseId: string;
+  subjectId: string;
+  displayOrder: number;
+  estimatedDuration?: string | null;
+}
+
 export interface IBatch extends ITenantEntity {
   courseId: string;
   name: string;
   code: string;
+  academicSession?: string | null;
+  description?: string | null;
   startDate: Date | string;
   endDate?: Date | string | null;
   maxCapacity: number;
+  maxStrength?: number;
   status: BatchStatus;
 }
+
+export interface IBatchSubject extends IBaseEntity {
+  batchId: string;
+  subjectId: string;
+  assignedTeacherId?: string | null;
+  startDate?: Date | string | null;
+  expectedEndDate?: Date | string | null;
+  status: BatchSubjectStatus;
+  progress: number;
+  notes?: string | null;
+}
+
+export interface IRoom extends ITenantEntity {
+  name: string;
+  code: string;
+  capacity: number;
+  type: RoomType;
+  status: RoomStatus;
+}
+

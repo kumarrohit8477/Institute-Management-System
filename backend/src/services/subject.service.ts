@@ -6,37 +6,38 @@ import { CreateSubjectInput, UpdateSubjectInput } from "../validations/subject.v
 
 export class SubjectService {
   /**
-   * Create a new subject assigned to a course
+   * Create a new subject (optionally assigned to a course or created centrally)
    */
   static async createSubject(instituteId: string, input: CreateSubjectInput) {
     const { courseId, name, code, description } = input;
 
-    // Verify course belongs to this institute
-    const course = await prisma.course.findFirst({
-      where: { id: courseId, instituteId }
-    });
+    let targetCourse = null;
+    if (courseId) {
+      targetCourse = await prisma.course.findFirst({
+        where: { id: courseId, instituteId }
+      });
 
-    if (!course) {
-      throw new AppError("Course not found in this institute", HTTP_STATUS.NOT_FOUND);
+      if (!targetCourse) {
+        throw new AppError("Course not found in this institute", HTTP_STATUS.NOT_FOUND);
+      }
     }
 
-    const existing = await prisma.subject.findUnique({
+    // Verify code uniqueness within institute
+    const existing = await prisma.subject.findFirst({
       where: {
-        courseId_code: {
-          courseId,
-          code: code.toUpperCase()
-        }
+        instituteId,
+        code: code.toUpperCase()
       }
     });
 
     if (existing) {
-      throw new AppError(`Subject code '${code}' already exists in this course`, HTTP_STATUS.CONFLICT);
+      throw new AppError(`Subject code '${code}' already exists in this institute`, HTTP_STATUS.CONFLICT);
     }
 
     const subject = await prisma.subject.create({
       data: {
         instituteId,
-        courseId,
+        courseId: courseId || null,
         name,
         code: code.toUpperCase(),
         description,
@@ -46,6 +47,25 @@ export class SubjectService {
         course: { select: { id: true, name: true, code: true } }
       }
     });
+
+    // If courseId provided, also link via CourseSubject
+    if (courseId) {
+      const maxOrder = await prisma.courseSubject.aggregate({
+        where: { courseId },
+        _max: { displayOrder: true }
+      });
+      const nextOrder = (maxOrder._max.displayOrder || 0) + 1;
+
+      await prisma.courseSubject.upsert({
+        where: { courseId_subjectId: { courseId, subjectId: subject.id } },
+        update: {},
+        create: {
+          courseId,
+          subjectId: subject.id,
+          displayOrder: nextOrder
+        }
+      });
+    }
 
     return subject;
   }
@@ -59,7 +79,14 @@ export class SubjectService {
 
     const where: Prisma.SubjectWhereInput = {
       instituteId,
-      ...(courseId ? { courseId } : {}),
+      ...(courseId
+        ? {
+            OR: [
+              { courseId },
+              { courseSubjects: { some: { courseId } } }
+            ]
+          }
+        : {}),
       ...(status ? { status } : {}),
       ...(search
         ? {
@@ -81,7 +108,24 @@ export class SubjectService {
         orderBy: { createdAt: "asc" },
         include: {
           course: { select: { id: true, name: true, code: true } },
-          _count: { select: { teachers: true, teacherAssignments: true } }
+          courseSubjects: {
+            include: { course: { select: { id: true, name: true, code: true } } }
+          },
+          teachers: {
+            include: {
+              teacher: {
+                select: { id: true, employeeCode: true, firstName: true, lastName: true, specialization: true }
+              }
+            }
+          },
+          _count: {
+            select: {
+              teachers: true,
+              teacherAssignments: true,
+              batchSubjects: true,
+              courseSubjects: true
+            }
+          }
         }
       })
     ]);
@@ -105,17 +149,20 @@ export class SubjectService {
       where: { id, instituteId },
       include: {
         course: true,
+        courseSubjects: {
+          include: { course: { select: { id: true, name: true, code: true } } }
+        },
         teachers: {
           include: {
             teacher: {
-              select: { id: true, employeeCode: true, firstName: true, lastName: true, specialization: true }
+              select: { id: true, employeeCode: true, firstName: true, lastName: true, specialization: true, phone: true }
             }
           }
         },
-        teacherAssignments: {
+        batchSubjects: {
           include: {
-            teacher: { select: { id: true, firstName: true, lastName: true } },
-            batch: { select: { id: true, name: true, code: true } }
+            batch: { select: { id: true, name: true, code: true } },
+            assignedTeacher: { select: { id: true, firstName: true, lastName: true } }
           }
         }
       }
@@ -143,16 +190,15 @@ export class SubjectService {
     const { name, code, description, status } = input;
 
     if (code && code.toUpperCase() !== subject.code) {
-      const existing = await prisma.subject.findUnique({
+      const existing = await prisma.subject.findFirst({
         where: {
-          courseId_code: {
-            courseId: subject.courseId,
-            code: code.toUpperCase()
-          }
+          instituteId,
+          code: code.toUpperCase(),
+          id: { not: id }
         }
       });
       if (existing) {
-        throw new AppError(`Subject code '${code}' already exists in this course`, HTTP_STATUS.CONFLICT);
+        throw new AppError(`Subject code '${code}' is already in use in this institute`, HTTP_STATUS.CONFLICT);
       }
     }
 
@@ -165,7 +211,8 @@ export class SubjectService {
         ...(status ? { status } : {})
       },
       include: {
-        course: { select: { id: true, name: true, code: true } }
+        course: { select: { id: true, name: true, code: true } },
+        courseSubjects: { include: { course: true } }
       }
     });
 
@@ -173,15 +220,39 @@ export class SubjectService {
   }
 
   /**
-   * Delete a subject
+   * Delete a subject safely (prevent deletion if used in batch subjects or timetable)
    */
   static async deleteSubject(instituteId: string, id: string) {
     const subject = await prisma.subject.findFirst({
-      where: { id, instituteId }
+      where: { id, instituteId },
+      include: {
+        _count: {
+          select: {
+            batchSubjects: true,
+            timetables: true,
+            questions: true,
+            tests: true
+          }
+        }
+      }
     });
 
     if (!subject) {
       throw new AppError("Subject not found", HTTP_STATUS.NOT_FOUND);
+    }
+
+    if (subject._count.batchSubjects > 0) {
+      throw new AppError(
+        `Cannot delete subject: It is currently assigned to ${subject._count.batchSubjects} active batch(es). Remove it from batches first.`,
+        HTTP_STATUS.CONFLICT
+      );
+    }
+
+    if (subject._count.timetables > 0) {
+      throw new AppError(
+        `Cannot delete subject: It has ${subject._count.timetables} class timetable slot(s) scheduled.`,
+        HTTP_STATUS.CONFLICT
+      );
     }
 
     await prisma.subject.delete({

@@ -6,6 +6,7 @@ import { resolveTenantContext } from "../middleware/tenant.middleware";
 import { enforceBatchQuota } from "../middleware/quota.middleware";
 import {
   createBatchSchema,
+  createBatchWizardSchema,
   updateBatchSchema,
   batchQuerySchema,
   assignStudentBatchSchema,
@@ -25,6 +26,20 @@ router.post(
   validateRequest(createBatchSchema),
   enforceBatchQuota,
   BatchController.createBatch
+);
+
+router.post(
+  "/wizard",
+  authorize(UserRole.ADMIN),
+  validateRequest(createBatchWizardSchema),
+  enforceBatchQuota,
+  BatchController.createBatchWizard
+);
+
+router.patch(
+  "/:id/status",
+  authorize(UserRole.ADMIN),
+  BatchController.updateBatchStatus
 );
 
 router.get("/", validateRequest(batchQuerySchema), BatchController.getBatches);

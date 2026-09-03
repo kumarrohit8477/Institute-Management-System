@@ -53,15 +53,26 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     },
     {
       to: "/admin/courses",
-      label: "Courses & Subjects",
+      label: "Courses",
       icon: BookOpen,
       badge: "Curriculum",
+    },
+    {
+      to: "/admin/subjects",
+      label: "Subjects Repository",
+      icon: Sparkles,
     },
     {
       to: "/admin/batches",
       label: "Batch Management",
       icon: Layers,
-      badge: "Cohorts",
+      badge: "Central Unit",
+    },
+    {
+      to: "/admin/rooms",
+      label: "Classrooms & Rooms",
+      icon: Shield,
+      badge: "Facilities",
     },
     {
       to: "/admin/timetable",

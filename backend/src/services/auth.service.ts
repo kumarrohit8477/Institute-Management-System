@@ -72,7 +72,7 @@ export class AuthService {
         }
       }
     } else {
-      // 3. Identifier is not an email — Check Student Admission Number
+      // 3. Identifier is not an email — Check Student Admission Number or Teacher Employee Code
       const studentWhere: any = { admissionNumber: identifier };
       if (targetInstituteId) {
         studentWhere.instituteId = targetInstituteId;
@@ -84,7 +84,8 @@ export class AuthService {
           user: {
             include: {
               institute: true,
-              student: true
+              student: true,
+              teacher: true
             }
           },
           institute: true
@@ -93,6 +94,30 @@ export class AuthService {
 
       if (studentProfile?.user) {
         user = studentProfile.user;
+      } else {
+        // Check Teacher Employee Code
+        const teacherWhere: any = { employeeCode: identifier.toUpperCase() };
+        if (targetInstituteId) {
+          teacherWhere.instituteId = targetInstituteId;
+        }
+
+        const teacherProfile = await prisma.teacher.findFirst({
+          where: teacherWhere,
+          include: {
+            user: {
+              include: {
+                institute: true,
+                student: true,
+                teacher: true
+              }
+            },
+            institute: true
+          }
+        });
+
+        if (teacherProfile?.user) {
+          user = teacherProfile.user;
+        }
       }
     }
 
@@ -105,20 +130,21 @@ export class AuthService {
         },
         include: {
           institute: true,
-          student: true
+          student: true,
+          teacher: true
         }
       });
       if (fallbackUser) user = fallbackUser;
     }
 
     if (!user) {
-      throw new AppError("Invalid credentials. Please check your email/student ID and password.", HTTP_STATUS.UNAUTHORIZED);
+      throw new AppError("Invalid credentials. Please check your email/ID and password.", HTTP_STATUS.UNAUTHORIZED);
     }
 
     // 4. Validate password
     const isPasswordValid = await PasswordUtil.compare(password, user.passwordHash);
     if (!isPasswordValid) {
-      throw new AppError("Invalid credentials. Please check your email/student ID and password.", HTTP_STATUS.UNAUTHORIZED);
+      throw new AppError("Invalid credentials. Please check your email/ID and password.", HTTP_STATUS.UNAUTHORIZED);
     }
 
     // 5. Check account status
@@ -164,6 +190,8 @@ export class AuthService {
     // Determine readable display name
     const userName = user.student
       ? `${user.student.firstName} ${user.student.lastName}`
+      : (user as any).teacher
+      ? `${(user as any).teacher.firstName} ${(user as any).teacher.lastName}`
       : user.role === UserRole.SUPER_ADMIN
       ? "Platform Super Admin"
       : user.role === UserRole.ADMIN
@@ -202,6 +230,18 @@ export class AuthService {
             phone: user.student.phone,
             avatarUrl: user.student.avatarUrl,
             status: user.student.status
+          }
+        : null,
+      teacher: (user as any).teacher
+        ? {
+            id: (user as any).teacher.id,
+            employeeCode: (user as any).teacher.employeeCode,
+            firstName: (user as any).teacher.firstName,
+            lastName: (user as any).teacher.lastName,
+            email: (user as any).teacher.email,
+            phone: (user as any).teacher.phone,
+            specialization: (user as any).teacher.specialization,
+            avatarUrl: (user as any).teacher.avatarUrl
           }
         : null,
       tokens: {
@@ -291,7 +331,8 @@ export class AuthService {
       where: { id: userId },
       include: {
         institute: true,
-        student: true
+        student: true,
+        teacher: true
       }
     });
 
@@ -301,6 +342,8 @@ export class AuthService {
 
     const userName = user.student
       ? `${user.student.firstName} ${user.student.lastName}`
+      : (user as any).teacher
+      ? `${(user as any).teacher.firstName} ${(user as any).teacher.lastName}`
       : user.role === UserRole.SUPER_ADMIN
       ? "Platform Super Admin"
       : user.role === UserRole.ADMIN
@@ -337,6 +380,18 @@ export class AuthService {
             avatarUrl: user.student.avatarUrl,
             status: user.student.status,
             admissionDate: user.student.admissionDate
+          }
+        : null,
+      teacher: (user as any).teacher
+        ? {
+            id: (user as any).teacher.id,
+            employeeCode: (user as any).teacher.employeeCode,
+            firstName: (user as any).teacher.firstName,
+            lastName: (user as any).teacher.lastName,
+            email: (user as any).teacher.email,
+            phone: (user as any).teacher.phone,
+            specialization: (user as any).teacher.specialization,
+            avatarUrl: (user as any).teacher.avatarUrl
           }
         : null
     };

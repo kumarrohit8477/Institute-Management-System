@@ -6,15 +6,13 @@ export const createTimetableSchema = z.object({
     batchId: z.string({ required_error: "Batch ID is required" }),
     subjectId: z.string({ required_error: "Subject ID is required" }),
     teacherId: z.string({ required_error: "Teacher ID is required" }),
+    roomId: z.string().optional().nullable(),
+    batchSubjectId: z.string().optional().nullable(),
     dayOfWeek: z.nativeEnum(DayOfWeek, { required_error: "Day of week is required" }),
-    startTime: z
-      .string({ required_error: "Start time is required" })
-      .regex(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/, "Format must be HH:mm or HH:mm:ss"),
-    endTime: z
-      .string({ required_error: "End time is required" })
-      .regex(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/, "Format must be HH:mm or HH:mm:ss"),
+    startTime: z.string({ required_error: "Start time is required" }),
+    endTime: z.string({ required_error: "End time is required" }),
     roomNumber: z.string().optional().nullable(),
-    meetingLink: z.string().url().optional().nullable(),
+    meetingLink: z.string().optional().nullable(),
     classType: z.nativeEnum(ClassType).default(ClassType.OFFLINE),
     status: z.nativeEnum(ScheduleStatus).default(ScheduleStatus.ACTIVE)
   })
@@ -25,19 +23,16 @@ export const updateTimetableSchema = z.object({
     id: z.string({ required_error: "Timetable ID is required" })
   }),
   body: z.object({
+    batchId: z.string().optional(),
     subjectId: z.string().optional(),
     teacherId: z.string().optional(),
+    roomId: z.string().optional().nullable(),
+    batchSubjectId: z.string().optional().nullable(),
     dayOfWeek: z.nativeEnum(DayOfWeek).optional(),
-    startTime: z
-      .string()
-      .regex(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/, "Format must be HH:mm or HH:mm:ss")
-      .optional(),
-    endTime: z
-      .string()
-      .regex(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/, "Format must be HH:mm or HH:mm:ss")
-      .optional(),
+    startTime: z.string().optional(),
+    endTime: z.string().optional(),
     roomNumber: z.string().optional().nullable(),
-    meetingLink: z.string().url().optional().nullable(),
+    meetingLink: z.string().optional().nullable(),
     classType: z.nativeEnum(ClassType).optional(),
     status: z.nativeEnum(ScheduleStatus).optional()
   })
@@ -47,6 +42,7 @@ export const timetableQuerySchema = z.object({
   query: z.object({
     batchId: z.string().optional(),
     teacherId: z.string().optional(),
+    roomId: z.string().optional(),
     dayOfWeek: z.nativeEnum(DayOfWeek).optional(),
     status: z.nativeEnum(ScheduleStatus).optional(),
     page: z.coerce.number().min(1).default(1),

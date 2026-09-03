@@ -6,7 +6,10 @@ export const createCourseSchema = z.object({
     name: z.string({ required_error: "Course name is required" }).min(2),
     code: z.string({ required_error: "Course code is required" }).min(2).toUpperCase(),
     description: z.string().optional().nullable(),
-    durationMonths: z.coerce.number().min(1).optional().nullable()
+    duration: z.coerce.number().min(1).optional().nullable(),
+    durationUnit: z.enum(["DAYS", "MONTHS", "YEARS"]).optional().default("MONTHS"),
+    durationMonths: z.coerce.number().min(1).optional().nullable(),
+    totalFees: z.coerce.number().min(0).optional().nullable()
   })
 });
 
@@ -18,7 +21,10 @@ export const updateCourseSchema = z.object({
     name: z.string().min(2).optional(),
     code: z.string().min(2).toUpperCase().optional(),
     description: z.string().optional().nullable(),
+    duration: z.coerce.number().min(1).optional().nullable(),
+    durationUnit: z.enum(["DAYS", "MONTHS", "YEARS"]).optional(),
     durationMonths: z.coerce.number().min(1).optional().nullable(),
+    totalFees: z.coerce.number().min(0).optional().nullable(),
     status: z.nativeEnum(CourseStatus).optional()
   })
 });

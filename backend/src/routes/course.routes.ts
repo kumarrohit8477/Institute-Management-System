@@ -36,4 +36,7 @@ router.delete(
   CourseController.deleteCourse
 );
 
+import { courseSubjectRoutes } from "./courseSubject.routes";
+router.use("/", courseSubjectRoutes);
+
 export const courseRoutes = router;

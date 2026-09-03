@@ -15,6 +15,9 @@ export const createTeacherSchema = z.object({
     avatarUrl: z.string().url().optional().nullable(),
     bio: z.string().optional().nullable(),
     address: z.string().optional().nullable(),
+    skills: z.string().optional().nullable(),
+    createUserAccount: z.boolean().optional().default(false),
+    password: z.string().min(6).optional(),
     joiningDate: z.string().optional(),
     subjectIds: z.array(z.string()).optional() // Array of subjects qualified for
   })
@@ -33,6 +36,7 @@ export const updateTeacherSchema = z.object({
     qualification: z.string().optional().nullable(),
     specialization: z.string().optional().nullable(),
     experienceYears: z.coerce.number().min(0).optional(),
+    skills: z.string().optional().nullable(),
     avatarUrl: z.string().url().optional().nullable(),
     bio: z.string().optional().nullable(),
     address: z.string().optional().nullable(),

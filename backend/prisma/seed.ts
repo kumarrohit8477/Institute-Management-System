@@ -478,6 +478,463 @@ async function main() {
   });
 
   console.log(`🎓 Student Enrolled: ${studentProfile.firstName} ${studentProfile.lastName} (Batch: ${morningBatch.code})`);
+
+  // ===========================================================================
+  // 8. Academic Hierarchy: Full Stack Development (FSD) Course, Subjects, Teachers, Rooms, Batch
+  // ===========================================================================
+  console.log("🏫 Seeding Complete Academic Management System Data (FSD Course)...");
+
+  // 8a. Course: Full Stack Development
+  const fsdCourse = await prisma.course.upsert({
+    where: {
+      instituteId_code: {
+        instituteId: institute.id,
+        code: "FSD"
+      }
+    },
+    update: {
+      duration: 6,
+      durationUnit: "MONTHS",
+      durationMonths: 6,
+      totalFees: 50000.0
+    },
+    create: {
+      instituteId: institute.id,
+      name: "Full Stack Development",
+      code: "FSD",
+      description: "Master modern web development from frontend to backend and databases.",
+      duration: 6,
+      durationUnit: "MONTHS",
+      durationMonths: 6,
+      totalFees: 50000.0,
+      status: CourseStatus.ACTIVE
+    }
+  });
+
+  // 8b. 5 Core Subjects
+  const subjectsData = [
+    { name: "HTML & CSS", code: "HTML-CSS", desc: "Modern HTML5 semantics, CSS3 Flexbox, Grid, and responsive layout design." },
+    { name: "JavaScript", code: "JS", desc: "ES6+, asynchronous programming, DOM manipulation, and modern web APIs." },
+    { name: "React", code: "REACT", desc: "Component architecture, hooks, state management, and modern SPA development." },
+    { name: "Node.js", code: "NODE", desc: "Backend runtime, Express.js REST APIs, authentication, and microservices." },
+    { name: "Database", code: "DB", desc: "Relational modeling, MySQL, PostgreSQL, Prisma ORM, and query optimization." }
+  ];
+
+  const createdSubjects = [];
+  for (let i = 0; i < subjectsData.length; i++) {
+    const sub = subjectsData[i];
+    const createdSub = await prisma.subject.upsert({
+      where: {
+        courseId_code: {
+          courseId: fsdCourse.id,
+          code: sub.code
+        }
+      },
+      update: { name: sub.name, description: sub.desc },
+      create: {
+        instituteId: institute.id,
+        courseId: fsdCourse.id,
+        name: sub.name,
+        code: sub.code,
+        description: sub.desc,
+        status: SubjectStatus.ACTIVE
+      }
+    });
+
+    // Link in CourseSubject curriculum
+    await prisma.courseSubject.upsert({
+      where: {
+        courseId_subjectId: {
+          courseId: fsdCourse.id,
+          subjectId: createdSub.id
+        }
+      },
+      update: { displayOrder: i + 1 },
+      create: {
+        courseId: fsdCourse.id,
+        subjectId: createdSub.id,
+        displayOrder: i + 1,
+        estimatedDuration: "4-6 Weeks"
+      }
+    });
+
+    createdSubjects.push(createdSub);
+  }
+
+  // 8c. 3 Teachers with Login Credentials (Password: Teacher@123)
+  const teacherPasswordHash = await bcrypt.hash("Teacher@123", 10);
+
+  const teachersData = [
+    {
+      firstName: "Amit",
+      lastName: "Sharma",
+      email: "amit.sharma@apexacademy.local",
+      phone: "+91 9811002233",
+      employeeCode: "FAC-2026-0010",
+      qualification: "M.Tech in Computer Science",
+      specialization: "Frontend & UI Engineering",
+      skills: "HTML, CSS, JavaScript, React, Tailwind CSS",
+      experienceYears: 7.0,
+      subjectIndices: [0, 1, 2] // HTML-CSS, JS, React
+    },
+    {
+      firstName: "Priya",
+      lastName: "Singh",
+      email: "priya.singh@apexacademy.local",
+      phone: "+91 9822003344",
+      employeeCode: "FAC-2026-0011",
+      qualification: "Ph.D. in Computer Science",
+      specialization: "Backend Systems & Cloud Architecture",
+      skills: "Node.js, Express, TypeScript, Microservices, Docker",
+      experienceYears: 9.5,
+      subjectIndices: [3] // Node.js
+    },
+    {
+      firstName: "Rahul",
+      lastName: "Verma",
+      email: "rahul.verma@apexacademy.local",
+      phone: "+91 9833004455",
+      employeeCode: "FAC-2026-0012",
+      qualification: "MCA, B.Sc Computer Science",
+      specialization: "Database Systems & Data Modeling",
+      skills: "MySQL, PostgreSQL, MongoDB, Redis, Prisma ORM",
+      experienceYears: 6.0,
+      subjectIndices: [4] // Database
+    }
+  ];
+
+  const createdTeachers = [];
+  for (const td of teachersData) {
+    // Create Login User
+    const teacherUser = await prisma.user.upsert({
+      where: {
+        instituteId_email: {
+          instituteId: institute.id,
+          email: td.email.toLowerCase()
+        }
+      },
+      update: {
+        passwordHash: teacherPasswordHash,
+        role: UserRole.TEACHER,
+        status: UserStatus.ACTIVE
+      },
+      create: {
+        instituteId: institute.id,
+        email: td.email.toLowerCase(),
+        passwordHash: teacherPasswordHash,
+        role: UserRole.TEACHER,
+        status: UserStatus.ACTIVE
+      }
+    });
+
+    const teacher = await prisma.teacher.upsert({
+      where: {
+        instituteId_employeeCode: {
+          instituteId: institute.id,
+          employeeCode: td.employeeCode
+        }
+      },
+      update: {
+        userId: teacherUser.id,
+        skills: td.skills,
+        specialization: td.specialization,
+        qualification: td.qualification
+      },
+      create: {
+        instituteId: institute.id,
+        userId: teacherUser.id,
+        employeeCode: td.employeeCode,
+        firstName: td.firstName,
+        lastName: td.lastName,
+        email: td.email.toLowerCase(),
+        phone: td.phone,
+        gender: Gender.MALE,
+        qualification: td.qualification,
+        specialization: td.specialization,
+        experienceYears: td.experienceYears,
+        skills: td.skills,
+        status: TeacherStatus.ACTIVE
+      }
+    });
+
+    // Link qualifications
+    for (const idx of td.subjectIndices) {
+      await prisma.teacherSubject.upsert({
+        where: {
+          teacherId_subjectId: {
+            teacherId: teacher.id,
+            subjectId: createdSubjects[idx].id
+          }
+        },
+        update: {},
+        create: {
+          teacherId: teacher.id,
+          subjectId: createdSubjects[idx].id
+        }
+      });
+    }
+
+    createdTeachers.push(teacher);
+  }
+
+  // 8d. Classrooms / Rooms
+  const room101 = await prisma.room.upsert({
+    where: {
+      instituteId_code: {
+        instituteId: institute.id,
+        code: "R-101"
+      }
+    },
+    update: { capacity: 40 },
+    create: {
+      instituteId: institute.id,
+      name: "Room 101 - Smart Classroom",
+      code: "R-101",
+      capacity: 40,
+      type: "CLASSROOM",
+      status: "ACTIVE"
+    }
+  });
+
+  const lab02 = await prisma.room.upsert({
+    where: {
+      instituteId_code: {
+        instituteId: institute.id,
+        code: "LAB-02"
+      }
+    },
+    update: { capacity: 30 },
+    create: {
+      instituteId: institute.id,
+      name: "Lab 2 - Systems & Coding",
+      code: "LAB-02",
+      capacity: 30,
+      type: "LAB",
+      status: "ACTIVE"
+    }
+  });
+
+  // 8e. Batch: FSD-2026-A
+  const fsdBatch = await prisma.batch.upsert({
+    where: {
+      instituteId_code: {
+        instituteId: institute.id,
+        code: "FSD-2026-A"
+      }
+    },
+    update: {
+      academicSession: "2026-2027",
+      maxStrength: 30,
+      description: "Premier morning cohort for Full Stack Web Development."
+    },
+    create: {
+      instituteId: institute.id,
+      courseId: fsdCourse.id,
+      name: "Full Stack Development - Batch A",
+      code: "FSD-2026-A",
+      academicSession: "2026-2027",
+      description: "Premier morning cohort for Full Stack Web Development.",
+      startDate: new Date("2026-04-01"),
+      endDate: new Date("2026-10-01"),
+      maxStrength: 30,
+      status: BatchStatus.ACTIVE
+    }
+  });
+
+  // 8f. Batch Subjects with Teacher Assignments & Progress
+  // HTML & CSS -> Amit Sharma (100% completed)
+  await prisma.batchSubject.upsert({
+    where: {
+      batchId_subjectId: {
+        batchId: fsdBatch.id,
+        subjectId: createdSubjects[0].id
+      }
+    },
+    update: { assignedTeacherId: createdTeachers[0].id, progress: 100, status: "COMPLETED" },
+    create: {
+      batchId: fsdBatch.id,
+      subjectId: createdSubjects[0].id,
+      assignedTeacherId: createdTeachers[0].id,
+      status: "COMPLETED",
+      progress: 100,
+      notes: "Completed all CSS Flexbox and Grid hands-on projects."
+    }
+  });
+
+  // JavaScript -> Amit Sharma (80% in progress)
+  await prisma.batchSubject.upsert({
+    where: {
+      batchId_subjectId: {
+        batchId: fsdBatch.id,
+        subjectId: createdSubjects[1].id
+      }
+    },
+    update: { assignedTeacherId: createdTeachers[0].id, progress: 80, status: "IN_PROGRESS" },
+    create: {
+      batchId: fsdBatch.id,
+      subjectId: createdSubjects[1].id,
+      assignedTeacherId: createdTeachers[0].id,
+      status: "IN_PROGRESS",
+      progress: 80,
+      notes: "Async/await and Fetch API completed. Moving to DOM events."
+    }
+  });
+
+  // React -> Amit Sharma (40% in progress)
+  const reactBatchSub = await prisma.batchSubject.upsert({
+    where: {
+      batchId_subjectId: {
+        batchId: fsdBatch.id,
+        subjectId: createdSubjects[2].id
+      }
+    },
+    update: { assignedTeacherId: createdTeachers[0].id, progress: 40, status: "IN_PROGRESS" },
+    create: {
+      batchId: fsdBatch.id,
+      subjectId: createdSubjects[2].id,
+      assignedTeacherId: createdTeachers[0].id,
+      status: "IN_PROGRESS",
+      progress: 40,
+      notes: "Hooks and state management in progress."
+    }
+  });
+
+  // Node.js -> Priya Singh (Not started)
+  const nodeBatchSub = await prisma.batchSubject.upsert({
+    where: {
+      batchId_subjectId: {
+        batchId: fsdBatch.id,
+        subjectId: createdSubjects[3].id
+      }
+    },
+    update: { assignedTeacherId: createdTeachers[1].id, progress: 0, status: "NOT_STARTED" },
+    create: {
+      batchId: fsdBatch.id,
+      subjectId: createdSubjects[3].id,
+      assignedTeacherId: createdTeachers[1].id,
+      status: "NOT_STARTED",
+      progress: 0
+    }
+  });
+
+  // Database -> Rahul Verma (Not started)
+  const dbBatchSub = await prisma.batchSubject.upsert({
+    where: {
+      batchId_subjectId: {
+        batchId: fsdBatch.id,
+        subjectId: createdSubjects[4].id
+      }
+    },
+    update: { assignedTeacherId: createdTeachers[2].id, progress: 0, status: "NOT_STARTED" },
+    create: {
+      batchId: fsdBatch.id,
+      subjectId: createdSubjects[4].id,
+      assignedTeacherId: createdTeachers[2].id,
+      status: "NOT_STARTED",
+      progress: 0
+    }
+  });
+
+  // 8g. Timetable Schedules:
+  // Monday 10:00 - 11:30: React with Amit Sharma in Room 101
+  const existingSlot1 = await prisma.timetable.findFirst({
+    where: {
+      batchId: fsdBatch.id,
+      dayOfWeek: "MONDAY",
+      startTime: "10:00"
+    }
+  });
+  if (!existingSlot1) {
+    await prisma.timetable.create({
+      data: {
+        instituteId: institute.id,
+        batchId: fsdBatch.id,
+        subjectId: createdSubjects[2].id, // React
+        teacherId: createdTeachers[0].id, // Amit
+        roomId: room101.id,
+        batchSubjectId: reactBatchSub.id,
+        dayOfWeek: "MONDAY",
+        startTime: "10:00",
+        endTime: "11:30",
+        roomNumber: "R-101",
+        classType: "OFFLINE",
+        status: "ACTIVE"
+      }
+    });
+  }
+
+  // Monday 11:30 - 13:00: Node.js with Priya Singh in Lab 2 (valid back-to-back class!)
+  const existingSlot2 = await prisma.timetable.findFirst({
+    where: {
+      batchId: fsdBatch.id,
+      dayOfWeek: "MONDAY",
+      startTime: "11:30"
+    }
+  });
+  if (!existingSlot2) {
+    await prisma.timetable.create({
+      data: {
+        instituteId: institute.id,
+        batchId: fsdBatch.id,
+        subjectId: createdSubjects[3].id, // Node.js
+        teacherId: createdTeachers[1].id, // Priya
+        roomId: lab02.id,
+        batchSubjectId: nodeBatchSub.id,
+        dayOfWeek: "MONDAY",
+        startTime: "11:30",
+        endTime: "13:00",
+        roomNumber: "LAB-02",
+        classType: "OFFLINE",
+        status: "ACTIVE"
+      }
+    });
+  }
+
+  // Tuesday 10:00 - 11:30: Database with Rahul Verma in Lab 2
+  const existingSlot3 = await prisma.timetable.findFirst({
+    where: {
+      batchId: fsdBatch.id,
+      dayOfWeek: "TUESDAY",
+      startTime: "10:00"
+    }
+  });
+  if (!existingSlot3) {
+    await prisma.timetable.create({
+      data: {
+        instituteId: institute.id,
+        batchId: fsdBatch.id,
+        subjectId: createdSubjects[4].id, // Database
+        teacherId: createdTeachers[2].id, // Rahul
+        roomId: lab02.id,
+        batchSubjectId: dbBatchSub.id,
+        dayOfWeek: "TUESDAY",
+        startTime: "10:00",
+        endTime: "11:30",
+        roomNumber: "LAB-02",
+        classType: "OFFLINE",
+        status: "ACTIVE"
+      }
+    });
+  }
+
+  // 8h. Enroll Student into FSD Batch
+  await prisma.studentBatch.upsert({
+    where: {
+      studentId_batchId: {
+        studentId: studentProfile.id,
+        batchId: fsdBatch.id
+      }
+    },
+    update: {},
+    create: {
+      studentId: studentProfile.id,
+      batchId: fsdBatch.id,
+      rollNumber: "FSD-001",
+      status: StudentBatchStatus.ACTIVE
+    }
+  });
+
+  console.log(`✅ FSD Course, 5 Subjects, 3 Teachers, Rooms, Batch FSD-2026-A & Timetable seeded successfully!`);
   console.log("🌱 Multi-Tenant SaaS Database Seeding Completed Successfully!");
 }
 

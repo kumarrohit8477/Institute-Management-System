@@ -3,7 +3,7 @@ import { SubjectStatus } from "@prisma/client";
 
 export const createSubjectSchema = z.object({
   body: z.object({
-    courseId: z.string({ required_error: "Course ID is required" }),
+    courseId: z.string().optional().nullable(),
     name: z.string({ required_error: "Subject name is required" }).min(2),
     code: z.string({ required_error: "Subject code is required" }).min(2).toUpperCase(),
     description: z.string().optional().nullable()

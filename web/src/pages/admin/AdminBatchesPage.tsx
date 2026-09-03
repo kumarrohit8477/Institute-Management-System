@@ -523,17 +523,35 @@ export const AdminBatchesPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setErrorMsg(null);
-            setIsCreateOpen(true);
-          }}
-          className="btn btn-primary"
-          style={{ gap: "0.4rem", fontWeight: 700, fontSize: "0.875rem" }}
-        >
-          <PlusCircle size={16} /> Create New Batch
-        </button>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <Link
+            to="/admin/batches/new"
+            className="btn btn-primary"
+            style={{
+              gap: "0.4rem",
+              fontWeight: 700,
+              fontSize: "0.875rem",
+              background: "#4f46e5",
+              color: "#ffffff",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center"
+            }}
+          >
+            <Sparkles size={16} /> New Batch Wizard
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setErrorMsg(null);
+              setIsCreateOpen(true);
+            }}
+            className="btn btn-outline"
+            style={{ gap: "0.4rem", fontWeight: 600, fontSize: "0.875rem" }}
+          >
+            <PlusCircle size={16} /> Quick Add
+          </button>
+        </div>
       </div>
 
       {/* KPI Stats Bar */}
@@ -849,14 +867,32 @@ export const AdminBatchesPage: React.FC = () => {
                     alignItems: "center",
                   }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => openViewModal(bat)}
-                    className="btn btn-outline"
-                    style={{ fontSize: "0.78rem", padding: "0.3rem 0.65rem", gap: "0.25rem" }}
-                  >
-                    <Eye size={13} /> Batch Roster & Enrolled
-                  </button>
+                  <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                    <Link
+                      to={`/admin/batches/${bat.id}`}
+                      className="btn btn-primary"
+                      style={{
+                        fontSize: "0.78rem",
+                        padding: "0.3rem 0.65rem",
+                        gap: "0.25rem",
+                        background: "#4f46e5",
+                        color: "#ffffff",
+                        textDecoration: "none",
+                        display: "inline-flex",
+                        alignItems: "center"
+                      }}
+                    >
+                      <Layers size={13} /> Manage Academics
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => openViewModal(bat)}
+                      className="btn btn-outline"
+                      style={{ fontSize: "0.78rem", padding: "0.3rem 0.5rem", gap: "0.25rem" }}
+                    >
+                      <Eye size={13} /> Quick View
+                    </button>
+                  </div>
 
                   <div style={{ display: "flex", gap: "0.3rem" }}>
                     <button

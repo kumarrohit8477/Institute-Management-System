@@ -34,10 +34,7 @@ export class StudentBatchService {
 
     // Capacity check
     if (batch._count.students >= batch.maxStrength) {
-      throw new AppError(
-        `Batch has reached maximum capacity (${batch.maxStrength} students)`,
-        HTTP_STATUS.BAD_REQUEST
-      );
+      throw new AppError("Batch capacity has been reached.", HTTP_STATUS.BAD_REQUEST);
     }
 
     // Verify student
