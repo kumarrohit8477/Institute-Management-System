@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ExamApiService, StartAttemptResponse, ExamQuestion } from "../../services/examApi";
+import { ExamApiService, StartAttemptResponse, ExamQuestion } from "@/src/services/examApi";
 import { Clock, CheckCircle2, ChevronLeft, ChevronRight, AlertCircle, Send, RotateCcw } from "lucide-react";
 
 export const OnlineExamInterfacePage: React.FC = () => {

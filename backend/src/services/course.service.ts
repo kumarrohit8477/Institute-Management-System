@@ -161,4 +161,24 @@ export class CourseService {
 
     return updated;
   }
+
+  /**
+   * Delete a course
+   */
+  static async deleteCourse(instituteId: string, id: string) {
+    const course = await prisma.course.findFirst({
+      where: { id, instituteId }
+    });
+
+    if (!course) {
+      throw new AppError("Course not found", HTTP_STATUS.NOT_FOUND);
+    }
+
+    await prisma.course.delete({
+      where: { id }
+    });
+
+    return { success: true, message: "Course deleted successfully" };
+  }
 }
+

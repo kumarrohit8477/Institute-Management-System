@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StudentApiService, StudentAcademics } from "../../services/studentApi";
+import { StudentApiService, StudentAcademics } from "@/src/services/studentApi";
 import { BookOpen, Calendar, Clock, Layers, Users, CheckCircle2 } from "lucide-react";
 
 export const MyCoursesPage: React.FC = () => {

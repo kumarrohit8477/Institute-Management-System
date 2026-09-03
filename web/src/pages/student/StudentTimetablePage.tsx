@@ -6,7 +6,7 @@ import React, {
 import {
   StudentApiService,
   StudentScheduleResponse,
-} from "../../services/studentApi";
+} from "@/src/services/studentApi";
 
 import {
   Calendar,

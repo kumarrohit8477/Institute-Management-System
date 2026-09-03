@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SaasApi, SaasKPIs, InstituteTenantItem, PlatformInvoiceItem } from "../../services/saasApi";
+import { SaasApi, SaasKPIs, InstituteTenantItem, PlatformInvoiceItem } from "@/src/services/saasApi";
 import {
   Building2,
   Users,

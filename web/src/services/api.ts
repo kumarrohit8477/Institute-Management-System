@@ -1,4 +1,4 @@
-import { AuthResponse, LoginCredentials } from "../types/auth.types";
+import { AuthResponse, LoginCredentials } from "@/src/types/auth.types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
 

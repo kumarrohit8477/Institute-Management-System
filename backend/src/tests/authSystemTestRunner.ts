@@ -213,8 +213,8 @@ async function runAuthVerification() {
     });
 
     // Verify Tenant A Admin cannot see Tenant B's students
-    const tenantAStudents = await StudentService.getStudents(adminRes.institute!.id, {});
-    const tenantBStudents = await StudentService.getStudents(tenantB.institute.id, {});
+    const tenantAStudents = await StudentService.getStudents(adminRes.institute!.id, { page: 1, limit: 20 });
+    const tenantBStudents = await StudentService.getStudents(tenantB.institute.id, { page: 1, limit: 20 });
 
     const hasOverlap = tenantAStudents.students.some((s) =>
       tenantBStudents.students.some((bs) => bs.id === s.id)

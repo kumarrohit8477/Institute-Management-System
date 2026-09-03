@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AdminApiService, AdminStudent } from "../../services/adminApi";
+import { AdminApiService, AdminStudent } from "@/src/services/adminApi";
 import { Users, PlusCircle, X, Search, Check, AlertCircle } from "lucide-react";
 
 export const AdminStudentsPage: React.FC = () => {

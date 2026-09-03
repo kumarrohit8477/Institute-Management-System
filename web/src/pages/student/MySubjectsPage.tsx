@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StudentApiService, StudentAcademics } from "../../services/studentApi";
+import { StudentApiService, StudentAcademics } from "@/src/services/studentApi";
 import { Layers, GraduationCap, ArrowRight, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 

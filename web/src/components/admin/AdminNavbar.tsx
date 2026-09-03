@@ -1,6 +1,6 @@
 import React from "react";
-import { useAuth } from "../../hooks/useAuth";
-import { InstituteApiService } from "../../services/instituteApi";
+import { useAuth } from "@/src/hooks/useAuth";
+import { InstituteApiService } from "@/src/services/instituteApi";
 import { LogOut, Shield, Menu } from "lucide-react";
 import "./AdminNavbar.css";
 

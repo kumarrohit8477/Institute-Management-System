@@ -1,45 +1,45 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import { RoleRoute } from "./components/RoleRoute";
-import { StudentLayout } from "./components/student/StudentLayout";
-import { SuperAdminLayout } from "./components/superadmin/SuperAdminLayout";
-import { AdminLayout } from "./components/admin/AdminLayout";
-import { LandingPage } from "./pages/LandingPage";
-import { LoginPage } from "./pages/LoginPage";
-import { UnauthorizedPage } from "./pages/UnauthorizedPage";
+import { AuthProvider } from "@/src/context/AuthContext";
+import { ProtectedRoute } from "@/src/components/ProtectedRoute";
+import { RoleRoute } from "@/src/components/RoleRoute";
+import { StudentLayout } from "@/src/components/student/StudentLayout";
+import { SuperAdminLayout } from "@/src/components/superadmin/SuperAdminLayout";
+import { AdminLayout } from "@/src/components/admin/AdminLayout";
+import { LandingPage } from "@/src/pages/LandingPage";
+import { LoginPage } from "@/src/pages/LoginPage";
+import { UnauthorizedPage } from "@/src/pages/UnauthorizedPage";
 
 // Super Admin Pages
-import { SuperAdminDashboard } from "./pages/superadmin/SuperAdminDashboard";
-import { InstitutesManagementPage } from "./pages/superadmin/InstitutesManagementPage";
-import { SubscriptionPlansPage } from "./pages/superadmin/SubscriptionPlansPage";
-import { PlatformBillingPage } from "./pages/superadmin/PlatformBillingPage";
+import { SuperAdminDashboard } from "@/src/pages/superadmin/SuperAdminDashboard";
+import { InstitutesManagementPage } from "@/src/pages/superadmin/InstitutesManagementPage";
+import { SubscriptionPlansPage } from "@/src/pages/superadmin/SubscriptionPlansPage";
+import { PlatformBillingPage } from "@/src/pages/superadmin/PlatformBillingPage";
 
 // Admin Pages
-import { AdminDashboard } from "./pages/admin/AdminDashboard";
-import { AdminStudentsPage } from "./pages/admin/AdminStudentsPage";
-import { AdminTeachersPage } from "./pages/admin/AdminTeachersPage";
-import { AdminCoursesPage } from "./pages/admin/AdminCoursesPage";
-import { AdminBatchesPage } from "./pages/admin/AdminBatchesPage";
-import { AdminTimetablePage } from "./pages/admin/AdminTimetablePage";
-import { AdminMaterialsPage } from "./pages/admin/AdminMaterialsPage";
-import { AdminAttendancePage } from "./pages/admin/AdminAttendancePage";
-import { AdminBrandingPage } from "./pages/admin/AdminBrandingPage";
+import { AdminDashboard } from "@/src/pages/admin/AdminDashboard";
+import { AdminStudentsPage } from "@/src/pages/admin/AdminStudentsPage";
+import { AdminTeachersPage } from "@/src/pages/admin/AdminTeachersPage";
+import { AdminCoursesPage } from "@/src/pages/admin/AdminCoursesPage";
+import { AdminBatchesPage } from "@/src/pages/admin/AdminBatchesPage";
+import { AdminTimetablePage } from "@/src/pages/admin/AdminTimetablePage";
+import { AdminMaterialsPage } from "@/src/pages/admin/AdminMaterialsPage";
+import { AdminAttendancePage } from "@/src/pages/admin/AdminAttendancePage";
+import { AdminBrandingPage } from "@/src/pages/admin/AdminBrandingPage";
 
 // Student Pages
-import { StudentDashboard } from "./pages/student/StudentDashboard";
-import { MyCoursesPage } from "./pages/student/MyCoursesPage";
-import { MySubjectsPage } from "./pages/student/MySubjectsPage";
-import { MyTeachersPage } from "./pages/student/MyTeachersPage";
-import { StudentTimetablePage } from "./pages/student/StudentTimetablePage";
-import { StudentMaterialsPage } from "./pages/student/StudentMaterialsPage";
-import { StudentAttendancePage } from "./pages/student/StudentAttendancePage";
-import { StudentTestsPage } from "./pages/student/StudentTestsPage";
-import { OnlineExamInterfacePage } from "./pages/student/OnlineExamInterfacePage";
-import { StudentResultsPage } from "./pages/student/StudentResultsPage";
-import { StudentFeesPage } from "./pages/student/StudentFeesPage";
-import { StudentNotificationsPage } from "./pages/student/StudentNotificationsPage";
+import { StudentDashboard } from "@/src/pages/student/StudentDashboard";
+import { MyCoursesPage } from "@/src/pages/student/MyCoursesPage";
+import { MySubjectsPage } from "@/src/pages/student/MySubjectsPage";
+import { MyTeachersPage } from "@/src/pages/student/MyTeachersPage";
+import { StudentTimetablePage } from "@/src/pages/student/StudentTimetablePage";
+import { StudentMaterialsPage } from "@/src/pages/student/StudentMaterialsPage";
+import { StudentAttendancePage } from "@/src/pages/student/StudentAttendancePage";
+import { StudentTestsPage } from "@/src/pages/student/StudentTestsPage";
+import { OnlineExamInterfacePage } from "@/src/pages/student/OnlineExamInterfacePage";
+import { StudentResultsPage } from "@/src/pages/student/StudentResultsPage";
+import { StudentFeesPage } from "@/src/pages/student/StudentFeesPage";
+import { StudentNotificationsPage } from "@/src/pages/student/StudentNotificationsPage";
 
 export const App: React.FC = () => {
   return (

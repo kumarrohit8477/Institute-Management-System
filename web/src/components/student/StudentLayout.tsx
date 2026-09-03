@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { StudentSidebar } from "./StudentSidebar";
-import { StudentNavbar } from "./StudentNavbar";
+import { StudentSidebar } from "@/src/components/student/StudentSidebar";
+import { StudentNavbar } from "@/src/components/student/StudentNavbar";
 import "./StudentLayout.css";
 
 export const StudentLayout: React.FC = () => {

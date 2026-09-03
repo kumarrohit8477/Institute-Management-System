@@ -1,4 +1,4 @@
-import ApiService from "./api";
+import ApiService from "@/src/services/api";
 
 export interface SaasKPIs {
   totalInstitutes: number;

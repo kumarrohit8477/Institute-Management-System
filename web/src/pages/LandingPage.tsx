@@ -1,14 +1,14 @@
 import React from "react";
-import { LandingNavbar } from "../components/landing/LandingNavbar";
-import { LandingHero } from "../components/landing/LandingHero";
-import { LandingFeatures } from "../components/landing/LandingFeatures";
-import { LandingHowItWorks } from "../components/landing/LandingHowItWorks";
-import { LandingRoles } from "../components/landing/LandingRoles";
-import { LandingPreviewTabs } from "../components/landing/LandingPreviewTabs";
-import { LandingSecurity } from "../components/landing/LandingSecurity";
-import { LandingPricing } from "../components/landing/LandingPricing";
-import { LandingCTA } from "../components/landing/LandingCTA";
-import { LandingFooter } from "../components/landing/LandingFooter";
+import { LandingNavbar } from "@/src/components/landing/LandingNavbar";
+import { LandingHero } from "@/src/components/landing/LandingHero";
+import { LandingFeatures } from "@/src/components/landing/LandingFeatures";
+import { LandingHowItWorks } from "@/src/components/landing/LandingHowItWorks";
+import { LandingRoles } from "@/src/components/landing/LandingRoles";
+import { LandingPreviewTabs } from "@/src/components/landing/LandingPreviewTabs";
+import { LandingSecurity } from "@/src/components/landing/LandingSecurity";
+import { LandingPricing } from "@/src/components/landing/LandingPricing";
+import { LandingCTA } from "@/src/components/landing/LandingCTA";
+import { LandingFooter } from "@/src/components/landing/LandingFooter";
 
 export const LandingPage: React.FC = () => {
   return (

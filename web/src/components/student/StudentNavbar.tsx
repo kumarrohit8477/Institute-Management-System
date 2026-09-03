@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "@/src/hooks/useAuth";
 import {
   NotificationApiService,
   StudentNotificationItem,
-} from "../../services/notificationApi";
-import { InstituteApiService } from "../../services/instituteApi";
+} from "@/src/services/notificationApi";
+import { InstituteApiService } from "@/src/services/instituteApi";
 import {
   LogOut,
   Bell,

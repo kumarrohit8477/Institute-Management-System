@@ -38,6 +38,12 @@ router.patch(
   BatchController.updateBatch
 );
 
+router.delete(
+  "/:id",
+  authorize(UserRole.ADMIN),
+  BatchController.deleteBatch
+);
+
 // --- STUDENT BATCH ASSIGNMENTS ---
 router.post(
   "/:batchId/students",

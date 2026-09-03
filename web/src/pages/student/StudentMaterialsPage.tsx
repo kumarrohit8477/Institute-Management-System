@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   StudentApiService,
   StudentMaterialsResponse,
-} from "../../services/studentApi";
+} from "@/src/services/studentApi";
 import {
   FileText,
   Video,

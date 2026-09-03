@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ExamApiService, TestResultData } from "../../services/examApi";
+import { ExamApiService, TestResultData } from "@/src/services/examApi";
 import { Trophy, CheckCircle2, XCircle, Award, ArrowLeft, Layers, Percent, HelpCircle } from "lucide-react";
 import "./StudentResultsPage.css";
 export const StudentResultsPage: React.FC = () => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "@/src/hooks/useAuth";
 import { ArrowRight } from "lucide-react";
 
 export const LandingNavbar: React.FC = () => {

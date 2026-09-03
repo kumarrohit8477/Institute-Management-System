@@ -13,6 +13,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["./*"],
       "@ims/types": ["packages/types/src"],
       "@ims/types/*": ["packages/types/src/*"],
       "@ims/common": ["packages/common/src"],

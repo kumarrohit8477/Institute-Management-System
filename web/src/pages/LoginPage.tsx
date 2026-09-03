@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@/src/hooks/useAuth";
 import { Lock, Mail, Eye, EyeOff, Shield, AlertCircle, ArrowRight, ArrowLeft, Sparkles, Building } from "lucide-react";
 
 export const LoginPage: React.FC = () => {

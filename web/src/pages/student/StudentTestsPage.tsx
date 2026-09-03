@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import {
   ExamApiService,
   AvailableTestItem,
-} from "../../services/examApi";
+} from "@/src/services/examApi";
 
 import {
   FileCheck2,

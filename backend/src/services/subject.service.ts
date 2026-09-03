@@ -171,4 +171,24 @@ export class SubjectService {
 
     return updated;
   }
+
+  /**
+   * Delete a subject
+   */
+  static async deleteSubject(instituteId: string, id: string) {
+    const subject = await prisma.subject.findFirst({
+      where: { id, instituteId }
+    });
+
+    if (!subject) {
+      throw new AppError("Subject not found", HTTP_STATUS.NOT_FOUND);
+    }
+
+    await prisma.subject.delete({
+      where: { id }
+    });
+
+    return { success: true, message: "Subject deleted successfully" };
+  }
 }
+

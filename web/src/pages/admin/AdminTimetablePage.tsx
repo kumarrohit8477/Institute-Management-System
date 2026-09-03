@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AdminApiService, AdminTimetableSlot } from "../../services/adminApi";
+import { AdminApiService, AdminTimetableSlot } from "@/src/services/adminApi";
 import { Calendar, Clock, MapPin, Video, PlusCircle } from "lucide-react";
 
 export const AdminTimetablePage: React.FC = () => {

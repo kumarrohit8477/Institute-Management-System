@@ -2,6 +2,7 @@ import { Router } from "express";
 import { TeacherController } from "../controllers/teacher.controller";
 import { AssignmentController } from "../controllers/assignment.controller";
 import { authenticate, authorize, validateRequest } from "../middleware/auth.middleware";
+import { resolveTenantContext } from "../middleware/tenant.middleware";
 import {
   createTeacherSchema,
   updateTeacherSchema,
@@ -13,6 +14,7 @@ import { UserRole } from "@prisma/client";
 const router = Router();
 
 router.use(authenticate);
+router.use(resolveTenantContext);
 
 // Admin-only teacher endpoints
 router.post(
@@ -36,6 +38,12 @@ router.patch(
   authorize(UserRole.ADMIN),
   validateRequest(updateTeacherSchema),
   TeacherController.updateTeacher
+);
+
+router.delete(
+  "/:id",
+  authorize(UserRole.ADMIN),
+  TeacherController.deleteTeacher
 );
 
 // Teacher Subject Qualifications

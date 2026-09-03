@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SaasApi, PlatformInvoiceItem } from "../../services/saasApi";
+import { SaasApi, PlatformInvoiceItem } from "@/src/services/saasApi";
 import {
   Receipt,
   Search,

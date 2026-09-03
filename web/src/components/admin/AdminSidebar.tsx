@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { InstituteApiService } from "../../services/instituteApi";
+import { useAuth } from "@/src/hooks/useAuth";
+import { InstituteApiService } from "@/src/services/instituteApi";
 import {
   LayoutDashboard,
   Users,

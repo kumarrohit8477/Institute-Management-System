@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AdminApiService, AdminMaterial } from "../../services/adminApi";
+import { AdminApiService, AdminMaterial } from "@/src/services/adminApi";
 import { FolderDown, FileText, PlusCircle, Download } from "lucide-react";
 
 export const AdminMaterialsPage: React.FC = () => {

@@ -28,4 +28,10 @@ export class SubjectController {
     const updated = await SubjectService.updateSubject(instituteId, req.params.id, req.body);
     return ResponseHandler.success(res, updated, "Subject updated successfully");
   });
+
+  static deleteSubject = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const instituteId = req.instituteId as string;
+    const result = await SubjectService.deleteSubject(instituteId, req.params.id);
+    return ResponseHandler.success(res, result, "Subject deleted successfully");
+  });
 }

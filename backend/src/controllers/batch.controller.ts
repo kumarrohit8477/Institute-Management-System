@@ -31,6 +31,12 @@ export class BatchController {
     return ResponseHandler.success(res, updated, "Batch updated successfully");
   });
 
+  static deleteBatch = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const instituteId = req.instituteId as string;
+    const result = await BatchService.deleteBatch(instituteId, req.params.id);
+    return ResponseHandler.success(res, result, "Batch deleted successfully");
+  });
+
   // --- STUDENT BATCH ASSIGNMENT ---
   static assignStudent = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const instituteId = req.instituteId as string;

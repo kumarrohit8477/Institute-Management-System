@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import {
   NotificationApiService,
   StudentNotificationItem,
-} from "../../services/notificationApi";
+} from "@/src/services/notificationApi";
 
 import {
   CheckCheck,

@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "@/src/hooks/useAuth";
 import { LogOut, ShieldCheck, Globe, User } from "lucide-react";
 
 export const SuperAdminNavbar: React.FC = () => {

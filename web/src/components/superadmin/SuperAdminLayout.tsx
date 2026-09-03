@@ -1,7 +1,7 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import { SuperAdminNavbar } from "./SuperAdminNavbar";
-import { SuperAdminSidebar } from "./SuperAdminSidebar";
+import { SuperAdminNavbar } from "@/src/components/superadmin/SuperAdminNavbar";
+import { SuperAdminSidebar } from "@/src/components/superadmin/SuperAdminSidebar";
 
 export const SuperAdminLayout: React.FC = () => {
   return (

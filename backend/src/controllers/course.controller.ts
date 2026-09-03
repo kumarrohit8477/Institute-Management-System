@@ -28,4 +28,10 @@ export class CourseController {
     const updated = await CourseService.updateCourse(instituteId, req.params.id, req.body);
     return ResponseHandler.success(res, updated, "Course updated successfully");
   });
+
+  static deleteCourse = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const instituteId = req.instituteId as string;
+    const result = await CourseService.deleteCourse(instituteId, req.params.id);
+    return ResponseHandler.success(res, result, "Course deleted successfully");
+  });
 }

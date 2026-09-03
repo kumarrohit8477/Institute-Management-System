@@ -30,4 +30,10 @@ router.patch(
   CourseController.updateCourse
 );
 
+router.delete(
+  "/:id",
+  authorize(UserRole.ADMIN),
+  CourseController.deleteCourse
+);
+
 export const courseRoutes = router;

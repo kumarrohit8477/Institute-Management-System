@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
-import { useAuth } from "../../hooks/useAuth";
-import { InstituteApiService } from "../../services/instituteApi";
+import { useAuth } from "@/src/hooks/useAuth";
+import { InstituteApiService } from "@/src/services/instituteApi";
 import {
   Image as ImageIcon,
   Building2,

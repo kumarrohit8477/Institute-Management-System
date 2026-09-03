@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FeeApiService, StudentFeeOverviewResponse, StudentFeeInvoice } from "../../services/feeApi";
+import { FeeApiService, StudentFeeOverviewResponse, StudentFeeInvoice } from "@/src/services/feeApi";
 import { CreditCard, CheckCircle2, Clock, AlertTriangle, Download, Receipt, Calendar, ArrowRight, ShieldCheck } from "lucide-react";
 
 export const StudentFeesPage: React.FC = () => {

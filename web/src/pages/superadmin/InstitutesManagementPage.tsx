@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SaasApi, InstituteTenantItem, SubscriptionPlanItem } from "../../services/saasApi";
+import { SaasApi, InstituteTenantItem, SubscriptionPlanItem } from "@/src/services/saasApi";
 import {
   Building2,
   Plus,

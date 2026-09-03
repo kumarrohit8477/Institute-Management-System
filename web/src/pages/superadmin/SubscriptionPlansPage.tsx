@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SaasApi, SubscriptionPlanItem } from "../../services/saasApi";
+import { SaasApi, SubscriptionPlanItem } from "@/src/services/saasApi";
 import {
   Layers,
   Check,

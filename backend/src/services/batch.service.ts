@@ -187,4 +187,24 @@ export class BatchService {
 
     return updated;
   }
+
+  /**
+   * Delete a batch
+   */
+  static async deleteBatch(instituteId: string, id: string) {
+    const batch = await prisma.batch.findFirst({
+      where: { id, instituteId }
+    });
+
+    if (!batch) {
+      throw new AppError("Batch not found", HTTP_STATUS.NOT_FOUND);
+    }
+
+    await prisma.batch.delete({
+      where: { id }
+    });
+
+    return { success: true, message: "Batch deleted successfully" };
+  }
 }
+

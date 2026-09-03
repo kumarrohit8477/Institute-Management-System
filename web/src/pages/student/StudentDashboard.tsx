@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../hooks/useAuth";
-import { StudentApiService, StudentAcademics, StudentScheduleResponse, StudentAttendanceResponse } from "../../services/studentApi";
+import { useAuth } from "@/src/hooks/useAuth";
+import { StudentApiService, StudentAcademics, StudentScheduleResponse, StudentAttendanceResponse } from "@/src/services/studentApi";
 import {
   BookOpen,
   Calendar,

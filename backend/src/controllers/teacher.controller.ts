@@ -28,4 +28,10 @@ export class TeacherController {
     const updated = await TeacherService.updateTeacher(instituteId, req.params.id, req.body);
     return ResponseHandler.success(res, updated, "Teacher profile updated successfully");
   });
+
+  static deleteTeacher = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const instituteId = req.instituteId as string;
+    const result = await TeacherService.deleteTeacher(instituteId, req.params.id);
+    return ResponseHandler.success(res, result, "Teacher removed successfully");
+  });
 }

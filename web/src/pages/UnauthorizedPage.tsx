@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ShieldAlert, ArrowLeft } from "lucide-react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@/src/hooks/useAuth";
 
 export const UnauthorizedPage: React.FC = () => {
   const { role } = useAuth();

@@ -235,4 +235,24 @@ export class TeacherService {
 
     return updated;
   }
+
+  /**
+   * Delete a teacher record
+   */
+  static async deleteTeacher(instituteId: string, id: string) {
+    const teacher = await prisma.teacher.findFirst({
+      where: { id, instituteId }
+    });
+
+    if (!teacher) {
+      throw new AppError("Teacher not found", HTTP_STATUS.NOT_FOUND);
+    }
+
+    await prisma.teacher.delete({
+      where: { id }
+    });
+
+    return { success: true, message: "Teacher deleted successfully" };
+  }
 }
+

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { InstituteApiService } from "../../services/instituteApi";
+import { useAuth } from "@/src/hooks/useAuth";
+import { InstituteApiService } from "@/src/services/instituteApi";
 import {
   AdminApiService,
   AdminStudent,
   AdminTeacher,
   AdminCourse,
   AdminBatch,
-} from "../../services/adminApi";
+} from "@/src/services/adminApi";
 import {
   Users,
   BookOpen,
