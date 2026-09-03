@@ -4,16 +4,10 @@ import {
   Building2,
   Plus,
   Search,
-  Filter,
-  CheckCircle2,
-  XCircle,
   AlertCircle,
-  Layers,
-  ArrowUpRight,
-  UserPlus,
-  RefreshCw,
-  ExternalLink
+  RefreshCw
 } from "lucide-react";
+import "./InstitutesManagementPage.css";
 
 export const InstitutesManagementPage: React.FC = () => {
   const [institutes, setInstitutes] = useState<InstituteTenantItem[]>([]);
@@ -145,12 +139,12 @@ export const InstitutesManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="institutes-page">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="institutes-page__header">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Institutes Directory</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="institutes-page__title">Institutes Directory</h1>
+          <p className="institutes-page__subtitle">
             Manage multi-tenant subscriptions, quota health, and onboard new educational academies.
           </p>
         </div>
@@ -159,7 +153,7 @@ export const InstitutesManagementPage: React.FC = () => {
             setModalError(null);
             setShowOnboardModal(true);
           }}
-          className="flex items-center space-x-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all"
+          className="institutes-page__btn-primary"
         >
           <Plus className="w-4 h-4" />
           <span>Onboard New Institute</span>
@@ -167,31 +161,31 @@ export const InstitutesManagementPage: React.FC = () => {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
-        <form onSubmit={handleSearchSubmit} className="flex-1 w-full flex items-center space-x-2">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
+      <div className="institutes-page__filter-bar">
+        <form onSubmit={handleSearchSubmit} className="institutes-page__search-form">
+          <div className="institutes-page__search-box">
+            <Search className="w-4 h-4 institutes-page__search-icon" />
             <input
               type="text"
               placeholder="Search by institute name, code, domain, or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="institutes-page__search-input"
             />
           </div>
           <button
             type="submit"
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700"
+            className="institutes-page__btn-search"
           >
             Search
           </button>
         </form>
 
-        <div className="flex items-center space-x-3 w-full md:w-auto">
+        <div className="institutes-page__filter-group">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+            className="institutes-page__select"
           >
             <option value="">All Statuses</option>
             <option value="ACTIVE">Active</option>
@@ -202,7 +196,7 @@ export const InstitutesManagementPage: React.FC = () => {
           <select
             value={planFilter}
             onChange={(e) => setPlanFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+            className="institutes-page__select"
           >
             <option value="">All Plans</option>
             <option value="FREE_TRIAL">Free Trial</option>
@@ -218,7 +212,7 @@ export const InstitutesManagementPage: React.FC = () => {
               setPlanFilter("");
               fetchInstitutes();
             }}
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl border border-slate-700"
+            className="institutes-page__btn-icon"
             title="Reset Filters"
           >
             <RefreshCw className="w-4 h-4" />
@@ -227,101 +221,103 @@ export const InstitutesManagementPage: React.FC = () => {
       </div>
 
       {/* Institutes Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+      <div className="institutes-page__table-card">
         {loading ? (
-          <div className="py-16 text-center text-slate-400 space-y-3">
-            <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-xs">Loading institutes directory...</p>
+          <div className="superadmin-dashboard__loader">
+            <div className="superadmin-dashboard__spinner"></div>
+            <p className="superadmin-dashboard__loader-text">Loading institutes directory...</p>
           </div>
         ) : institutes.length === 0 ? (
-          <div className="py-16 text-center text-slate-500 space-y-2">
-            <Building2 className="w-10 h-10 mx-auto text-slate-600" />
-            <p className="text-sm font-semibold text-slate-400">No institutes found matching criteria</p>
+          <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
+            <Building2 className="w-10 h-10 mx-auto text-slate-400" />
+            <p style={{ marginTop: "0.75rem", fontSize: "0.9rem", fontWeight: 600, color: "#64748b" }}>
+              No institutes found matching criteria
+            </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-800/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+          <div className="institutes-page__table-wrapper">
+            <table className="institutes-page__table">
+              <thead className="institutes-page__thead">
                 <tr>
-                  <th className="px-6 py-3.5">Institute</th>
-                  <th className="px-6 py-3.5">Active Plan</th>
-                  <th className="px-6 py-3.5">Students Quota</th>
-                  <th className="px-6 py-3.5">Status</th>
-                  <th className="px-6 py-3.5">Created</th>
-                  <th className="px-6 py-3.5 text-right">Actions</th>
+                  <th className="institutes-page__th">Institute</th>
+                  <th className="institutes-page__th">Active Plan</th>
+                  <th className="institutes-page__th">Students Quota</th>
+                  <th className="institutes-page__th">Status</th>
+                  <th className="institutes-page__th">Created</th>
+                  <th className="institutes-page__th" style={{ textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody>
                 {institutes.map((inst) => {
                   const studentCount = inst._count?.students || inst.tenantUsage?.studentCount || 0;
                   const maxStudents = inst.subscription?.plan?.maxStudents || 100;
                   const quotaPercent = Math.min(100, Math.round((studentCount / maxStudents) * 100));
 
                   return (
-                    <tr key={inst.id} className="hover:bg-slate-800/40 transition-all">
-                      <td className="px-6 py-4">
-                        <div className="space-y-0.5">
-                          <p className="font-bold text-white text-sm">{inst.name}</p>
-                          <div className="flex items-center space-x-2 text-[11px] text-slate-400">
-                            <span className="bg-slate-800 px-1.5 py-0.5 rounded font-mono text-slate-300">
+                    <tr key={inst.id} className="institutes-page__tr">
+                      <td className="institutes-page__td">
+                        <div className="institutes-page__inst-info">
+                          <p className="institutes-page__inst-name">{inst.name}</p>
+                          <div className="institutes-page__inst-meta">
+                            <span className="institutes-page__code-badge">
                               {inst.code}
                             </span>
                             {inst.customDomain && (
-                              <span className="text-indigo-400 font-mono flex items-center space-x-1">
-                                <span>{inst.customDomain}</span>
+                              <span className="institutes-page__domain">
+                                {inst.customDomain}
                               </span>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="space-y-1">
-                          <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                      <td className="institutes-page__td">
+                        <div className="institutes-page__plan-info">
+                          <span className="institutes-page__plan-badge">
                             {inst.subscription?.plan?.name || "Free Trial"}
                           </span>
-                          <p className="text-[10px] text-slate-400">
+                          <span className="institutes-page__cycle">
                             Cycle: {inst.subscription?.billingCycle || "MONTHLY"}
-                          </p>
+                          </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="space-y-1.5 w-32">
-                          <div className="flex justify-between text-[11px]">
-                            <span className="font-semibold text-slate-200">{studentCount}</span>
-                            <span className="text-slate-500">/ {maxStudents}</span>
+                      <td className="institutes-page__td">
+                        <div className="institutes-page__quota-container">
+                          <div className="institutes-page__quota-numbers">
+                            <strong>{studentCount}</strong>
+                            <span>/ {maxStudents}</span>
                           </div>
-                          <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                          <div className="institutes-page__quota-bar">
                             <div
-                              className={`h-1.5 rounded-full transition-all ${
+                              className={`institutes-page__quota-fill ${
                                 quotaPercent >= 90
-                                  ? "bg-rose-500"
+                                  ? "quota-fill--rose"
                                   : quotaPercent >= 70
-                                  ? "bg-amber-500"
-                                  : "bg-emerald-500"
+                                  ? "quota-fill--amber"
+                                  : "quota-fill--green"
                               }`}
                               style={{ width: `${quotaPercent}%` }}
                             ></div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="institutes-page__td">
                         <span
-                          className={`inline-block px-2.5 py-1 text-[11px] font-bold rounded-lg ${
+                          className={`sa-badge ${
                             inst.status === "ACTIVE"
-                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                              ? "sa-badge--active"
                               : inst.status === "TRIAL"
-                              ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                              : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                              ? "sa-badge--trial"
+                              : "sa-badge--suspended"
                           }`}
                         >
                           {inst.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-slate-400 text-[11px]">
+                      <td className="institutes-page__td" style={{ fontSize: "0.75rem", color: "#64748b" }}>
                         {new Date(inst.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end space-x-2">
+                      <td className="institutes-page__td">
+                        <div className="institutes-page__actions">
                           <button
                             onClick={() => {
                               setSelectedInstitute(inst);
@@ -330,18 +326,18 @@ export const InstitutesManagementPage: React.FC = () => {
                               setModalError(null);
                               setShowPlanModal(true);
                             }}
-                            className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg text-xs font-semibold border border-slate-700 transition-all"
+                            className="institutes-page__btn-plan"
                             title="Upgrade / Change Plan"
                           >
                             Plan
                           </button>
                           <button
                             onClick={() => handleToggleStatus(inst)}
-                            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                            className={
                               inst.status === "ACTIVE"
-                                ? "bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border-rose-800/60"
-                                : "bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 border-emerald-800/60"
-                            }`}
+                                ? "institutes-page__btn-suspend"
+                                : "institutes-page__btn-activate"
+                            }
                           >
                             {inst.status === "ACTIVE" ? "Suspend" : "Activate"}
                           </button>
@@ -358,110 +354,111 @@ export const InstitutesManagementPage: React.FC = () => {
 
       {/* MODAL 1: ONBOARD NEW INSTITUTE */}
       {showOnboardModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl p-6 shadow-2xl space-y-6 my-8">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div className="flex items-center space-x-2.5">
-                <Building2 className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-base font-bold text-white">Onboard New Institute Tenant</h3>
+        <div className="institutes-page__modal-backdrop">
+          <div className="institutes-page__modal">
+            <div className="institutes-page__modal-header">
+              <div className="institutes-page__modal-title-row">
+                <Building2 className="w-5 h-5 text-indigo-600" />
+                <h3 className="institutes-page__modal-title">Onboard New Institute Tenant</h3>
               </div>
               <button
                 onClick={() => setShowOnboardModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="institutes-page__modal-close"
               >
                 ✕
               </button>
             </div>
 
             {modalError && (
-              <div className="p-3.5 bg-rose-950/50 border border-rose-800 text-rose-300 rounded-xl text-xs flex items-center space-x-2">
+              <div className="institutes-page__modal-error">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{modalError}</span>
               </div>
             )}
 
-            <form onSubmit={handleOnboardSubmit} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Institute Name *</label>
+            <form onSubmit={handleOnboardSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div className="institutes-page__form-grid-2">
+                <div className="institutes-page__field">
+                  <label className="institutes-page__label">Institute Name *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Apex Knowledge Academy"
                     value={onboardForm.name}
                     onChange={(e) => setOnboardForm({ ...onboardForm, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="institutes-page__input"
                   />
                 </div>
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Unique Code *</label>
+                <div className="institutes-page__field">
+                  <label className="institutes-page__label">Unique Code *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. APEX01"
                     value={onboardForm.code}
                     onChange={(e) => setOnboardForm({ ...onboardForm, code: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white font-mono uppercase focus:outline-none focus:border-indigo-500"
+                    className="institutes-page__input"
+                    style={{ textTransform: "uppercase", fontFamily: "monospace" }}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Custom Subdomain</label>
+              <div className="institutes-page__form-grid-2">
+                <div className="institutes-page__field">
+                  <label className="institutes-page__label">Custom Subdomain</label>
                   <input
                     type="text"
                     placeholder="e.g. apex.ims.local"
                     value={onboardForm.customDomain}
                     onChange={(e) => setOnboardForm({ ...onboardForm, customDomain: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="institutes-page__input"
                   />
                 </div>
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Official Email *</label>
+                <div className="institutes-page__field">
+                  <label className="institutes-page__label">Official Email *</label>
                   <input
                     type="email"
                     required
                     placeholder="contact@apex.local"
                     value={onboardForm.email}
                     onChange={(e) => setOnboardForm({ ...onboardForm, email: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="institutes-page__input"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Admin Email *</label>
+              <div className="institutes-page__form-grid-2">
+                <div className="institutes-page__field">
+                  <label className="institutes-page__label">Admin Email *</label>
                   <input
                     type="email"
                     required
                     placeholder="admin@apex.local"
                     value={onboardForm.adminEmail}
                     onChange={(e) => setOnboardForm({ ...onboardForm, adminEmail: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="institutes-page__input"
                   />
                 </div>
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Admin Password *</label>
+                <div className="institutes-page__field">
+                  <label className="institutes-page__label">Admin Password *</label>
                   <input
                     type="password"
                     required
                     placeholder="Min 6 characters"
                     value={onboardForm.adminPassword}
                     onChange={(e) => setOnboardForm({ ...onboardForm, adminPassword: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="institutes-page__input"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Plan Tier *</label>
+              <div className="institutes-page__form-grid-2">
+                <div className="institutes-page__field">
+                  <label className="institutes-page__label">Plan Tier *</label>
                   <select
                     value={onboardForm.planTier}
                     onChange={(e) => setOnboardForm({ ...onboardForm, planTier: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="institutes-page__input"
                   >
                     <option value="FREE_TRIAL">Free Trial (14 Days - 30 Students)</option>
                     <option value="STARTER">Starter (₹2,999/m - 150 Students)</option>
@@ -469,12 +466,12 @@ export const InstitutesManagementPage: React.FC = () => {
                     <option value="ENTERPRISE">Enterprise (₹14,999/m - Unlimited)</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Billing Cycle</label>
+                <div className="institutes-page__field">
+                  <label className="institutes-page__label">Billing Cycle</label>
                   <select
                     value={onboardForm.billingCycle}
                     onChange={(e) => setOnboardForm({ ...onboardForm, billingCycle: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                    className="institutes-page__input"
                   >
                     <option value="MONTHLY">Monthly</option>
                     <option value="ANNUAL">Annual (10 Months Price)</option>
@@ -482,30 +479,30 @@ export const InstitutesManagementPage: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-400 font-semibold mb-1">Phone Number *</label>
+              <div className="institutes-page__field">
+                <label className="institutes-page__label">Phone Number *</label>
                 <input
                   type="text"
                   required
                   placeholder="+91 9876543210"
                   value={onboardForm.phone}
                   onChange={(e) => setOnboardForm({ ...onboardForm, phone: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  className="institutes-page__input"
                 />
               </div>
 
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-800">
+              <div className="institutes-page__modal-footer">
                 <button
                   type="button"
                   onClick={() => setShowOnboardModal(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold"
+                  className="institutes-page__btn-cancel"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold shadow-lg shadow-indigo-600/30 disabled:opacity-50"
+                  className="institutes-page__btn-submit"
                 >
                   {actionLoading ? "Onboarding..." : "Onboard Institute"}
                 </button>
@@ -517,35 +514,35 @@ export const InstitutesManagementPage: React.FC = () => {
 
       {/* MODAL 2: CHANGE SUBSCRIPTION PLAN */}
       {showPlanModal && selectedInstitute && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="institutes-page__modal-backdrop">
+          <div className="institutes-page__modal institutes-page__modal--sm">
+            <div className="institutes-page__modal-header">
               <div>
-                <h3 className="text-base font-bold text-white">Upgrade Subscription Plan</h3>
-                <p className="text-xs text-slate-400">{selectedInstitute.name}</p>
+                <h3 className="institutes-page__modal-title">Upgrade Subscription Plan</h3>
+                <p className="institutes-page__modal-subtitle">{selectedInstitute.name}</p>
               </div>
               <button
                 onClick={() => setShowPlanModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="institutes-page__modal-close"
               >
                 ✕
               </button>
             </div>
 
             {modalError && (
-              <div className="p-3.5 bg-rose-950/50 border border-rose-800 text-rose-300 rounded-xl text-xs flex items-center space-x-2">
+              <div className="institutes-page__modal-error">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{modalError}</span>
               </div>
             )}
 
-            <form onSubmit={handlePlanChangeSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-400 font-semibold mb-1">Target Plan Tier *</label>
+            <form onSubmit={handlePlanChangeSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div className="institutes-page__field">
+                <label className="institutes-page__label">Target Plan Tier *</label>
                 <select
                   value={changePlanTier}
                   onChange={(e) => setChangePlanTier(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  className="institutes-page__input"
                 >
                   <option value="FREE_TRIAL">Free Trial (14 Days - 30 Students)</option>
                   <option value="STARTER">Starter Academy (₹2,999/m - 150 Students)</option>
@@ -554,43 +551,41 @@ export const InstitutesManagementPage: React.FC = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-slate-400 font-semibold mb-1">Billing Term</label>
+              <div className="institutes-page__field">
+                <label className="institutes-page__label">Billing Term</label>
                 <select
                   value={changeBillingCycle}
                   onChange={(e) => setChangeBillingCycle(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  className="institutes-page__input"
                 >
                   <option value="MONTHLY">Monthly</option>
                   <option value="ANNUAL">Annual (Includes 2 Months Free)</option>
                 </select>
               </div>
 
-              <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700 text-slate-400 space-y-1.5">
-                <div className="flex justify-between">
+              <div className="institutes-page__summary-box">
+                <div className="institutes-page__summary-row">
                   <span>Current Plan:</span>
-                  <span className="font-semibold text-white">
-                    {selectedInstitute.subscription?.plan?.name || "Free Trial"}
-                  </span>
+                  <strong>{selectedInstitute.subscription?.plan?.name || "Free Trial"}</strong>
                 </div>
-                <div className="flex justify-between">
+                <div className="institutes-page__summary-row">
                   <span>GST Tax Rate:</span>
-                  <span className="font-semibold text-white">18% Standard B2B</span>
+                  <strong>18% Standard B2B</strong>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-800">
+              <div className="institutes-page__modal-footer">
                 <button
                   type="button"
                   onClick={() => setShowPlanModal(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold"
+                  className="institutes-page__btn-cancel"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold shadow-lg shadow-indigo-600/30 disabled:opacity-50"
+                  className="institutes-page__btn-submit"
                 >
                   {actionLoading ? "Updating..." : "Confirm Plan Change"}
                 </button>

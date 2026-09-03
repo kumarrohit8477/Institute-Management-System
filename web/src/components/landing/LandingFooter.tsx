@@ -1,30 +1,31 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import "./LandingFooter.css";
 
 export const LandingFooter: React.FC = () => {
   return (
-    <footer className="py-12 bg-slate-950 border-t border-slate-800 text-xs text-slate-500">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+    <footer className="landing-footer">
+      <div className="landing-footer__container">
+        <div className="landing-footer__brand">
+          <div className="landing-footer__logo-box">
             IMS
           </div>
           <div>
-            <div className="font-bold text-white text-sm">Institute Management System</div>
-            <div>Multi-Tenant Educational ERP SaaS v1.3</div>
+            <div className="landing-footer__brand-title">Institute Management System</div>
+            <div className="landing-footer__brand-sub">Multi-Tenant Educational ERP SaaS v1.3</div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-6 text-slate-400">
-          <a href="#features" className="hover:text-white transition-colors">Features</a>
-          <a href="#roles" className="hover:text-white transition-colors">Roles</a>
-          <a href="#plans" className="hover:text-white transition-colors">Pricing</a>
-          <Link to="/login" className="hover:text-white transition-colors text-indigo-400 font-semibold">
+        <div className="landing-footer__links">
+          <a href="#features" className="landing-footer__link">Features</a>
+          <a href="#roles" className="landing-footer__link">Roles</a>
+          <a href="#plans" className="landing-footer__link">Pricing</a>
+          <Link to="/login" className="landing-footer__link link--signin">
             Sign In
           </Link>
         </div>
 
-        <div>
+        <div className="landing-footer__copy">
           © {new Date().getFullYear()} IMS Cloud. All rights reserved.
         </div>
       </div>

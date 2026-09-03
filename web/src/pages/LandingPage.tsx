@@ -9,10 +9,11 @@ import { LandingSecurity } from "@/src/components/landing/LandingSecurity";
 import { LandingPricing } from "@/src/components/landing/LandingPricing";
 import { LandingCTA } from "@/src/components/landing/LandingCTA";
 import { LandingFooter } from "@/src/components/landing/LandingFooter";
+import "./LandingPage.css";
 
 export const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="landing-page">
       <LandingNavbar />
       <LandingHero />
       <LandingFeatures />

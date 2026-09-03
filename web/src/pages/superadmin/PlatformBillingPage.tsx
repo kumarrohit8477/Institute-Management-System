@@ -2,17 +2,10 @@ import React, { useEffect, useState } from "react";
 import { SaasApi, PlatformInvoiceItem } from "@/src/services/saasApi";
 import {
   Receipt,
-  Search,
-  Filter,
-  CheckCircle2,
-  Clock,
-  IndianRupee,
-  CreditCard,
-  Building2,
   AlertCircle,
-  RefreshCw,
-  ArrowDownToLine
+  RefreshCw
 } from "lucide-react";
+import "./PlatformBillingPage.css";
 
 export const PlatformBillingPage: React.FC = () => {
   const [invoices, setInvoices] = useState<PlatformInvoiceItem[]>([]);
@@ -81,47 +74,47 @@ export const PlatformBillingPage: React.FC = () => {
     .reduce((acc, inv) => acc + Number(inv.totalAmount), 0);
 
   return (
-    <div className="space-y-8">
+    <div className="billing-page">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Platform Invoices & B2B Billing</h1>
-        <p className="text-sm text-slate-400 mt-1">
+      <div className="billing-page__header">
+        <h1 className="billing-page__title">Platform Invoices & B2B Billing</h1>
+        <p className="billing-page__subtitle">
           Track subscription invoices, GST breakdowns, payment collections, and tenant renewal statuses.
         </p>
       </div>
 
       {/* Financial Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
-          <span className="text-xs font-medium text-slate-400">Total B2B Invoices Raised</span>
-          <p className="text-2xl font-bold text-white">₹{Math.round(totalBilled).toLocaleString("en-IN")}</p>
-          <p className="text-[11px] text-slate-500">{invoices.length} Total Invoices</p>
+      <div className="billing-page__stats-grid">
+        <div className="billing-page__stat-card">
+          <span className="billing-page__stat-label">Total B2B Invoices Raised</span>
+          <p className="billing-page__stat-val">₹{Math.round(totalBilled).toLocaleString("en-IN")}</p>
+          <p className="billing-page__stat-sub">{invoices.length} Total Invoices</p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
-          <span className="text-xs font-medium text-emerald-400">Collected Revenue (Paid)</span>
-          <p className="text-2xl font-bold text-emerald-400">₹{Math.round(totalPaid).toLocaleString("en-IN")}</p>
-          <p className="text-[11px] text-slate-500">
+        <div className="billing-page__stat-card">
+          <span className="billing-page__stat-label" style={{ color: "#059669" }}>Collected Revenue (Paid)</span>
+          <p className="billing-page__stat-val val--emerald">₹{Math.round(totalPaid).toLocaleString("en-IN")}</p>
+          <p className="billing-page__stat-sub">
             {invoices.filter((i) => i.status === "PAID").length} Cleared Invoices
           </p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
-          <span className="text-xs font-medium text-amber-400">Pending Receivables</span>
-          <p className="text-2xl font-bold text-amber-400">₹{Math.round(totalPending).toLocaleString("en-IN")}</p>
-          <p className="text-[11px] text-slate-500">
+        <div className="billing-page__stat-card">
+          <span className="billing-page__stat-label" style={{ color: "#d97706" }}>Pending Receivables</span>
+          <p className="billing-page__stat-val val--amber">₹{Math.round(totalPending).toLocaleString("en-IN")}</p>
+          <p className="billing-page__stat-sub">
             {invoices.filter((i) => i.status === "PENDING").length} Unpaid Invoices
           </p>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
+      <div className="billing-page__filter-bar">
+        <div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+            className="billing-page__filter-select"
           >
             <option value="">All Invoices</option>
             <option value="PAID">Paid</option>
@@ -131,7 +124,7 @@ export const PlatformBillingPage: React.FC = () => {
 
         <button
           onClick={fetchInvoices}
-          className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl border border-slate-700"
+          className="billing-page__btn-refresh"
           title="Refresh Invoices"
         >
           <RefreshCw className="w-4 h-4" />
@@ -139,82 +132,84 @@ export const PlatformBillingPage: React.FC = () => {
       </div>
 
       {/* Invoices Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+      <div className="billing-page__table-card">
         {loading ? (
-          <div className="py-16 text-center text-slate-400 space-y-3">
-            <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-xs">Loading platform invoices...</p>
+          <div className="superadmin-dashboard__loader">
+            <div className="superadmin-dashboard__spinner"></div>
+            <p className="superadmin-dashboard__loader-text">Loading platform invoices...</p>
           </div>
         ) : invoices.length === 0 ? (
-          <div className="py-16 text-center text-slate-500 space-y-2">
-            <Receipt className="w-10 h-10 mx-auto text-slate-600" />
-            <p className="text-sm font-semibold text-slate-400">No B2B invoices found</p>
+          <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
+            <Receipt className="w-10 h-10 mx-auto text-slate-400" />
+            <p style={{ marginTop: "0.75rem", fontSize: "0.9rem", fontWeight: 600, color: "#64748b" }}>
+              No B2B invoices found
+            </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-800/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+          <div className="institutes-page__table-wrapper">
+            <table className="institutes-page__table">
+              <thead className="institutes-page__thead">
                 <tr>
-                  <th className="px-6 py-3.5">Invoice #</th>
-                  <th className="px-6 py-3.5">Institute Tenant</th>
-                  <th className="px-6 py-3.5">Base + 18% GST</th>
-                  <th className="px-6 py-3.5">Total Amount</th>
-                  <th className="px-6 py-3.5">Status</th>
-                  <th className="px-6 py-3.5">Due Date</th>
-                  <th className="px-6 py-3.5 text-right">Action</th>
+                  <th className="institutes-page__th">Invoice #</th>
+                  <th className="institutes-page__th">Institute Tenant</th>
+                  <th className="institutes-page__th">Base + 18% GST</th>
+                  <th className="institutes-page__th">Total Amount</th>
+                  <th className="institutes-page__th">Status</th>
+                  <th className="institutes-page__th">Due Date</th>
+                  <th className="institutes-page__th" style={{ textAlign: "right" }}>Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody>
                 {invoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-slate-800/40 transition-all">
-                    <td className="px-6 py-4">
-                      <span className="font-mono font-bold text-indigo-400 text-sm">
+                  <tr key={inv.id} className="institutes-page__tr">
+                    <td className="institutes-page__td">
+                      <span className="billing-page__inv-number">
                         {inv.invoiceNumber}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-0.5">
-                        <p className="font-semibold text-white">{inv.institute?.name || "Unknown Tenant"}</p>
-                        <p className="text-[11px] text-slate-400 font-mono">Code: {inv.institute?.code}</p>
+                    <td className="institutes-page__td">
+                      <div>
+                        <p className="billing-page__tenant-name">{inv.institute?.name || "Unknown Tenant"}</p>
+                        <p className="billing-page__tenant-code">Code: {inv.institute?.code}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-300">
+                    <td className="institutes-page__td">
                       <div>
-                        <span>₹{Number(inv.amount).toLocaleString("en-IN")}</span>
-                        <span className="text-[11px] text-slate-500 block">
+                        <span style={{ fontWeight: 600 }}>₹{Number(inv.amount).toLocaleString("en-IN")}</span>
+                        <span className="billing-page__tax-sub">
                           + ₹{Number(inv.taxAmount).toLocaleString("en-IN")} GST
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="font-bold text-white text-sm">
+                    <td className="institutes-page__td">
+                      <span className="billing-page__total-amount">
                         ₹{Number(inv.totalAmount).toLocaleString("en-IN")}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="institutes-page__td">
                       <span
-                        className={`inline-block px-2.5 py-1 text-[11px] font-bold rounded-lg ${
+                        className={`sa-badge ${
                           inv.status === "PAID"
-                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                            : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                            ? "sa-badge--paid"
+                            : "sa-badge--pending"
                         }`}
                       >
                         {inv.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-400 text-[11px]">
+                    <td className="institutes-page__td" style={{ fontSize: "0.75rem", color: "#64748b" }}>
                       {new Date(inv.dueDate).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="institutes-page__td" style={{ textAlign: "right" }}>
                       {inv.status === "PENDING" ? (
                         <button
                           onClick={() => handleOpenPayModal(inv)}
-                          className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 rounded-lg text-xs font-semibold border border-emerald-500/40 transition-all"
+                          className="billing-page__btn-pay"
                         >
                           Record Payment
                         </button>
                       ) : (
-                        <span className="text-[11px] text-slate-500 font-medium">
+                        <span className="billing-page__paid-text">
                           Paid on {inv.paidAt ? new Date(inv.paidAt).toLocaleDateString() : "—"}
                         </span>
                       )}
@@ -229,48 +224,48 @@ export const PlatformBillingPage: React.FC = () => {
 
       {/* RECORD MANUAL PAYMENT MODAL */}
       {showPayModal && selectedInvoice && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="institutes-page__modal-backdrop">
+          <div className="institutes-page__modal institutes-page__modal--sm">
+            <div className="institutes-page__modal-header">
               <div>
-                <h3 className="text-base font-bold text-white">Record Invoice Payment</h3>
-                <p className="text-xs text-slate-400">{selectedInvoice.invoiceNumber} ({selectedInvoice.institute?.name})</p>
+                <h3 className="institutes-page__modal-title">Record Invoice Payment</h3>
+                <p className="institutes-page__modal-subtitle">{selectedInvoice.invoiceNumber} ({selectedInvoice.institute?.name})</p>
               </div>
               <button
                 onClick={() => setShowPayModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="institutes-page__modal-close"
               >
                 ✕
               </button>
             </div>
 
             {modalError && (
-              <div className="p-3.5 bg-rose-950/50 border border-rose-800 text-rose-300 rounded-xl text-xs flex items-center space-x-2">
+              <div className="institutes-page__modal-error">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{modalError}</span>
               </div>
             )}
 
-            <form onSubmit={handleRecordPaymentSubmit} className="space-y-4 text-xs">
-              <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700 space-y-1 text-slate-300">
-                <div className="flex justify-between">
+            <form onSubmit={handleRecordPaymentSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div className="institutes-page__summary-box">
+                <div className="institutes-page__summary-row">
                   <span>Total Amount Due:</span>
-                  <span className="font-bold text-white text-sm">
+                  <strong style={{ fontSize: "1rem", color: "#0f172a" }}>
                     ₹{Number(selectedInvoice.totalAmount).toLocaleString("en-IN")}
-                  </span>
+                  </strong>
                 </div>
-                <div className="flex justify-between text-[11px] text-slate-400">
+                <div className="institutes-page__summary-row" style={{ fontSize: "0.75rem" }}>
                   <span>Includes 18% GST:</span>
                   <span>₹{Number(selectedInvoice.taxAmount).toLocaleString("en-IN")}</span>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-400 font-semibold mb-1">Payment Method *</label>
+              <div className="institutes-page__field">
+                <label className="institutes-page__label">Payment Method *</label>
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  className="institutes-page__input"
                 >
                   <option value="BANK_TRANSFER">Bank Wire / NEFT / RTGS</option>
                   <option value="UPI">UPI Payment</option>
@@ -279,30 +274,32 @@ export const PlatformBillingPage: React.FC = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-slate-400 font-semibold mb-1">UTR / Transaction Reference *</label>
+              <div className="institutes-page__field">
+                <label className="institutes-page__label">UTR / Transaction Reference *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. UTR-20260901-XXXX"
                   value={transactionRef}
                   onChange={(e) => setTransactionRef(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+                  className="institutes-page__input"
+                  style={{ fontFamily: "monospace" }}
                 />
               </div>
 
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-800">
+              <div className="institutes-page__modal-footer">
                 <button
                   type="button"
                   onClick={() => setShowPayModal(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold"
+                  className="institutes-page__btn-cancel"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading}
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold shadow-lg shadow-emerald-600/30 disabled:opacity-50"
+                  className="institutes-page__btn-submit"
+                  style={{ backgroundColor: "#059669" }}
                 >
                   {actionLoading ? "Processing..." : "Confirm & Clear Invoice"}
                 </button>

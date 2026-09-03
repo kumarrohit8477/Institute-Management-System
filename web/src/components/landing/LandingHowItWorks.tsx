@@ -1,4 +1,5 @@
 import React from "react";
+import "./LandingHowItWorks.css";
 
 export const LandingHowItWorks: React.FC = () => {
   const steps = [
@@ -25,26 +26,26 @@ export const LandingHowItWorks: React.FC = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-20 border-t border-slate-800/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+    <section id="how-it-works" className="landing-how">
+      <div className="landing-how__container">
+        <div className="landing-how__header">
+          <span className="landing-how__tag">
             Simple 4-Step Flow
           </span>
-          <h2 className="text-3xl font-bold text-white mt-2">
+          <h2 className="landing-how__title">
             How Institutes Operate on IMS Cloud
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="landing-how__grid">
           {steps.map((st, idx) => (
             <div
               key={idx}
-              className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 relative space-y-3"
+              className="landing-how__card"
             >
-              <div className="text-3xl font-black text-indigo-500/40">{st.number}</div>
-              <h4 className="text-base font-bold text-white">{st.title}</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">{st.desc}</p>
+              <div className="landing-how__number">{st.number}</div>
+              <h4 className="landing-how__step-title">{st.title}</h4>
+              <p className="landing-how__step-desc">{st.desc}</p>
             </div>
           ))}
         </div>

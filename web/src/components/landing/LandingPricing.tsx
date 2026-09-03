@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2 } from "lucide-react";
+import "./LandingPricing.css";
 
 export const LandingPricing: React.FC = () => {
   const plans = [
@@ -75,70 +76,64 @@ export const LandingPricing: React.FC = () => {
   ];
 
   return (
-    <section id="plans" className="py-20 border-t border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+    <section id="plans" className="landing-pricing">
+      <div className="landing-pricing__container">
+        <div className="landing-pricing__header">
+          <span className="landing-pricing__tag">
             Transparent Pricing
           </span>
-          <h2 className="text-3xl font-bold text-white mt-2">
+          <h2 className="landing-pricing__title">
             Scalable Plans for Any Institute Size
           </h2>
-          <p className="text-slate-400 text-sm mt-3">
+          <p className="landing-pricing__desc">
             Transparent SaaS billing with monthly and annual options. Upgrade or scale your limits anytime.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="landing-pricing__grid">
           {plans.map((p, idx) => (
             <div
               key={idx}
-              className={`p-6 rounded-2xl flex flex-col justify-between transition-all ${
-                p.highlight
-                  ? "bg-slate-900 border-2 border-indigo-500 shadow-xl shadow-indigo-500/10"
-                  : "bg-slate-900/60 border border-slate-800"
+              className={`landing-pricing__card ${
+                p.highlight ? "landing-pricing__card--featured" : ""
               }`}
             >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+              <div>
+                <div className="landing-pricing__card-top">
+                  <span className="landing-pricing__tier-label">
                     {p.tier}
                   </span>
                   <span
-                    className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                      p.highlight
-                        ? "bg-indigo-500 text-white"
-                        : "bg-slate-800 text-slate-300"
+                    className={`landing-pricing__badge ${
+                      p.highlight ? "badge--featured" : "badge--normal"
                     }`}
                   >
                     {p.badge}
                   </span>
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-white">{p.name}</h4>
-                  <div className="mt-2 flex items-baseline space-x-1">
-                    <span className="text-3xl font-black text-white">{p.price}</span>
-                    <span className="text-xs text-slate-400">/{p.period}</span>
+                  <h4 className="landing-pricing__plan-name">{p.name}</h4>
+                  <div className="landing-pricing__price-row">
+                    <span className="landing-pricing__price">{p.price}</span>
+                    <span className="landing-pricing__period">/{p.period}</span>
                   </div>
                 </div>
 
-                <ul className="space-y-2.5 pt-4 border-t border-slate-800 text-xs text-slate-300">
+                <ul className="landing-pricing__features">
                   {p.features.map((feat, fIdx) => (
-                    <li key={fIdx} className="flex items-center space-x-2">
-                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                    <li key={fIdx} className="landing-pricing__feature-item">
+                      <CheckCircle2 size={14} className="landing-pricing__check" />
                       <span>{feat}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="pt-6">
+              <div>
                 <Link
                   to="/login"
-                  className={`w-full flex items-center justify-center py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    p.highlight
-                      ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30"
-                      : "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+                  className={`landing-pricing__btn ${
+                    p.highlight ? "btn--featured" : "btn--normal"
                   }`}
                 >
                   Select Plan

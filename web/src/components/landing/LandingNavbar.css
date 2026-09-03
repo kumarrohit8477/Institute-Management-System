@@ -1,0 +1,140 @@
+.landing-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid #e8edf5;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+}
+
+.landing-navbar__container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.landing-navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+
+.landing-navbar__logo-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+  flex-shrink: 0;
+}
+
+.landing-navbar__brand-text {
+  display: flex;
+  align-items: center;
+}
+
+.landing-navbar__brand-title {
+  font-family: "Manrope", "DM Sans", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.025em;
+}
+
+.landing-navbar__brand-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  border: 1px solid #c7d2fe;
+  margin-left: 0.5rem;
+}
+
+.landing-navbar__nav {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+.landing-navbar__nav-link {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #475569;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.landing-navbar__nav-link:hover {
+  color: #0f172a;
+}
+
+.landing-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.landing-navbar__btn-signin {
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.landing-navbar__btn-signin:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.landing-navbar__btn-getstarted {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  transition: all 0.2s ease;
+}
+
+.landing-navbar__btn-getstarted:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+}
+
+@media (max-width: 860px) {
+  .landing-navbar__nav {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .landing-navbar__container {
+    padding: 0 1rem;
+  }
+  .landing-navbar__brand-tag {
+    display: none;
+  }
+}

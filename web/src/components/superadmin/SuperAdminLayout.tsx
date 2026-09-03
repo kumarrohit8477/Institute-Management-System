@@ -2,14 +2,15 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import { SuperAdminNavbar } from "@/src/components/superadmin/SuperAdminNavbar";
 import { SuperAdminSidebar } from "@/src/components/superadmin/SuperAdminSidebar";
+import "./SuperAdminLayout.css";
 
 export const SuperAdminLayout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="superadmin-layout">
       <SuperAdminNavbar />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="superadmin-layout__container">
         <SuperAdminSidebar />
-        <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-950">
+        <main className="superadmin-layout__main">
           <Outlet />
         </main>
       </div>
