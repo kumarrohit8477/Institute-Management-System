@@ -11,47 +11,14 @@ export const AdminMaterialsPage: React.FC = () => {
       setLoading(true);
       try {
         const data = await AdminApiService.getMaterials();
-        if (data && data.length > 0) {
+        if (data && Array.isArray(data)) {
           setMaterials(data);
         } else {
-          setMaterials([
-            {
-              id: "mat-1",
-              title: "Physics Mechanics & Kinematics Formula Book",
-              description: "Complete formula derivations, summary tables, and solved numericals.",
-              fileUrl: "#",
-              fileType: "PDF",
-              fileSize: 4200000,
-              batchId: "bat-1",
-              subjectId: "sub-1",
-              createdAt: "2026-08-25",
-            },
-            {
-              id: "mat-2",
-              title: "Integral Calculus DPP Set 4",
-              description: "Daily Practice Problems with comprehensive step-by-step solutions.",
-              fileUrl: "#",
-              fileType: "PDF",
-              fileSize: 2100000,
-              batchId: "bat-1",
-              subjectId: "sub-2",
-              createdAt: "2026-08-28",
-            },
-            {
-              id: "mat-3",
-              title: "Organic Chemistry Reaction Mechanism Notes",
-              description: "Named reactions and electron displacement mechanisms for competitive exams.",
-              fileUrl: "#",
-              fileType: "PDF",
-              fileSize: 3400000,
-              batchId: "bat-1",
-              subjectId: "sub-3",
-              createdAt: "2026-08-30",
-            },
-          ]);
+          setMaterials([]);
         }
       } catch (err) {
-        console.error(err);
+        console.error("Failed to load materials:", err);
+        setMaterials([]);
       } finally {
         setLoading(false);
       }
@@ -68,8 +35,17 @@ export const AdminMaterialsPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid-cols-2">
-        {materials.map((mat) => (
+      {materials.length === 0 ? (
+        <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
+          <FolderDown size={40} color="var(--color-text-muted)" style={{ margin: "0 auto 1rem" }} />
+          <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.5rem" }}>No Study Materials Found</h3>
+          <p style={{ color: "var(--color-text-muted)", fontSize: "0.875rem" }}>
+            No course materials or lecture notes have been uploaded to the database repository yet.
+          </p>
+        </div>
+      ) : (
+        <div className="grid-cols-2">
+          {materials.map((mat) => (
           <div key={mat.id} className="card">
             <div
               style={{
@@ -139,7 +115,8 @@ export const AdminMaterialsPage: React.FC = () => {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

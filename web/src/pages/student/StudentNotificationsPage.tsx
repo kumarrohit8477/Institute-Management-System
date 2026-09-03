@@ -30,50 +30,6 @@ export const StudentNotificationsPage: React.FC = () => {
   const [selectedType, setSelectedType] =
     useState<string>("ALL");
 
-  const sampleNotifications: StudentNotificationItem[] =
-    [
-      {
-        id: "notif-1",
-        title: "JEE Main Grand Mock 1 Live Now",
-        message:
-          "The full-syllabus CBT benchmark mock test is available. Make sure to complete before the deadline.",
-        type: "TEST",
-        actionUrl: "/student/tests",
-        isRead: false,
-        createdAt: "2026-09-01T08:30:00Z",
-      },
-      {
-        id: "notif-2",
-        title: "New Study Materials Uploaded",
-        message:
-          "Dr. Harish Verma has uploaded Physics Chapter 4 Electrodynamics derivation notes with solved problem sets.",
-        type: "ANNOUNCEMENT",
-        actionUrl: "/student/materials",
-        isRead: false,
-        createdAt: "2026-08-31T14:15:00Z",
-      },
-      {
-        id: "notif-3",
-        title: "Fee Receipt Issued",
-        message:
-          "Installment 1 payment of ₹50,000 via UPI has been verified and official receipt voucher generated.",
-        type: "FEE",
-        actionUrl: "/student/fees",
-        isRead: true,
-        createdAt: "2026-08-30T10:00:00Z",
-      },
-      {
-        id: "notif-4",
-        title: "Timetable Adjustment for Friday",
-        message:
-          "Mathematics class on Friday has been moved to 11:00 AM in Room LH-101.",
-        type: "TIMETABLE",
-        actionUrl: "/student/timetable",
-        isRead: true,
-        createdAt: "2026-08-28T09:00:00Z",
-      },
-    ];
-
   useEffect(() => {
     const load = async () => {
       try {
@@ -82,14 +38,15 @@ export const StudentNotificationsPage: React.FC = () => {
 
         if (
           response.notifications &&
-          response.notifications.length > 0
+          Array.isArray(response.notifications)
         ) {
           setNotifications(response.notifications);
         } else {
-          setNotifications(sampleNotifications);
+          setNotifications([]);
         }
-      } catch {
-        setNotifications(sampleNotifications);
+      } catch (err) {
+        console.error("Failed to load notifications from database:", err);
+        setNotifications([]);
       }
     };
 
@@ -245,8 +202,17 @@ export const StudentNotificationsPage: React.FC = () => {
       </div>
 
       <div className="student-notifications__list">
-        {filteredNotifications.map(
-          (notification) => (
+        {filteredNotifications.length === 0 ? (
+          <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
+            <AlertCircle size={40} color="var(--color-text-muted)" style={{ margin: "0 auto 1rem" }} />
+            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.5rem" }}>No Notifications</h3>
+            <p style={{ color: "var(--color-text-muted)", fontSize: "0.875rem" }}>
+              No system announcements or alerts recorded in the database.
+            </p>
+          </div>
+        ) : (
+          filteredNotifications.map(
+            (notification) => (
             <div
               key={notification.id}
               className={`card student-notifications__item ${
@@ -320,7 +286,7 @@ export const StudentNotificationsPage: React.FC = () => {
               </div>
             </div>
           )
-        )}
+        ))}
       </div>
     </div>
   );

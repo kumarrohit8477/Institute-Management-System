@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/src/hooks/useAuth";
 import { StudentApiService, StudentAcademics, StudentScheduleResponse, StudentAttendanceResponse } from "@/src/services/studentApi";
+import { ExamApiService, AvailableTestItem } from "@/src/services/examApi";
+import { NotificationApiService, StudentNotificationItem } from "@/src/services/notificationApi";
 import {
   BookOpen,
   Calendar,
@@ -20,21 +22,27 @@ export const StudentDashboard: React.FC = () => {
   const [academics, setAcademics] = useState<StudentAcademics | null>(null);
   const [schedule, setSchedule] = useState<StudentScheduleResponse | null>(null);
   const [attendance, setAttendance] = useState<StudentAttendanceResponse | null>(null);
+  const [tests, setTests] = useState<AvailableTestItem[]>([]);
+  const [notifications, setNotifications] = useState<StudentNotificationItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const loadDashboardData = async () => {
       setLoading(true);
       try {
-        const [acadData, schedData, attData] = await Promise.allSettled([
+        const [acadData, schedData, attData, testData, notifData] = await Promise.allSettled([
           StudentApiService.getMyAcademics(),
           StudentApiService.getMySchedule(),
-          StudentApiService.getMyAttendance()
+          StudentApiService.getMyAttendance(),
+          ExamApiService.getAvailableTests(),
+          NotificationApiService.getMyNotifications()
         ]);
 
         if (acadData.status === "fulfilled") setAcademics(acadData.value);
         if (schedData.status === "fulfilled") setSchedule(schedData.value);
         if (attData.status === "fulfilled") setAttendance(attData.value);
+        if (testData.status === "fulfilled" && Array.isArray(testData.value)) setTests(testData.value);
+        if (notifData.status === "fulfilled" && Array.isArray(notifData.value)) setNotifications(notifData.value);
       } catch (err) {
         console.error("Failed to load student dashboard data:", err);
       } finally {
@@ -52,7 +60,7 @@ export const StudentDashboard: React.FC = () => {
 
   const currentBatch = academics?.batches?.[0];
   const currentCourse = academics?.courses?.[0];
-  const attPercentage = attendance?.statistics?.attendancePercentage ?? 92.5;
+  const attPercentage = attendance?.statistics?.attendancePercentage ?? 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
@@ -75,7 +83,7 @@ export const StudentDashboard: React.FC = () => {
           <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "rgba(255,255,255,0.15)", padding: "0.25rem 0.75rem", borderRadius: "999px", fontSize: "0.8rem", marginBottom: "0.75rem" }}>
             <span>🎓 Student Portal</span>
             <span>•</span>
-            <span>{institute?.name || "Apex Academy"}</span>
+            <span>{institute?.name || "Institute Portal"}</span>
           </div>
           <h1 style={{ fontSize: "1.75rem", color: "#ffffff", marginBottom: "0.5rem" }}>
             Welcome back, {student?.firstName || user?.email?.split("@")[0]}! 👋
@@ -88,11 +96,11 @@ export const StudentDashboard: React.FC = () => {
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <div style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(4px)", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.2)" }}>
             <div style={{ fontSize: "0.75rem", color: "#bfdbfe", textTransform: "uppercase", fontWeight: 600 }}>Admission No.</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#ffffff" }}>{student?.admissionNumber || "ADM-2026-001"}</div>
+            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#ffffff" }}>{student?.admissionNumber || "N/A"}</div>
           </div>
           <div style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(4px)", padding: "1rem 1.25rem", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.2)" }}>
             <div style={{ fontSize: "0.75rem", color: "#bfdbfe", textTransform: "uppercase", fontWeight: 600 }}>Roll Number</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#ffffff" }}>{currentBatch?.rollNumber || "JEE-M1-01"}</div>
+            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#ffffff" }}>{currentBatch?.rollNumber || "N/A"}</div>
           </div>
         </div>
       </div>
@@ -106,14 +114,18 @@ export const StudentDashboard: React.FC = () => {
               <BookOpen size={18} color="var(--color-primary)" />
               <span>Current Course</span>
             </div>
-            <span className="badge badge-primary">{currentCourse?.code || "JEE-2027"}</span>
+            {currentCourse ? (
+              <span className="badge badge-primary">{currentCourse.code}</span>
+            ) : (
+              <span className="badge badge-gray">Not Enrolled</span>
+            )}
           </div>
           <h3 style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>
-            {currentCourse?.name || "IIT-JEE 2-Year Advanced Program"}
+            {currentCourse?.name || "No Enrolled Course"}
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
-            <div><strong>Batch:</strong> {currentBatch?.name || "JEE Morning Star Batch"} ({currentBatch?.code || "BATCH-JEE-M1"})</div>
-            <div><strong>Subjects:</strong> {academics?.subjects?.length || 3} Core Subjects Active</div>
+            <div><strong>Batch:</strong> {currentBatch ? `${currentBatch.name} (${currentBatch.code})` : "No Batch Assigned"}</div>
+            <div><strong>Subjects:</strong> {academics?.subjects?.length || 0} Core Subjects Active</div>
           </div>
           <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid #f1f5f9" }}>
             <Link to="/student/courses" style={{ color: "var(--color-primary)", textDecoration: "none", fontSize: "0.85rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
@@ -139,7 +151,7 @@ export const StudentDashboard: React.FC = () => {
                 {attPercentage}%
               </div>
               <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
-                {attendance?.statistics?.presentCount || 37} Present / {attendance?.statistics?.totalDays || 40} Days Logged
+                {attendance?.statistics?.presentCount || 0} Present / {attendance?.statistics?.totalDays || 0} Days Logged
               </div>
             </div>
             <div
@@ -177,27 +189,30 @@ export const StudentDashboard: React.FC = () => {
               <Award size={18} color="#8b5cf6" />
               <span>Assigned Faculty</span>
             </div>
-            <span className="badge badge-gray">{academics?.teachers?.length || 2} Teachers</span>
+            <span className="badge badge-gray">{academics?.teachers?.length || 0} Teachers</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {(academics?.teachers?.slice(0, 2) || [
-              { firstName: "Dr. Harish", lastName: "Verma", subjectName: "Physics", qualification: "Ph.D. IIT Kanpur" },
-              { firstName: "Prof. Sunita", lastName: "Ramanujan", subjectName: "Mathematics", qualification: "M.Sc Gold Medalist" }
-            ]).map((t, idx) => (
-              <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#f3e8ff", color: "#7c3aed", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.85rem" }}>
-                  {t.firstName[0]}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: "0.875rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {t.firstName} {t.lastName}
-                  </div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
-                    {t.subjectName || "Core Faculty"} • {t.qualification || "Ph.D."}
-                  </div>
-                </div>
+            {(!academics?.teachers || academics.teachers.length === 0) ? (
+              <div style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", padding: "0.5rem 0" }}>
+                No instructors assigned yet.
               </div>
-            ))}
+            ) : (
+              academics.teachers.slice(0, 2).map((t, idx) => (
+                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#f3e8ff", color: "#7c3aed", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.85rem" }}>
+                    {t.firstName?.[0] || "T"}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.875rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {t.firstName} {t.lastName}
+                    </div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
+                      {t.subjectName || "Core Faculty"} • {t.qualification || "Instructor"}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
           <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid #f1f5f9" }}>
             <Link to="/student/teachers" style={{ color: "var(--color-primary)", textDecoration: "none", fontSize: "0.85rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
@@ -264,10 +279,10 @@ export const StudentDashboard: React.FC = () => {
 
                     <div>
                       <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--color-text-main)" }}>
-                        {slot.subject.name}
+                        {slot.subject?.name || "Subject Lecture"}
                       </div>
                       <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "0.2rem" }}>
-                        <span>👨‍🏫 {slot.teacher.firstName} {slot.teacher.lastName}</span>
+                        <span>👨‍🏫 {slot.teacher ? `${slot.teacher.firstName} ${slot.teacher.lastName}` : "Faculty Assigned"}</span>
                         {slot.roomNumber && (
                           <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
                             <MapPin size={12} /> Room {slot.roomNumber}
@@ -309,25 +324,31 @@ export const StudentDashboard: React.FC = () => {
           <div className="card">
             <div className="card-header">
               <h3 style={{ fontSize: "1rem" }}>Upcoming Tests</h3>
-              <span className="badge badge-warning">2 Scheduled</span>
+              <span className="badge badge-warning">{tests.length} Available</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              <div style={{ padding: "0.75rem", borderRadius: "8px", background: "#fefce8", border: "1px solid #fef08a" }}>
-                <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "#854d0e" }}>
-                  JEE Weekly Mock Test #4
+              {tests.length === 0 ? (
+                <div style={{ padding: "0.75rem", fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
+                  No active tests scheduled in database.
                 </div>
-                <div style={{ fontSize: "0.75rem", color: "#a16207", marginTop: "0.25rem" }}>
-                  📅 Saturday, 10:00 AM • 3 Hours • 300 Marks
-                </div>
-              </div>
-              <div style={{ padding: "0.75rem", borderRadius: "8px", background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>
-                  Physics Mechanics Sectional
-                </div>
-                <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: "0.25rem" }}>
-                  📅 Next Tuesday, 04:00 PM • 1 Hour
-                </div>
-              </div>
+              ) : (
+                tests.slice(0, 3).map((t) => (
+                  <Link
+                    key={t.id}
+                    to="/student/tests"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    <div style={{ padding: "0.75rem", borderRadius: "8px", background: "#f8fafc", border: "1px solid #e2e8f0" }}>
+                      <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>
+                        {t.title}
+                      </div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: "0.25rem" }}>
+                        ⏱️ {t.durationMinutes} Mins • Total Marks: {t.totalMarks}
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
             </div>
           </div>
 
@@ -337,24 +358,23 @@ export const StudentDashboard: React.FC = () => {
               <h3 style={{ fontSize: "1rem" }}>Announcements</h3>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", fontSize: "0.85rem" }}>
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <AlertCircle size={16} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: "2px" }} />
-                <div>
-                  <div style={{ fontWeight: 600 }}>Study Notes Uploaded</div>
-                  <div style={{ color: "var(--color-text-muted)", fontSize: "0.75rem" }}>
-                    Electrodynamics Chapter 4 notes are now available in Study Materials.
-                  </div>
+              {notifications.length === 0 ? (
+                <div style={{ padding: "0.5rem 0", color: "var(--color-text-muted)" }}>
+                  No recent notifications found.
                 </div>
-              </div>
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <CheckCircle2 size={16} color="var(--color-success)" style={{ flexShrink: 0, marginTop: "2px" }} />
-                <div>
-                  <div style={{ fontWeight: 600 }}>Fee Receipt Issued</div>
-                  <div style={{ color: "var(--color-text-muted)", fontSize: "0.75rem" }}>
-                    Q2 installment receipt is available for download.
+              ) : (
+                notifications.slice(0, 3).map((n) => (
+                  <div key={n.id} style={{ display: "flex", gap: "0.5rem" }}>
+                    <AlertCircle size={16} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: "2px" }} />
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{n.title}</div>
+                      <div style={{ color: "var(--color-text-muted)", fontSize: "0.75rem" }}>
+                        {n.message}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                ))
+              )}
             </div>
           </div>
         </div>

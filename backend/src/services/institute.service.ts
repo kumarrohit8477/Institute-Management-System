@@ -1,7 +1,7 @@
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
 import { HTTP_STATUS } from "@ims/common";
-import { UploadLogoInput } from "../validations/institute.validation";
+import { UploadLogoInput, UpdateInstituteProfileInput } from "../validations/institute.validation";
 import fs from "fs";
 import path from "path";
 
@@ -47,6 +47,17 @@ export class InstituteService {
       include: {
         subscription: {
           include: { plan: true }
+        },
+        tenantUsage: true,
+        _count: {
+          select: {
+            students: true,
+            teachers: true,
+            courses: true,
+            batches: true,
+            rooms: true,
+            users: true
+          }
         }
       }
     });
@@ -64,10 +75,15 @@ export class InstituteService {
       phone: institute.phone,
       address: institute.address,
       logoUrl: institute.logoUrl,
+      tagline: institute.tagline,
       website: institute.website,
       status: institute.status,
       settings: institute.settings,
-      subscription: institute.subscription
+      createdAt: institute.createdAt,
+      updatedAt: institute.updatedAt,
+      subscription: institute.subscription,
+      tenantUsage: institute.tenantUsage,
+      _count: institute._count
     };
   }
 
@@ -150,6 +166,7 @@ export class InstituteService {
       name: updated.name,
       code: updated.code,
       logoUrl: updated.logoUrl,
+      tagline: updated.tagline,
       updatedAt: updated.updatedAt
     };
   }
@@ -178,7 +195,98 @@ export class InstituteService {
       name: updated.name,
       code: updated.code,
       logoUrl: null,
+      tagline: updated.tagline,
       updatedAt: updated.updatedAt
+    };
+  }
+
+  /**
+   * Update or clear institute tagline / slogan
+   */
+  static async updateTagline(instituteId: string, tagline?: string | null) {
+    const institute = await prisma.institute.findUnique({
+      where: { id: instituteId }
+    });
+
+    if (!institute) {
+      throw new AppError("Institute not found", HTTP_STATUS.NOT_FOUND);
+    }
+
+    const cleanTagline = tagline?.trim() ? tagline.trim() : null;
+
+    const updated = await prisma.institute.update({
+      where: { id: instituteId },
+      data: { tagline: cleanTagline }
+    });
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      code: updated.code,
+      logoUrl: updated.logoUrl,
+      tagline: updated.tagline,
+      updatedAt: updated.updatedAt
+    };
+  }
+
+  /**
+   * Update institute profile / contact details
+   */
+  static async updateProfile(instituteId: string, input: UpdateInstituteProfileInput) {
+    const institute = await prisma.institute.findUnique({
+      where: { id: instituteId }
+    });
+
+    if (!institute) {
+      throw new AppError("Institute not found", HTTP_STATUS.NOT_FOUND);
+    }
+
+    const dataToUpdate: any = {};
+    if (input.name !== undefined) dataToUpdate.name = input.name.trim();
+    if (input.phone !== undefined) dataToUpdate.phone = input.phone.trim();
+    if (input.address !== undefined) dataToUpdate.address = input.address?.trim() || null;
+    if (input.website !== undefined) dataToUpdate.website = input.website?.trim() || null;
+    if (input.tagline !== undefined) dataToUpdate.tagline = input.tagline?.trim() || null;
+
+    const updated = await prisma.institute.update({
+      where: { id: instituteId },
+      data: dataToUpdate,
+      include: {
+        subscription: {
+          include: { plan: true }
+        },
+        tenantUsage: true,
+        _count: {
+          select: {
+            students: true,
+            teachers: true,
+            courses: true,
+            batches: true,
+            rooms: true,
+            users: true
+          }
+        }
+      }
+    });
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      code: updated.code,
+      customDomain: updated.customDomain,
+      email: updated.email,
+      phone: updated.phone,
+      address: updated.address,
+      logoUrl: updated.logoUrl,
+      tagline: updated.tagline,
+      website: updated.website,
+      status: updated.status,
+      settings: updated.settings,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+      subscription: updated.subscription,
+      tenantUsage: updated.tenantUsage,
+      _count: updated._count
     };
   }
 }

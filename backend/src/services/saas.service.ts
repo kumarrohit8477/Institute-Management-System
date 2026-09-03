@@ -168,6 +168,7 @@ export class SaasService {
           email,
           phone,
           address: address || null,
+          tagline: (input as any).tagline || null,
           status: planTier === "FREE_TRIAL" ? InstituteStatus.TRIAL : InstituteStatus.ACTIVE,
           settings: {
             currency: "INR",

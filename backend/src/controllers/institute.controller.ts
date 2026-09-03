@@ -48,4 +48,32 @@ export class InstituteController {
     const updated = await InstituteService.deleteLogo(instituteId);
     return ResponseHandler.success(res, updated, "Institute logo removed successfully");
   });
+
+  /**
+   * PUT /api/v1/institute/tagline or PATCH /api/v1/institute/tagline
+   * Update or remove institute tagline / slogan
+   */
+  static updateTagline = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const instituteId = req.instituteId || req.body.instituteId;
+    if (!instituteId) {
+      throw new AppError("Institute context is required", HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const updated = await InstituteService.updateTagline(instituteId, req.body.tagline);
+    return ResponseHandler.success(res, updated, "Institute tagline updated successfully");
+  });
+
+  /**
+   * PUT /api/v1/institute/profile or PATCH /api/v1/institute/profile
+   * Update institute contact / profile information
+   */
+  static updateProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const instituteId = req.instituteId || req.body.instituteId;
+    if (!instituteId) {
+      throw new AppError("Institute context is required", HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const updated = await InstituteService.updateProfile(instituteId, req.body);
+    return ResponseHandler.success(res, updated, "Institute profile updated successfully");
+  });
 }

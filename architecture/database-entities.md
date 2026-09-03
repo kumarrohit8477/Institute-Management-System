@@ -1,4 +1,4 @@
-﻿# Institute Management System — Database Entity Specifications
+# Institute Management System — Database Entity Specifications
 **Document Version:** 1.0.0  
 **Phase:** Step 0.1 — Define Database Entities  
 
@@ -39,6 +39,7 @@ Root tenant entity. Represents the educational institute/organization.
 | `phone` | `VARCHAR(20)` | NOT NULL | Contact phone number |
 | `address` | `TEXT` | NULLABLE | Physical address |
 | `logoUrl` | `VARCHAR(500)` | NULLABLE | URL of institute logo |
+| `tagline` | `VARCHAR(255)` | NULLABLE | Official motto / tagline / slogan |
 | `website` | `VARCHAR(255)` | NULLABLE | Official website URL |
 | `status` | `ENUM` | DEFAULT: `ACTIVE` (`ACTIVE`, `INACTIVE`, `SUSPENDED`) | Operational status |
 | `settings` | `JSON` | NULLABLE | Custom configuration (timezone, branding, currency) |

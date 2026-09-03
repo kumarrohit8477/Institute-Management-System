@@ -13,6 +13,7 @@ export const createInstituteTenantSchema = z.object({
     email: z.string({ required_error: "Institute email is required" }).email(),
     phone: z.string({ required_error: "Contact phone is required" }).min(6),
     address: z.string().optional().nullable(),
+    tagline: z.string().max(255).optional().nullable(),
     adminEmail: z.string({ required_error: "Admin email is required" }).email(),
     adminPassword: z.string({ required_error: "Admin password is required" }).min(6),
     planTier: z.nativeEnum(PlanTier).default(PlanTier.STARTER),
@@ -30,7 +31,8 @@ export const updateInstituteTenantSchema = z.object({
     phone: z.string().min(6).optional(),
     address: z.string().optional().nullable(),
     status: z.nativeEnum(InstituteStatus).optional(),
-    logoUrl: z.string().optional().nullable()
+    logoUrl: z.string().optional().nullable(),
+    tagline: z.string().max(255).optional().nullable()
   })
 });
 

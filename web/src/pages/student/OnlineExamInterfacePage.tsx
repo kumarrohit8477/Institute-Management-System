@@ -14,68 +14,7 @@ export const OnlineExamInterfacePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [showSubmitModal, setShowSubmitModal] = useState<boolean>(false);
-
-  // Fallback sample questions if backend offline
-  const sampleFallbackQuestions: ExamQuestion[] = [
-    {
-      id: "tq1",
-      questionId: "q1",
-      sectionName: "Section A: Physics",
-      sortOrder: 1,
-      marks: 4,
-      negativeMarks: 1,
-      question: {
-        id: "q1",
-        subjectId: "s1",
-        type: "SINGLE_CHOICE",
-        difficulty: "MEDIUM",
-        questionText: "A particle is projected vertically upwards with velocity u. The ratio of time taken to reach half of the maximum height to the total time to reach the maximum height is:",
-        options: [
-          { id: "opt1", optionText: "1 - 1/√2", sortOrder: 1 },
-          { id: "opt2", optionText: "1 / √2", sortOrder: 2 },
-          { id: "opt3", optionText: "1 - √2", sortOrder: 3 },
-          { id: "opt4", optionText: "√2 - 1", sortOrder: 4 }
-        ]
-      }
-    },
-    {
-      id: "tq2",
-      questionId: "q2",
-      sectionName: "Section A: Physics",
-      sortOrder: 2,
-      marks: 4,
-      negativeMarks: 1,
-      question: {
-        id: "q2",
-        subjectId: "s1",
-        type: "MULTIPLE_CHOICE",
-        difficulty: "HARD",
-        questionText: "Which of the following statements are TRUE regarding conservative electrostatic forces?",
-        options: [
-          { id: "opt5", optionText: "Work done in a closed loop is always zero", sortOrder: 1 },
-          { id: "opt6", optionText: "Electric field lines never form closed continuous loops in electrostatics", sortOrder: 2 },
-          { id: "opt7", optionText: "Curl of electrostatic field is always non-zero", sortOrder: 3 },
-          { id: "opt8", optionText: "Potential difference between two points depends only on endpoints, not on path", sortOrder: 4 }
-        ]
-      }
-    },
-    {
-      id: "tq3",
-      questionId: "q3",
-      sectionName: "Section B: Mathematics",
-      sortOrder: 3,
-      marks: 4,
-      negativeMarks: 0,
-      question: {
-        id: "q3",
-        subjectId: "s2",
-        type: "NUMERICAL",
-        difficulty: "MEDIUM",
-        questionText: "Find the limit: lim (x -> 0) [ (sin x - x) / x³ ]. Enter your answer as a decimal rounded to two places (e.g. -0.17):",
-        options: []
-      }
-    }
-  ];
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Initialize test
   useEffect(() => {
@@ -95,8 +34,8 @@ export const OnlineExamInterfacePage: React.FC = () => {
           };
         }
         setAnswers(prefilled);
-      } catch (err) {
-        console.warn("Using sample mock test attempt fallback:", err);
+      } catch (err: any) {
+        setErrorMsg(err?.message || "Failed to load examination attempt from database.");
       } finally {
         setLoading(false);
       }
@@ -125,7 +64,7 @@ export const OnlineExamInterfacePage: React.FC = () => {
     return () => clearInterval(timer);
   }, [secondsRemaining]);
 
-  const questions = testData?.test?.questions || sampleFallbackQuestions;
+  const questions = testData?.test?.questions || [];
   const currentQ = questions[currentIdx];
 
   const formatTimer = (totalSecs: number) => {
@@ -238,6 +177,33 @@ export const OnlineExamInterfacePage: React.FC = () => {
   };
 
   const totalAnswered = questions.filter((q) => isAnswered(q.question.id)).length;
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-bg)" }}>
+        <div className="card" style={{ padding: "3rem", textAlign: "center", color: "var(--color-text-muted)" }}>
+          Loading examination assessment from database...
+        </div>
+      </div>
+    );
+  }
+
+  if (errorMsg || questions.length === 0) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-bg)" }}>
+        <div className="card" style={{ padding: "3rem", textAlign: "center", maxWidth: "500px" }}>
+          <AlertCircle size={48} color="#ef4444" style={{ margin: "0 auto 1rem" }} />
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "0.5rem" }}>Unable to Load Examination</h2>
+          <p style={{ color: "var(--color-text-muted)", fontSize: "0.875rem", marginBottom: "1.5rem" }}>
+            {errorMsg || "No questions found for this examination in the database."}
+          </p>
+          <button onClick={() => navigate("/student/tests")} className="btn btn-primary" style={{ width: "100%" }}>
+            Return to Available Tests
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--color-bg)" }}>

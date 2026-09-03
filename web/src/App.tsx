@@ -30,6 +30,7 @@ import { AdminTimetablePage } from "@/src/pages/admin/AdminTimetablePage";
 import { AdminMaterialsPage } from "@/src/pages/admin/AdminMaterialsPage";
 import { AdminAttendancePage } from "@/src/pages/admin/AdminAttendancePage";
 import { AdminBrandingPage } from "@/src/pages/admin/AdminBrandingPage";
+import { AdminProfilePage } from "@/src/pages/admin/AdminProfilePage";
 
 // Teacher Pages
 import { TeacherLayout } from "@/src/components/teacher/TeacherLayout";
@@ -92,6 +93,8 @@ export const App: React.FC = () => {
                 <Route path="materials" element={<AdminMaterialsPage />} />
                 <Route path="attendance" element={<AdminAttendancePage />} />
                 <Route path="branding" element={<AdminBrandingPage />} />
+                <Route path="profile" element={<AdminProfilePage />} />
+                <Route path="institute" element={<Navigate to="/admin/profile" replace />} />
               </Route>
             </Route>
           </Route>

@@ -24,24 +24,13 @@ export const AdminStudentsPage: React.FC = () => {
     setLoading(true);
     try {
       const data = await AdminApiService.getStudents();
-      if (data && data.length > 0) {
+      if (data && Array.isArray(data)) {
         setStudents(data);
       } else {
-        setStudents([
-          {
-            id: "stu-1",
-            admissionNumber: "ADM-2026-001",
-            firstName: "Rohit",
-            lastName: "Kumar",
-            email: "student1@apex.edu",
-            phone: "+91 98765 43210",
-            status: "ACTIVE",
-            createdAt: "2026-04-01",
-          },
-        ]);
+        setStudents([]);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to load students from database.");
     } finally {
       setLoading(false);
     }
@@ -67,22 +56,9 @@ export const AdminStudentsPage: React.FC = () => {
         phone: "",
         gender: "MALE",
       });
-      loadStudents();
+      await loadStudents();
     } catch (err: any) {
-      // Fallback in demo
-      const newStu: AdminStudent = {
-        id: `stu-${Date.now()}`,
-        admissionNumber: form.admissionNumber || `ADM-${Date.now().toString().slice(-4)}`,
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        phone: form.phone,
-        status: "ACTIVE",
-        createdAt: new Date().toISOString(),
-      };
-      setStudents((prev) => [newStu, ...prev]);
-      setIsModalOpen(false);
-      setSuccessMsg("Student added to active roster!");
+      setErrorMsg(err?.message || "Failed to enroll student in database.");
     }
   };
 

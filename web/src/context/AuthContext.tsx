@@ -14,6 +14,7 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   clearError: () => void;
   updateInstituteLogo: (logoUrl: string | null) => void;
+  updateInstituteTagline: (tagline: string | null) => void;
   refreshInstitute: () => Promise<void>;
 }
 
@@ -120,6 +121,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateInstituteTagline = (tagline: string | null) => {
+    setInstitute((prev) => (prev ? { ...prev, tagline } : null));
+    const stored = localStorage.getItem("ims_user_profile");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.institute) {
+          parsed.institute.tagline = tagline;
+          localStorage.setItem("ims_user_profile", JSON.stringify(parsed));
+        }
+      } catch {}
+    }
+  };
+
   const refreshInstitute = async () => {
     try {
       const me = await ApiService.getMe();
@@ -153,6 +168,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logout,
         clearError,
         updateInstituteLogo,
+        updateInstituteTagline,
         refreshInstitute
       }}
     >

@@ -23,6 +23,7 @@ export interface MobileAuthResponse {
     name: string;
     code: string;
     logoUrl?: string | null;
+    tagline?: string | null;
   } | null;
   student?: {
     id: string;

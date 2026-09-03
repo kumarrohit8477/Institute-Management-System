@@ -86,96 +86,30 @@ export const AdminBatchesPage: React.FC = () => {
       ]);
 
       let loadedCourses: AdminCourse[] = [];
-      if (couRes.status === "fulfilled" && couRes.value.length > 0) {
+      if (couRes.status === "fulfilled" && Array.isArray(couRes.value)) {
         loadedCourses = couRes.value;
         setCourses(couRes.value);
       } else {
-        loadedCourses = [
-          { id: "cou-1", name: "IIT-JEE 2-Year Advanced Program", code: "JEE-2027", durationMonths: 24, status: "ACTIVE" },
-          { id: "cou-2", name: "NEET Medical Intensive Batch", code: "NEET-2027", durationMonths: 24, status: "ACTIVE" },
-        ];
-        setCourses(loadedCourses);
+        setCourses([]);
       }
 
       if (loadedCourses.length > 0 && !createForm.courseId) {
         setCreateForm((prev) => ({ ...prev, courseId: loadedCourses[0].id }));
       }
 
-      if (stuRes.status === "fulfilled" && stuRes.value.length > 0) {
+      if (stuRes.status === "fulfilled" && Array.isArray(stuRes.value)) {
         setAllStudents(stuRes.value);
+      } else {
+        setAllStudents([]);
       }
 
-      if (batRes.status === "fulfilled" && batRes.value.length > 0) {
+      if (batRes.status === "fulfilled" && Array.isArray(batRes.value)) {
         setBatches(batRes.value);
       } else {
-        setBatches([
-          {
-            id: "bat-1",
-            name: "JEE Morning Star Batch",
-            code: "BATCH-JEE-M1",
-            courseId: loadedCourses[0]?.id || "cou-1",
-            course: loadedCourses[0],
-            startDate: "2026-04-01",
-            endDate: "2028-03-31",
-            maxStrength: 60,
-            status: "ACTIVE",
-            _count: { students: 42, teacherAssignments: 3 },
-            students: [
-              {
-                id: "sb-1",
-                studentId: "stu-1",
-                rollNumber: "JEE-001",
-                student: {
-                  id: "stu-1",
-                  admissionNumber: "ADM-2026-001",
-                  firstName: "Aarav",
-                  lastName: "Sharma",
-                  email: "aarav.sharma@ims.local",
-                  phone: "+91 98765 43210",
-                  status: "ACTIVE",
-                },
-              },
-              {
-                id: "sb-2",
-                studentId: "stu-2",
-                rollNumber: "JEE-002",
-                student: {
-                  id: "stu-2",
-                  admissionNumber: "ADM-2026-002",
-                  firstName: "Diya",
-                  lastName: "Patel",
-                  email: "diya.patel@ims.local",
-                  phone: "+91 98765 43211",
-                  status: "ACTIVE",
-                },
-              },
-            ],
-            teacherAssignments: [
-              {
-                id: "ta-1",
-                teacher: { id: "tea-1", firstName: "Dr. Rajesh", lastName: "Verma", employeeCode: "FAC-2026-0001" },
-                subject: { id: "sub-1", name: "Physics Mechanics", code: "PHY-101" },
-              },
-            ],
-          },
-          {
-            id: "bat-2",
-            name: "NEET Weekend Achievers",
-            code: "BATCH-NEET-W1",
-            courseId: loadedCourses[1]?.id || "cou-2",
-            course: loadedCourses[1],
-            startDate: "2026-04-05",
-            endDate: "2028-04-05",
-            maxStrength: 50,
-            status: "ACTIVE",
-            _count: { students: 38, teacherAssignments: 2 },
-            students: [],
-            teacherAssignments: [],
-          },
-        ]);
+        setBatches([]);
       }
-    } catch (err) {
-      console.error("Failed to load batch data:", err);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to load batches from database.");
     } finally {
       setLoading(false);
     }
@@ -214,28 +148,13 @@ export const AdminBatchesPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const created = await AdminApiService.createBatch(payload);
+      await AdminApiService.createBatch(payload);
       setSuccessMsg(`Cohort '${payload.name}' created successfully!`);
       setIsCreateOpen(false);
       setCreateForm(initialCreateForm);
       await loadData();
     } catch (err: any) {
-      const newBat: AdminBatch = {
-        id: `bat-${Date.now()}`,
-        name: payload.name,
-        code: payload.code,
-        courseId: payload.courseId,
-        course: courses.find((c) => c.id === payload.courseId),
-        maxStrength: payload.maxStrength,
-        startDate: payload.startDate,
-        endDate: payload.endDate,
-        status: "ACTIVE",
-        _count: { students: 0, teacherAssignments: 0 },
-      };
-      setBatches((prev) => [newBat, ...prev]);
-      setIsCreateOpen(false);
-      setCreateForm(initialCreateForm);
-      setSuccessMsg(`Cohort '${payload.name}' added to active batch list!`);
+      setErrorMsg(err?.message || "Failed to create batch in database.");
     } finally {
       setIsSubmitting(false);
     }
@@ -278,19 +197,7 @@ export const AdminBatchesPage: React.FC = () => {
       setIsEditOpen(false);
       await loadData();
     } catch (err: any) {
-      setBatches((prev) =>
-        prev.map((b) =>
-          b.id === editForm.id
-            ? {
-                ...b,
-                ...payload,
-                course: courses.find((c) => c.id === payload.courseId),
-              }
-            : b
-        )
-      );
-      setIsEditOpen(false);
-      setSuccessMsg(`Batch '${payload.name}' updated.`);
+      setErrorMsg(err?.message || "Failed to update batch in database.");
     } finally {
       setIsSubmitting(false);
     }
@@ -306,13 +213,11 @@ export const AdminBatchesPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       await AdminApiService.deleteBatch(selectedBatch.id);
-      setBatches((prev) => prev.filter((b) => b.id !== selectedBatch.id));
       setSuccessMsg(`Batch '${selectedBatch.name}' removed.`);
       setIsDeleteOpen(false);
+      await loadData();
     } catch (err: any) {
-      setBatches((prev) => prev.filter((b) => b.id !== selectedBatch.id));
-      setSuccessMsg(`Batch removed.`);
-      setIsDeleteOpen(false);
+      setErrorMsg(err?.message || "Failed to delete batch. It may have active student enrollments.");
     } finally {
       setIsSubmitting(false);
       setSelectedBatch(null);
@@ -337,94 +242,31 @@ export const AdminBatchesPage: React.FC = () => {
   const handleEnrollStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBatch || !enrollStudentId) return;
+    setErrorMsg(null);
 
     try {
       await AdminApiService.assignStudentToBatch(selectedBatch.id, enrollStudentId, enrollRollNo || undefined);
-      const studentObj = allStudents.find((s) => s.id === enrollStudentId);
-      if (studentObj) {
-        const newEnrollment = {
-          id: `sb-${Date.now()}`,
-          studentId: studentObj.id,
-          rollNumber: enrollRollNo || `ROLL-${Date.now().toString().slice(-3)}`,
-          student: {
-            id: studentObj.id,
-            admissionNumber: studentObj.admissionNumber,
-            firstName: studentObj.firstName,
-            lastName: studentObj.lastName,
-            email: studentObj.email,
-            phone: studentObj.phone,
-            status: studentObj.status || "ACTIVE",
-          },
-        };
-        setSelectedBatch((prev) =>
-          prev
-            ? {
-                ...prev,
-                students: [...(prev.students || []), newEnrollment],
-                _count: { ...prev._count, students: (prev._count?.students || 0) + 1 },
-              }
-            : null
-        );
-      }
       setSuccessMsg("Student enrolled into batch successfully!");
       setEnrollRollNo("");
+      const updated = await AdminApiService.getBatchById(selectedBatch.id);
+      if (updated) setSelectedBatch(updated);
+      await loadData();
     } catch (err: any) {
-      const studentObj = allStudents.find((s) => s.id === enrollStudentId);
-      if (studentObj) {
-        const newEnrollment = {
-          id: `sb-${Date.now()}`,
-          studentId: studentObj.id,
-          rollNumber: enrollRollNo || `ROLL-${Date.now().toString().slice(-3)}`,
-          student: {
-            id: studentObj.id,
-            admissionNumber: studentObj.admissionNumber,
-            firstName: studentObj.firstName,
-            lastName: studentObj.lastName,
-            email: studentObj.email,
-            phone: studentObj.phone,
-            status: studentObj.status || "ACTIVE",
-          },
-        };
-        setSelectedBatch((prev) =>
-          prev
-            ? {
-                ...prev,
-                students: [...(prev.students || []), newEnrollment],
-                _count: { ...prev._count, students: (prev._count?.students || 0) + 1 },
-              }
-            : null
-        );
-      }
-      setSuccessMsg("Student enrolled into batch!");
-      setEnrollRollNo("");
+      setErrorMsg(err?.message || "Failed to enroll student.");
     }
   };
 
   const handleRemoveStudent = async (studentId: string) => {
     if (!selectedBatch) return;
+    setErrorMsg(null);
     try {
       await AdminApiService.removeStudentFromBatch(selectedBatch.id, studentId);
-      setSelectedBatch((prev) =>
-        prev
-          ? {
-              ...prev,
-              students: (prev.students || []).filter((s) => s.studentId !== studentId && s.student?.id !== studentId),
-              _count: { ...prev._count, students: Math.max((prev._count?.students || 1) - 1, 0) },
-            }
-          : null
-      );
       setSuccessMsg("Student removed from batch.");
-    } catch (err) {
-      setSelectedBatch((prev) =>
-        prev
-          ? {
-              ...prev,
-              students: (prev.students || []).filter((s) => s.studentId !== studentId && s.student?.id !== studentId),
-              _count: { ...prev._count, students: Math.max((prev._count?.students || 1) - 1, 0) },
-            }
-          : null
-      );
-      setSuccessMsg("Student removed from batch.");
+      const updated = await AdminApiService.getBatchById(selectedBatch.id);
+      if (updated) setSelectedBatch(updated);
+      await loadData();
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to remove student from batch.");
     }
   };
 

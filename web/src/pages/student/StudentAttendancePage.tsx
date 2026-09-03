@@ -21,22 +21,15 @@ export const StudentAttendancePage: React.FC = () => {
   }, []);
 
   const stats = attendanceData?.statistics || {
-    totalDays: 42,
-    presentCount: 38,
-    lateCount: 2,
-    absentCount: 2,
+    totalDays: 0,
+    presentCount: 0,
+    lateCount: 0,
+    absentCount: 0,
     excusedCount: 0,
-    attendancePercentage: 95.2
+    attendancePercentage: 0
   };
 
-  const records = attendanceData?.records || [
-    { id: "1", date: "2026-09-01", status: "PRESENT", remarks: "On time", batch: { name: "JEE Morning Star Batch" } },
-    { id: "2", date: "2026-08-31", status: "PRESENT", remarks: null, batch: { name: "JEE Morning Star Batch" } },
-    { id: "3", date: "2026-08-29", status: "LATE", remarks: "Arrived 10 mins late due to traffic", batch: { name: "JEE Morning Star Batch" } },
-    { id: "4", date: "2026-08-28", status: "PRESENT", remarks: null, batch: { name: "JEE Morning Star Batch" } },
-    { id: "5", date: "2026-08-27", status: "ABSENT", remarks: "Medical leave approved", batch: { name: "JEE Morning Star Batch" } },
-    { id: "6", date: "2026-08-26", status: "PRESENT", remarks: null, batch: { name: "JEE Morning Star Batch" } }
-  ];
+  const records = attendanceData?.records || [];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -150,23 +143,31 @@ export const StudentAttendancePage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {records.map((row: any) => (
-                <tr key={row.id}>
-                  <td style={{ fontWeight: 600 }}>
-                    {new Date(row.date).toLocaleDateString("en-US", {
-                      weekday: "short",
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric"
-                    })}
-                  </td>
-                  <td>{row.batch?.name || "Enrolled Batch"}</td>
-                  <td>{getStatusBadge(row.status)}</td>
-                  <td style={{ color: row.remarks ? "var(--color-text-main)" : "var(--color-text-muted)" }}>
-                    {row.remarks || "—"}
+              {records.length === 0 ? (
+                <tr>
+                  <td colSpan={4} style={{ textAlign: "center", padding: "2rem", color: "var(--color-text-muted)" }}>
+                    No attendance records found in the database.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                records.map((row: any) => (
+                  <tr key={row.id}>
+                    <td style={{ fontWeight: 600 }}>
+                      {new Date(row.date).toLocaleDateString("en-US", {
+                        weekday: "short",
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric"
+                      })}
+                    </td>
+                    <td>{row.batch?.name || "Enrolled Batch"}</td>
+                    <td>{getStatusBadge(row.status)}</td>
+                    <td style={{ color: row.remarks ? "var(--color-text-main)" : "var(--color-text-muted)" }}>
+                      {row.remarks || "—"}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

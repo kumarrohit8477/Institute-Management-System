@@ -217,7 +217,8 @@ export class AuthService {
             id: user.institute.id,
             name: user.institute.name,
             code: user.institute.code,
-            logoUrl: user.institute.logoUrl
+            logoUrl: user.institute.logoUrl,
+            tagline: user.institute.tagline
           }
         : null,
       student: user.student
@@ -365,6 +366,7 @@ export class AuthService {
             name: user.institute.name,
             code: user.institute.code,
             logoUrl: user.institute.logoUrl,
+            tagline: user.institute.tagline,
             email: user.institute.email,
             phone: user.institute.phone
           }

@@ -40,6 +40,7 @@ export interface IInstitute extends IBaseEntity {
   phone: string;
   address?: string | null;
   logoUrl?: string | null;
+  tagline?: string | null;
   website?: string | null;
   status: InstituteStatus;
   settings?: Record<string, any> | null;

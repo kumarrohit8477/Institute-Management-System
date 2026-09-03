@@ -155,7 +155,9 @@ async function runAcademicVerification() {
         teacherId: reactBatchSub.assignedTeacherId!, // Amit Sharma
         dayOfWeek: "MONDAY",
         startTime: "10:30", // Clashes with 10:00 - 11:30!
-        endTime: "12:00"
+        endTime: "12:00",
+        classType: "OFFLINE",
+        status: "ACTIVE"
       });
     } catch (err: any) {
       conflictCaught = true;

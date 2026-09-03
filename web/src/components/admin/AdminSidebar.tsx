@@ -15,6 +15,7 @@ import {
   X,
   Shield,
   Sparkles,
+  Building2,
 } from "lucide-react";
 import "./AdminSidebar.css";
 
@@ -58,11 +59,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       badge: "Curriculum",
     },
     {
-      to: "/admin/subjects",
-      label: "Subjects Repository",
-      icon: Sparkles,
-    },
-    {
       to: "/admin/batches",
       label: "Batch Management",
       icon: Layers,
@@ -90,11 +86,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       label: "Attendance Tracking",
       icon: CheckCircle2,
     },
-    {
-      to: "/admin/branding",
-      label: "Institute Branding",
-      icon: Palette,
-    },
+
   ];
 
   return (
@@ -133,6 +125,23 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               <div className="admin-sidebar__title">
                 {institute?.name || "Apex Academy"}
               </div>
+              {institute?.tagline ? (
+                <div
+                  className="admin-sidebar__tagline"
+                  title={institute.tagline}
+                  style={{
+                    fontSize: "0.72rem",
+                    color: "#1085a5",
+                    fontStyle: "italic",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: "160px"
+                  }}
+                >
+                  "{institute.tagline}"
+                </div>
+              ) : null}
               <div className="admin-sidebar__institute-name">
                 Admin Console • {institute?.code || "CAMPUS"}
               </div>

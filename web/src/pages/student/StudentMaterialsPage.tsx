@@ -42,74 +42,7 @@ export const StudentMaterialsPage: React.FC = () => {
     load();
   }, [search]);
 
-  const materials = materialsData?.materials || [
-    {
-      id: "1",
-      title:
-        "Electrodynamics & Gauss Law Comprehensive Lecture Notes",
-      description:
-        "Detailed derivations of Gauss Theorem, spherical charge configurations, and capacitor theory with solved examples.",
-      fileUrl:
-        "https://example.com/notes/physics-electrodynamics.pdf",
-      fileType: "PDF",
-      fileSizeBytes: "4200000",
-      createdAt: "2026-08-25T10:00:00Z",
-      course: {
-        id: "1",
-        name: "IIT-JEE 2-Year Advanced Program",
-        code: "JEE-2027",
-      },
-      subject: {
-        id: "1",
-        name: "Physics",
-        code: "PHY-JEE",
-      },
-    },
-    {
-      id: "2",
-      title:
-        "Differential Calculus — Limits & Continuity Video Walkthrough",
-      description:
-        "Recorded masterclass on L'Hopital rule shortcuts, standard expansions, and epsilon-delta intuition.",
-      fileUrl:
-        "https://youtube.com/watch?v=demo",
-      fileType: "VIDEO",
-      fileSizeBytes: null,
-      createdAt: "2026-08-22T14:30:00Z",
-      course: {
-        id: "1",
-        name: "IIT-JEE 2-Year Advanced Program",
-        code: "JEE-2027",
-      },
-      subject: {
-        id: "2",
-        name: "Mathematics",
-        code: "MATH-JEE",
-      },
-    },
-    {
-      id: "3",
-      title:
-        "Organic Reaction Mechanisms Quick Revision Cheat Sheet",
-      description:
-        "SN1 vs SN2 comparison charts, nucleophile strengths, and carbocation rearrangement rules.",
-      fileUrl:
-        "https://example.com/notes/organic-mechanisms.pdf",
-      fileType: "PDF",
-      fileSizeBytes: "2100000",
-      createdAt: "2026-08-18T09:15:00Z",
-      course: {
-        id: "1",
-        name: "IIT-JEE 2-Year Advanced Program",
-        code: "JEE-2027",
-      },
-      subject: {
-        id: "3",
-        name: "Chemistry",
-        code: "CHEM-JEE",
-      },
-    },
-  ];
+  const materials = materialsData?.materials || [];
 
   const filteredMaterials = materials.filter(
     (material) => {

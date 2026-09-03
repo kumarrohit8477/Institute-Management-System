@@ -97,83 +97,24 @@ export const AdminCoursesPage: React.FC = () => {
       ]);
 
       let loadedCourses: AdminCourse[] = [];
-      if (coursesRes.status === "fulfilled" && coursesRes.value.length > 0) {
+      if (coursesRes.status === "fulfilled" && Array.isArray(coursesRes.value)) {
         loadedCourses = coursesRes.value;
         setCourses(coursesRes.value);
       } else {
-        loadedCourses = [
-          {
-            id: "cou-1",
-            name: "IIT-JEE 2-Year Advanced Program",
-            code: "JEE-2027",
-            description:
-              "Comprehensive 2-year preparation for JEE Main & Advanced examinations.",
-            durationMonths: 24,
-            status: "ACTIVE",
-            _count: { subjects: 2, batches: 1 },
-          },
-          {
-            id: "cou-2",
-            name: "NEET Medical Intensive Batch",
-            code: "NEET-2027",
-            description:
-              "Specialized preparation for national medical entrance test.",
-            durationMonths: 24,
-            status: "ACTIVE",
-            _count: { subjects: 2, batches: 1 },
-          },
-        ];
-        setCourses(loadedCourses);
+        setCourses([]);
       }
 
       if (loadedCourses.length > 0 && !subjectForm.courseId) {
         setSubjectForm((prev) => ({ ...prev, courseId: loadedCourses[0].id }));
       }
 
-      if (subjectsRes.status === "fulfilled" && subjectsRes.value.length > 0) {
+      if (subjectsRes.status === "fulfilled" && Array.isArray(subjectsRes.value)) {
         setSubjects(subjectsRes.value);
       } else {
-        setSubjects([
-          {
-            id: "sub-1",
-            courseId: loadedCourses[0]?.id || "cou-1",
-            course: loadedCourses[0],
-            name: "Physics: Mechanics & Thermodynamics",
-            code: "PHY-101",
-            description: "Newtonian mechanics, rotational dynamics, gravitation, and thermal physics.",
-            status: "ACTIVE",
-          },
-          {
-            id: "sub-2",
-            courseId: loadedCourses[0]?.id || "cou-1",
-            course: loadedCourses[0],
-            name: "Mathematics: Advanced Calculus",
-            code: "MTH-101",
-            description: "Functions, limits, differentiation, integration, and differential equations.",
-            status: "ACTIVE",
-          },
-          {
-            id: "sub-3",
-            courseId: loadedCourses[1]?.id || "cou-2",
-            course: loadedCourses[1],
-            name: "Organic & Physical Chemistry",
-            code: "CHM-101",
-            description: "Reaction mechanisms, stereochemistry, chemical kinetics, and equilibrium.",
-            status: "ACTIVE",
-          },
-          {
-            id: "sub-4",
-            courseId: loadedCourses[1]?.id || "cou-2",
-            course: loadedCourses[1],
-            name: "Botany & Human Physiology",
-            code: "BIO-101",
-            description: "Plant morphology, cell biology, genetics, and human anatomical systems.",
-            status: "ACTIVE",
-          },
-        ]);
+        setSubjects([]);
       }
-    } catch (err) {
-      console.error("Failed to load course/subject data:", err);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to load curriculum from database.");
     } finally {
       setLoading(false);
     }
@@ -209,19 +150,7 @@ export const AdminCoursesPage: React.FC = () => {
       setCourseForm(initialCourseForm);
       await loadData();
     } catch (err: any) {
-      const newCou: AdminCourse = {
-        id: `cou-${Date.now()}`,
-        name: payload.name,
-        code: payload.code,
-        durationMonths: payload.durationMonths,
-        description: payload.description,
-        status: "ACTIVE",
-        _count: { subjects: 0, batches: 0 },
-      };
-      setCourses((prev) => [newCou, ...prev]);
-      setIsCreateCourseOpen(false);
-      setCourseForm(initialCourseForm);
-      setSuccessMsg(`Academic program '${payload.name}' created!`);
+      setErrorMsg(err?.message || "Failed to create course in database.");
     } finally {
       setIsSubmitting(false);
     }
@@ -260,11 +189,7 @@ export const AdminCoursesPage: React.FC = () => {
       setIsEditCourseOpen(false);
       await loadData();
     } catch (err: any) {
-      setCourses((prev) =>
-        prev.map((c) => (c.id === editCourseForm.id ? { ...c, ...payload } : c))
-      );
-      setIsEditCourseOpen(false);
-      setSuccessMsg(`Course '${payload.name}' updated.`);
+      setErrorMsg(err?.message || "Failed to update course in database.");
     } finally {
       setIsSubmitting(false);
     }
@@ -280,13 +205,11 @@ export const AdminCoursesPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       await AdminApiService.deleteCourse(selectedCourse.id);
-      setCourses((prev) => prev.filter((c) => c.id !== selectedCourse.id));
       setSuccessMsg(`Course '${selectedCourse.name}' removed.`);
       setIsDeleteCourseOpen(false);
+      await loadData();
     } catch (err: any) {
-      setCourses((prev) => prev.filter((c) => c.id !== selectedCourse.id));
-      setSuccessMsg(`Course removed.`);
-      setIsDeleteCourseOpen(false);
+      setErrorMsg(err?.message || "Failed to delete course. It may have active batches or enrolled students.");
     } finally {
       setIsSubmitting(false);
       setSelectedCourse(null);
@@ -332,26 +255,13 @@ export const AdminCoursesPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const created = await AdminApiService.createSubject(payload);
+      await AdminApiService.createSubject(payload);
       setSuccessMsg(`Subject '${payload.name}' added successfully!`);
       setIsCreateSubjectOpen(false);
       setSubjectForm(initialSubjectForm);
       await loadData();
     } catch (err: any) {
-      const matchedCourse = courses.find((c) => c.id === payload.courseId);
-      const newSub: AdminSubject = {
-        id: `sub-${Date.now()}`,
-        courseId: payload.courseId,
-        course: matchedCourse,
-        name: payload.name,
-        code: payload.code,
-        description: payload.description,
-        status: "ACTIVE",
-      };
-      setSubjects((prev) => [newSub, ...prev]);
-      setIsCreateSubjectOpen(false);
-      setSubjectForm(initialSubjectForm);
-      setSuccessMsg(`Subject '${payload.name}' added to curriculum!`);
+      setErrorMsg(err?.message || "Failed to create subject in database.");
     } finally {
       setIsSubmitting(false);
     }
@@ -389,11 +299,7 @@ export const AdminCoursesPage: React.FC = () => {
       setIsEditSubjectOpen(false);
       await loadData();
     } catch (err: any) {
-      setSubjects((prev) =>
-        prev.map((s) => (s.id === editSubjectForm.id ? { ...s, ...payload } : s))
-      );
-      setIsEditSubjectOpen(false);
-      setSuccessMsg(`Subject '${payload.name}' updated.`);
+      setErrorMsg(err?.message || "Failed to update subject in database.");
     } finally {
       setIsSubmitting(false);
     }
@@ -409,13 +315,11 @@ export const AdminCoursesPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       await AdminApiService.deleteSubject(selectedSubject.id);
-      setSubjects((prev) => prev.filter((s) => s.id !== selectedSubject.id));
       setSuccessMsg(`Subject '${selectedSubject.name}' removed.`);
       setIsDeleteSubjectOpen(false);
+      await loadData();
     } catch (err: any) {
-      setSubjects((prev) => prev.filter((s) => s.id !== selectedSubject.id));
-      setSuccessMsg(`Subject removed.`);
-      setIsDeleteSubjectOpen(false);
+      setErrorMsg(err?.message || "Failed to delete subject. It may be in use in active batches.");
     } finally {
       setIsSubmitting(false);
       setSelectedSubject(null);

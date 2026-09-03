@@ -91,114 +91,26 @@ export const AdminTeachersPage: React.FC = () => {
       ]);
 
       let loadedSubjects: AdminSubject[] = [];
-      if (subRes.status === "fulfilled" && subRes.value.length > 0) {
+      if (subRes.status === "fulfilled" && Array.isArray(subRes.value)) {
         loadedSubjects = subRes.value;
         setSubjects(subRes.value);
       } else {
-        loadedSubjects = [
-          { id: "sub-1", name: "Physics: Mechanics & Thermodynamics", code: "PHY-101" },
-          { id: "sub-2", name: "Mathematics: Advanced Calculus", code: "MTH-101" },
-          { id: "sub-3", name: "Organic & Physical Chemistry", code: "CHM-101" },
-          { id: "sub-4", name: "Botany & Zoology Foundations", code: "BIO-101" },
-        ];
-        setSubjects(loadedSubjects);
+        setSubjects([]);
       }
 
-      if (couRes.status === "fulfilled" && couRes.value.length > 0) {
+      if (couRes.status === "fulfilled" && Array.isArray(couRes.value)) {
         setCourses(couRes.value);
+      } else {
+        setCourses([]);
       }
 
-      if (teaRes.status === "fulfilled" && teaRes.value.length > 0) {
+      if (teaRes.status === "fulfilled" && Array.isArray(teaRes.value)) {
         setTeachers(teaRes.value);
       } else {
-        setTeachers([
-          {
-            id: "tea-1",
-            employeeCode: "FAC-2026-0001",
-            firstName: "Dr. Harish",
-            lastName: "Verma",
-            email: "h.verma@apex.edu",
-            phone: "+91 98111 22334",
-            gender: "MALE",
-            qualification: "Ph.D. IIT Kanpur",
-            specialization: "Physics Mechanics",
-            experienceYears: 12,
-            bio: "Former senior researcher with 12+ years preparing students for JEE Advanced Mechanics and Electrodynamics.",
-            address: "Main Campus, Faculty Tower 302",
-            status: "ACTIVE",
-            joiningDate: "2024-06-15",
-            createdAt: "2024-06-15",
-            subjects: [
-              {
-                id: "ts-1",
-                subject: { id: "sub-1", name: "Physics: Mechanics & Thermodynamics", code: "PHY-101" },
-              },
-            ],
-            assignments: [
-              {
-                id: "as-1",
-                batch: { id: "bat-1", name: "JEE Morning Star Batch", code: "BATCH-JEE-M1" },
-                subject: { id: "sub-1", name: "Physics: Mechanics & Thermodynamics", code: "PHY-101" },
-              },
-            ],
-          },
-          {
-            id: "tea-2",
-            employeeCode: "FAC-2026-0002",
-            firstName: "Prof. Sunita",
-            lastName: "Ramanujan",
-            email: "s.ramanujan@apex.edu",
-            phone: "+91 98222 33445",
-            gender: "FEMALE",
-            qualification: "M.Sc Mathematics (Gold Medalist)",
-            specialization: "Calculus & Algebra",
-            experienceYears: 9,
-            bio: "Passionate educator specializing in Differential Equations, Integral Calculus, and Combinatorics.",
-            address: "Faculty Wing A, Room 108",
-            status: "ACTIVE",
-            joiningDate: "2024-08-01",
-            createdAt: "2024-08-01",
-            subjects: [
-              {
-                id: "ts-2",
-                subject: { id: "sub-2", name: "Mathematics: Advanced Calculus", code: "MTH-101" },
-              },
-            ],
-            assignments: [
-              {
-                id: "as-2",
-                batch: { id: "bat-1", name: "JEE Morning Star Batch", code: "BATCH-JEE-M1" },
-                subject: { id: "sub-2", name: "Mathematics: Advanced Calculus", code: "MTH-101" },
-              },
-            ],
-          },
-          {
-            id: "tea-3",
-            employeeCode: "FAC-2026-0003",
-            firstName: "Dr. Arvind",
-            lastName: "Swaminathan",
-            email: "a.swami@apex.edu",
-            phone: "+91 98333 44556",
-            gender: "MALE",
-            qualification: "Ph.D. Organic Chemistry",
-            specialization: "Reaction Mechanisms & Stereochemistry",
-            experienceYears: 7,
-            bio: "Authored multiple competitive exam study materials and laboratory research guides.",
-            address: "Chemistry Annex, Lab Office 12",
-            status: "ACTIVE",
-            joiningDate: "2025-01-10",
-            createdAt: "2025-01-10",
-            subjects: [
-              {
-                id: "ts-3",
-                subject: { id: "sub-3", name: "Organic & Physical Chemistry", code: "CHM-101" },
-              },
-            ],
-          },
-        ]);
+        setTeachers([]);
       }
-    } catch (err) {
-      console.error("Failed to load teachers or subjects:", err);
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to load faculty from database.");
     } finally {
       setLoading(false);
     }
@@ -255,43 +167,7 @@ export const AdminTeachersPage: React.FC = () => {
       setAddForm(initialFormState);
       await loadData();
     } catch (err: any) {
-      // If backend responded with error or is running in mock/demo
-      const fallbackCode =
-        payload.employeeCode || `FAC-${new Date().getFullYear()}-${String(teachers.length + 1).padStart(4, "0")}`;
-      
-      const mappedSubjects = (payload.subjectIds || []).map((sId) => {
-        const found = subjects.find((s) => s.id === sId);
-        return {
-          id: `ts-${Date.now()}-${sId}`,
-          subject: found || { id: sId, name: "Subject", code: "SUB" },
-        };
-      });
-
-      const newTeacherRecord: AdminTeacher = {
-        id: `tea-${Date.now()}`,
-        employeeCode: fallbackCode,
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        email: payload.email,
-        phone: payload.phone,
-        gender: payload.gender,
-        qualification: payload.qualification || "Faculty Member",
-        specialization: payload.specialization || "General Faculty",
-        experienceYears: payload.experienceYears,
-        bio: payload.bio,
-        address: payload.address,
-        status: "ACTIVE",
-        joiningDate: payload.joiningDate || new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        subjects: mappedSubjects,
-      };
-
-      setTeachers((prev) => [newTeacherRecord, ...prev]);
-      setIsAddModalOpen(false);
-      setAddForm(initialFormState);
-      setSuccessMsg(
-        `Faculty member ${payload.firstName} ${payload.lastName} registered successfully!`
-      );
+      setErrorMsg(err?.message || "Failed to register faculty member in database.");
     } finally {
       setIsSubmitting(false);
     }
@@ -348,12 +224,7 @@ export const AdminTeachersPage: React.FC = () => {
       setIsEditModalOpen(false);
       await loadData();
     } catch (err: any) {
-      // Local state update
-      setTeachers((prev) =>
-        prev.map((t) => (t.id === editForm.id ? { ...t, ...updatePayload } : t))
-      );
-      setIsEditModalOpen(false);
-      setSuccessMsg(`Faculty profile updated.`);
+      setErrorMsg(err?.message || "Failed to update faculty profile in database.");
     } finally {
       setIsSubmitting(false);
     }
@@ -377,13 +248,11 @@ export const AdminTeachersPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       await AdminApiService.deleteTeacher(selectedTeacher.id);
-      setTeachers((prev) => prev.filter((t) => t.id !== selectedTeacher.id));
       setSuccessMsg(`Faculty record for ${selectedTeacher.firstName} removed.`);
       setIsDeleteModalOpen(false);
+      await loadData();
     } catch (err: any) {
-      setTeachers((prev) => prev.filter((t) => t.id !== selectedTeacher.id));
-      setSuccessMsg(`Faculty record removed.`);
-      setIsDeleteModalOpen(false);
+      setErrorMsg(err?.message || "Failed to delete faculty member. They may be assigned to batches or timetables.");
     } finally {
       setIsSubmitting(false);
       setSelectedTeacher(null);

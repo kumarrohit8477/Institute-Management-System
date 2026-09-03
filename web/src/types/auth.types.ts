@@ -22,6 +22,7 @@ export interface Institute {
   name: string;
   code: string;
   logoUrl?: string | null;
+  tagline?: string | null;
   email?: string;
   phone?: string;
 }

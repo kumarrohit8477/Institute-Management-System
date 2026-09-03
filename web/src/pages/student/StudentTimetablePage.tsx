@@ -84,56 +84,7 @@ export const StudentTimetablePage: React.FC = () => {
     load();
   }, []);
 
-  const daySlots =
-    schedule?.scheduleByDay?.[selectedDay] ||
-    (selectedDay === "MONDAY" ||
-    selectedDay === "WEDNESDAY" ||
-    selectedDay === "FRIDAY"
-      ? [
-          {
-            id: "1",
-            startTime: "09:00",
-            endTime: "10:30",
-            classType: "OFFLINE",
-            roomNumber: "LH-101",
-            subject: {
-              name:
-                "Physics (Mechanics, Electrodynamics & Optics)",
-              code: "PHY-JEE",
-            },
-            teacher: {
-              firstName: "Dr. Harish",
-              lastName: "Verma",
-            },
-            batch: {
-              name:
-                "JEE Morning Star Batch",
-            },
-          },
-          {
-            id: "2",
-            startTime: "11:00",
-            endTime: "12:30",
-            classType: "ONLINE",
-            meetingLink:
-              "https://meet.google.com/abc-defg-hij",
-            roomNumber: null,
-            subject: {
-              name:
-                "Mathematics (Calculus & Algebra)",
-              code: "MATH-JEE",
-            },
-            teacher: {
-              firstName: "Prof. Sunita",
-              lastName: "Ramanujan",
-            },
-            batch: {
-              name:
-                "JEE Morning Star Batch",
-            },
-          },
-        ]
-      : []);
+  const daySlots = schedule?.scheduleByDay?.[selectedDay] || [];
 
   const selectedDayLabel =
     days.find(
@@ -240,14 +191,13 @@ export const StudentTimetablePage: React.FC = () => {
 
                     <div className="student-timetable__class-info">
                       <h3>
-                        {slot.subject.name}
+                        {slot.subject?.name || "Subject Lecture"}
                       </h3>
 
                       <div className="student-timetable__class-meta">
                         <div>
                           <User size={14} />
-                          {slot.teacher.firstName}{" "}
-                          {slot.teacher.lastName}
+                          {slot.teacher ? `${slot.teacher.firstName} ${slot.teacher.lastName}` : "Assigned Faculty"}
                         </div>
 
                         {slot.roomNumber && (

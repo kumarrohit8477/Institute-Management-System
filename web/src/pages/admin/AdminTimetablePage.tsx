@@ -14,51 +14,14 @@ export const AdminTimetablePage: React.FC = () => {
       setLoading(true);
       try {
         const data = await AdminApiService.getTimetables();
-        if (data && data.length > 0) {
+        if (data && Array.isArray(data)) {
           setTimetables(data);
         } else {
-          setTimetables([
-            {
-              id: "tim-1",
-              batchId: "bat-1",
-              subjectId: "sub-1",
-              teacherId: "tea-1",
-              dayOfWeek: "MONDAY",
-              startTime: "09:00 AM",
-              endTime: "10:30 AM",
-              roomNumber: "LH-101",
-              meetingLink: "https://meet.google.com/xyz-ims-demo",
-              subject: { name: "Physics Mechanics" },
-              teacher: { firstName: "Dr. Harish", lastName: "Verma" },
-            },
-            {
-              id: "tim-2",
-              batchId: "bat-1",
-              subjectId: "sub-2",
-              teacherId: "tea-2",
-              dayOfWeek: "MONDAY",
-              startTime: "11:00 AM",
-              endTime: "12:30 PM",
-              roomNumber: "LH-102",
-              subject: { name: "Mathematics Calculus" },
-              teacher: { firstName: "Prof. Sunita", lastName: "Ramanujan" },
-            },
-            {
-              id: "tim-3",
-              batchId: "bat-1",
-              subjectId: "sub-1",
-              teacherId: "tea-1",
-              dayOfWeek: "WEDNESDAY",
-              startTime: "09:00 AM",
-              endTime: "10:30 AM",
-              roomNumber: "LH-101",
-              subject: { name: "Electrodynamics" },
-              teacher: { firstName: "Dr. Harish", lastName: "Verma" },
-            },
-          ]);
+          setTimetables([]);
         }
       } catch (err) {
-        console.error(err);
+        console.error("Failed to load timetables:", err);
+        setTimetables([]);
       } finally {
         setLoading(false);
       }

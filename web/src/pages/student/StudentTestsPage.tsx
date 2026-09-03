@@ -45,56 +45,6 @@ export const StudentTestsPage: React.FC = () => {
     load();
   }, []);
 
-  const sampleTests: AvailableTestItem[] =
-    tests.length > 0
-      ? tests
-      : [
-          {
-            id: "test-jee-01",
-            title:
-              "JEE Main All-India Grand Mock Test 1",
-            description:
-              "Full syllabus Physics, Chemistry & Mathematics benchmark test modeled after NTA computer-based examination pattern.",
-            durationMinutes: 180,
-            totalMarks: 300,
-            passingMarks: 100,
-            startTime:
-              "2026-09-01T00:00:00.000Z",
-            endTime:
-              "2026-09-30T23:59:59.000Z",
-            isPublished: true,
-            status: "LIVE",
-            batch: {
-              id: "b1",
-              name: "JEE Morning Star Batch",
-              code: "BATCH-JEE-M1",
-            },
-            myAttempt: null,
-          },
-          {
-            id: "test-phy-02",
-            title:
-              "Physics Mechanics & Kinematics Sectional Assessment",
-            description:
-              "Covers Newton's Laws of Motion, Friction, Work Power Energy, and Circular Motion.",
-            durationMinutes: 60,
-            totalMarks: 100,
-            passingMarks: 35,
-            startTime:
-              "2026-09-01T00:00:00.000Z",
-            endTime:
-              "2026-09-30T23:59:59.000Z",
-            isPublished: true,
-            status: "LIVE",
-            subject: {
-              id: "s1",
-              name: "Physics",
-              code: "PHY-JEE",
-            },
-            myAttempt: null,
-          },
-        ];
-
   const handleAction = (
     test: AvailableTestItem
   ) => {
@@ -123,7 +73,16 @@ export const StudentTestsPage: React.FC = () => {
       </div>
 
       <div className="student-tests__list">
-        {sampleTests.map((test) => {
+        {tests.length === 0 ? (
+          <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
+            <FileCheck2 size={40} color="var(--color-text-muted)" style={{ margin: "0 auto 1rem" }} />
+            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.5rem" }}>No Examinations Available</h3>
+            <p style={{ color: "var(--color-text-muted)", fontSize: "0.875rem" }}>
+              There are currently no active online examinations or assessments scheduled for your batch in the database.
+            </p>
+          </div>
+        ) : (
+          tests.map((test) => {
           const isCompleted =
             test.myAttempt?.status === "EVALUATED" ||
             test.myAttempt?.status === "SUBMITTED";
@@ -240,7 +199,7 @@ export const StudentTestsPage: React.FC = () => {
               </button>
             </div>
           );
-        })}
+        }))}
       </div>
     </div>
   );

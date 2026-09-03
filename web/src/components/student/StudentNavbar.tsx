@@ -38,53 +38,18 @@ export const StudentNavbar: React.FC<StudentNavbarProps> = ({
           await NotificationApiService.getMyNotifications();
 
         setUnreadCount(response.unreadCount);
-        setNotifications(response.notifications);
+        setNotifications(Array.isArray(response.notifications) ? response.notifications : []);
       } catch (error) {
-        console.warn(
-          "Using sample notifications fallback:",
+        console.error(
+          "Failed to load notifications from database:",
           error
         );
+        setNotifications([]);
       }
     };
 
     loadNotifications();
   }, []);
-
-  const sampleFallbackNotifications: StudentNotificationItem[] =
-    notifications.length > 0
-      ? notifications
-      : [
-          {
-            id: "notif-1",
-            title: "JEE Main Grand Mock 1 Live Now",
-            message:
-              "The full-syllabus CBT benchmark mock test is available. Make sure to complete before the deadline.",
-            type: "TEST",
-            actionUrl: "/student/tests",
-            isRead: false,
-            createdAt: "2026-09-01T08:30:00Z",
-          },
-          {
-            id: "notif-2",
-            title: "New Study Materials Uploaded",
-            message:
-              "Dr. Harish Verma has uploaded Physics Chapter 4 Electrodynamics derivation notes.",
-            type: "ANNOUNCEMENT",
-            actionUrl: "/student/materials",
-            isRead: false,
-            createdAt: "2026-08-31T14:15:00Z",
-          },
-          {
-            id: "notif-3",
-            title: "Fee Receipt Issued",
-            message:
-              "Installment 1 payment of ₹50,000 via UPI has been verified and official receipt generated.",
-            type: "FEE",
-            actionUrl: "/student/fees",
-            isRead: false,
-            createdAt: "2026-08-30T10:00:00Z",
-          },
-        ];
 
   const handleMarkAllRead = async () => {
     try {
@@ -140,7 +105,13 @@ export const StudentNavbar: React.FC<StudentNavbarProps> = ({
           </div>
 
           <div className="student-navbar__brand-subtitle">
-            Student Learning Portal
+            {institute?.tagline ? (
+              <span className="student-navbar__tagline" title={institute.tagline} style={{ fontStyle: "italic", color: "#60a5fa" }}>
+                "{institute.tagline}"
+              </span>
+            ) : (
+              "Student Learning Portal"
+            )}
             <span className="student-navbar__separator">
               •
             </span>
@@ -191,9 +162,14 @@ export const StudentNavbar: React.FC<StudentNavbarProps> = ({
               </div>
 
               <div className="student-navbar__notification-list">
-                {sampleFallbackNotifications
-                  .slice(0, 4)
-                  .map((notification) => (
+                {notifications.length === 0 ? (
+                  <div style={{ padding: "1.5rem 1rem", textAlign: "center", color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
+                    No new notifications
+                  </div>
+                ) : (
+                  notifications
+                    .slice(0, 4)
+                    .map((notification) => (
                     <div
                       key={notification.id}
                       className={`student-navbar__notification-item ${
@@ -227,7 +203,8 @@ export const StudentNavbar: React.FC<StudentNavbarProps> = ({
                         </Link>
                       )}
                     </div>
-                  ))}
+                  ))
+                )}
               </div>
 
               <div className="student-navbar__popover-footer">

@@ -46,17 +46,10 @@ export const AdminDashboard: React.FC = () => {
           AdminApiService.getBatches(),
         ]);
 
-        if (stu.status === "fulfilled" && stu.value.length > 0) setStudents(stu.value);
-        else setStudents([{ id: "1", admissionNumber: "ADM-001", firstName: "Rohit", lastName: "Kumar", email: "student@apex.edu", status: "ACTIVE", createdAt: "" }]);
-
-        if (tea.status === "fulfilled" && tea.value.length > 0) setTeachers(tea.value);
-        else setTeachers([{ id: "1", firstName: "Dr. Harish", lastName: "Verma", email: "h.verma@apex.edu", status: "ACTIVE", createdAt: "" }, { id: "2", firstName: "Prof. Sunita", lastName: "Ramanujan", email: "s.ramanujan@apex.edu", status: "ACTIVE", createdAt: "" }]);
-
-        if (cou.status === "fulfilled" && cou.value.length > 0) setCourses(cou.value);
-        else setCourses([{ id: "1", name: "IIT-JEE 2-Year", code: "JEE-2027", durationMonths: 24, status: "ACTIVE" }, { id: "2", name: "NEET Intensive", code: "NEET-2027", durationMonths: 24, status: "ACTIVE" }]);
-
-        if (bat.status === "fulfilled" && bat.value.length > 0) setBatches(bat.value);
-        else setBatches([{ id: "1", name: "JEE Morning Star", code: "BATCH-JEE-M1", courseId: "1", startDate: "2026-04-01", maxStrength: 60, status: "ACTIVE" }, { id: "2", name: "NEET Weekend", code: "BATCH-NEET-W1", courseId: "2", startDate: "2026-04-05", maxStrength: 50, status: "ACTIVE" }]);
+        if (stu.status === "fulfilled" && Array.isArray(stu.value)) setStudents(stu.value);
+        if (tea.status === "fulfilled" && Array.isArray(tea.value)) setTeachers(tea.value);
+        if (cou.status === "fulfilled" && Array.isArray(cou.value)) setCourses(cou.value);
+        if (bat.status === "fulfilled" && Array.isArray(bat.value)) setBatches(bat.value);
       } catch (err) {
         console.error("Summary load note:", err);
       } finally {
@@ -323,9 +316,15 @@ export const AdminDashboard: React.FC = () => {
                 fontSize: "0.75rem",
                 color: "#94a3b8",
                 marginTop: "2px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: "200px"
               }}
             >
-              {institute?.logoUrl
+              {institute?.tagline
+                ? `"${institute.tagline}"`
+                : institute?.logoUrl
                 ? "Custom Logo Active"
                 : "Default Badge Active"}
             </div>
@@ -344,7 +343,7 @@ export const AdminDashboard: React.FC = () => {
                 gap: "0.3rem",
               }}
             >
-              <ImageIcon size={13} /> Manage Logo →
+              <ImageIcon size={13} /> Manage Branding & Slogan →
             </Link>
           </div>
         </div>

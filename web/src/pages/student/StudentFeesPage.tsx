@@ -13,7 +13,7 @@ export const StudentFeesPage: React.FC = () => {
         const data = await FeeApiService.getMyFeeOverview();
         setFeeData(data);
       } catch (err) {
-        console.warn("Using sample mock fee data fallback:", err);
+        console.error("Failed to load fee overview from database:", err);
       } finally {
         setLoading(false);
       }
@@ -21,85 +21,17 @@ export const StudentFeesPage: React.FC = () => {
     load();
   }, []);
 
-  // Fallback demo financial profile
-  const sampleOverview: StudentFeeOverviewResponse = feeData || {
-    student: { id: "s1", name: "Rohit Kumar", admissionNumber: "ADM-2026-001" },
+  const overview: StudentFeeOverviewResponse = feeData || {
+    student: { id: "", name: "", admissionNumber: "" },
     summary: {
-      totalBilled: 160000,
-      totalPaid: 90000,
-      totalDiscount: 20000,
-      totalOutstanding: 70000,
-      nextDueDate: "2026-11-15T00:00:00.000Z"
+      totalBilled: 0,
+      totalPaid: 0,
+      totalDiscount: 0,
+      totalOutstanding: 0,
+      nextDueDate: null
     },
-    invoices: [
-      {
-        id: "fee-01",
-        title: "Year 1 Tuition & Comprehensive Study Material Fee",
-        totalAmount: 100000,
-        discountAmount: 10000,
-        finalAmount: 90000,
-        paidAmount: 90000,
-        dueDate: "2026-04-15",
-        status: "PAID",
-        createdAt: "2026-04-01T10:00:00.000Z",
-        batch: { id: "b1", name: "JEE Morning Star Batch", code: "BATCH-JEE-M1" },
-        payments: [
-          {
-            id: "p1",
-            receiptNumber: "RCP-20260405-0012",
-            amount: 50000,
-            paymentMethod: "UPI",
-            transactionReference: "UPI/3498239042/HDFC",
-            paymentDate: "2026-04-05T11:20:00.000Z",
-            remarks: "Installment 1"
-          },
-          {
-            id: "p2",
-            receiptNumber: "RCP-20260412-0045",
-            amount: 40000,
-            paymentMethod: "NET_BANKING",
-            transactionReference: "NEFT/N0982348239",
-            paymentDate: "2026-04-12T14:10:00.000Z",
-            remarks: "Installment 2 Clearance"
-          }
-        ]
-      },
-      {
-        id: "fee-02",
-        title: "Year 2 Advanced JEE Mock Series & Laboratory Fee",
-        totalAmount: 80000,
-        discountAmount: 10000,
-        finalAmount: 70000,
-        paidAmount: 0,
-        dueDate: "2026-11-15",
-        status: "PENDING",
-        createdAt: "2026-08-01T10:00:00.000Z",
-        batch: { id: "b1", name: "JEE Morning Star Batch", code: "BATCH-JEE-M1" },
-        payments: []
-      }
-    ],
-    paymentHistory: [
-      {
-        id: "p2",
-        receiptNumber: "RCP-20260412-0045",
-        feeTitle: "Year 1 Tuition & Comprehensive Study Material Fee",
-        amount: 40000,
-        paymentMethod: "NET_BANKING",
-        transactionReference: "NEFT/N0982348239",
-        paymentDate: "2026-04-12T14:10:00.000Z",
-        remarks: "Installment 2 Clearance"
-      },
-      {
-        id: "p1",
-        receiptNumber: "RCP-20260405-0012",
-        feeTitle: "Year 1 Tuition & Comprehensive Study Material Fee",
-        amount: 50000,
-        paymentMethod: "UPI",
-        transactionReference: "UPI/3498239042/HDFC",
-        paymentDate: "2026-04-05T11:20:00.000Z",
-        remarks: "Installment 1"
-      }
-    ]
+    invoices: [],
+    paymentHistory: []
   };
 
   const getStatusBadge = (status: string) => {
@@ -148,10 +80,10 @@ export const StudentFeesPage: React.FC = () => {
             NET BILLED AMOUNT
           </div>
           <div style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--color-text-main)" }}>
-            {formatCurrency(sampleOverview.summary.totalBilled)}
+            {formatCurrency(overview.summary.totalBilled)}
           </div>
           <div style={{ fontSize: "0.75rem", color: "var(--color-success)", marginTop: "0.25rem" }}>
-            Includes {formatCurrency(sampleOverview.summary.totalDiscount)} Scholarship
+            Includes {formatCurrency(overview.summary.totalDiscount)} Scholarship
           </div>
         </div>
 
@@ -160,7 +92,7 @@ export const StudentFeesPage: React.FC = () => {
             TOTAL PAID AMOUNT
           </div>
           <div style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--color-success)" }}>
-            {formatCurrency(sampleOverview.summary.totalPaid)}
+            {formatCurrency(overview.summary.totalPaid)}
           </div>
           <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: "0.25rem" }}>
             Cleared & Verified Transactions
@@ -171,11 +103,11 @@ export const StudentFeesPage: React.FC = () => {
           <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", fontWeight: 600, marginBottom: "0.25rem" }}>
             OUTSTANDING BALANCE
           </div>
-          <div style={{ fontSize: "1.75rem", fontWeight: 800, color: sampleOverview.summary.totalOutstanding > 0 ? "var(--color-danger)" : "var(--color-success)" }}>
-            {formatCurrency(sampleOverview.summary.totalOutstanding)}
+          <div style={{ fontSize: "1.75rem", fontWeight: 800, color: overview.summary.totalOutstanding > 0 ? "var(--color-danger)" : "var(--color-success)" }}>
+            {formatCurrency(overview.summary.totalOutstanding)}
           </div>
-          <div style={{ fontSize: "0.75rem", color: sampleOverview.summary.totalOutstanding > 0 ? "#dc2626" : "#059669", marginTop: "0.25rem" }}>
-            {sampleOverview.summary.totalOutstanding > 0 ? "Balance Pending" : "Zero Dues Remaining"}
+          <div style={{ fontSize: "0.75rem", color: overview.summary.totalOutstanding > 0 ? "#dc2626" : "#059669", marginTop: "0.25rem" }}>
+            {overview.summary.totalOutstanding > 0 ? "Balance Pending" : "Zero Dues Remaining"}
           </div>
         </div>
 
@@ -184,7 +116,7 @@ export const StudentFeesPage: React.FC = () => {
             NEXT PAYMENT DEADLINE
           </div>
           <div style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--color-primary)", marginTop: "0.25rem" }}>
-            {sampleOverview.summary.nextDueDate ? new Date(sampleOverview.summary.nextDueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "N/A"}
+            {overview.summary.nextDueDate ? new Date(overview.summary.nextDueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "N/A"}
           </div>
           <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: "0.25rem" }}>
             Installment 2 Due
@@ -199,7 +131,7 @@ export const StudentFeesPage: React.FC = () => {
             <CreditCard size={18} color="var(--color-primary)" />
             <h2 style={{ fontSize: "1.1rem" }}>Fee Invoices & Installments</h2>
           </div>
-          <span className="badge badge-gray">{sampleOverview.invoices.length} Invoices</span>
+          <span className="badge badge-gray">{overview.invoices.length} Invoices</span>
         </div>
 
         <div className="table-container" style={{ border: "none", borderRadius: 0 }}>
@@ -217,20 +149,28 @@ export const StudentFeesPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {sampleOverview.invoices.map((inv) => (
-                <tr key={inv.id}>
-                  <td style={{ fontWeight: 600 }}>{inv.title}</td>
-                  <td>{inv.batch?.name || "Enrolled Course"}</td>
-                  <td>{formatCurrency(Number(inv.totalAmount))}</td>
-                  <td style={{ color: "#059669", fontWeight: 600 }}>
-                    {inv.discountAmount > 0 ? `-${formatCurrency(Number(inv.discountAmount))}` : "—"}
+              {overview.invoices.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: "center", padding: "2rem", color: "var(--color-text-muted)" }}>
+                    No fee invoices generated in the database.
                   </td>
-                  <td style={{ fontWeight: 700 }}>{formatCurrency(Number(inv.finalAmount))}</td>
-                  <td style={{ color: "#059669", fontWeight: 600 }}>{formatCurrency(Number(inv.paidAmount))}</td>
-                  <td>{new Date(inv.dueDate).toLocaleDateString()}</td>
-                  <td>{getStatusBadge(inv.status)}</td>
                 </tr>
-              ))}
+              ) : (
+                overview.invoices.map((inv) => (
+                  <tr key={inv.id}>
+                    <td style={{ fontWeight: 600 }}>{inv.title}</td>
+                    <td>{inv.batch?.name || "Enrolled Course"}</td>
+                    <td>{formatCurrency(Number(inv.totalAmount))}</td>
+                    <td style={{ color: "#059669", fontWeight: 600 }}>
+                      {inv.discountAmount > 0 ? `-${formatCurrency(Number(inv.discountAmount))}` : "—"}
+                    </td>
+                    <td style={{ fontWeight: 700 }}>{formatCurrency(Number(inv.finalAmount))}</td>
+                    <td style={{ color: "#059669", fontWeight: 600 }}>{formatCurrency(Number(inv.paidAmount))}</td>
+                    <td>{new Date(inv.dueDate).toLocaleDateString()}</td>
+                    <td>{getStatusBadge(inv.status)}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -243,7 +183,7 @@ export const StudentFeesPage: React.FC = () => {
             <Receipt size={18} color="var(--color-success)" />
             <h2 style={{ fontSize: "1.1rem" }}>Payment Receipts & Transaction Log</h2>
           </div>
-          <span className="badge badge-gray">{sampleOverview.paymentHistory.length} Receipts</span>
+          <span className="badge badge-gray">{overview.paymentHistory.length} Receipts</span>
         </div>
 
         <div className="table-container" style={{ border: "none", borderRadius: 0 }}>
@@ -260,17 +200,24 @@ export const StudentFeesPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {sampleOverview.paymentHistory.map((pmt) => (
-                <tr key={pmt.id}>
-                  <td>
-                    <span style={{ fontWeight: 700, color: "var(--color-primary)", fontFamily: "monospace" }}>
-                      {pmt.receiptNumber}
-                    </span>
+              {overview.paymentHistory.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: "center", padding: "2rem", color: "var(--color-text-muted)" }}>
+                    No payment transaction receipts recorded in the database.
                   </td>
-                  <td>{new Date(pmt.paymentDate).toLocaleDateString()}</td>
-                  <td>{pmt.feeTitle}</td>
-                  <td style={{ fontWeight: 700, color: "#059669" }}>{formatCurrency(Number(pmt.amount))}</td>
-                  <td>
+                </tr>
+              ) : (
+                overview.paymentHistory.map((pmt) => (
+                  <tr key={pmt.id}>
+                    <td>
+                      <span style={{ fontWeight: 700, color: "var(--color-primary)", fontFamily: "monospace" }}>
+                        {pmt.receiptNumber}
+                      </span>
+                    </td>
+                    <td>{new Date(pmt.paymentDate).toLocaleDateString()}</td>
+                    <td>{pmt.feeTitle}</td>
+                    <td style={{ fontWeight: 700, color: "#059669" }}>{formatCurrency(Number(pmt.amount))}</td>
+                    <td>
                     <span className="badge badge-primary">{pmt.paymentMethod}</span>
                   </td>
                   <td style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
@@ -285,8 +232,9 @@ export const StudentFeesPage: React.FC = () => {
                       <Receipt size={13} /> View Voucher
                     </button>
                   </td>
-                </tr>
-              ))}
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -325,7 +273,7 @@ export const StudentFeesPage: React.FC = () => {
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "var(--color-text-muted)" }}>Student Name:</span>
-                <strong>{sampleOverview.student.name} ({sampleOverview.student.admissionNumber})</strong>
+                <strong>{overview.student.name} ({overview.student.admissionNumber})</strong>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "var(--color-text-muted)" }}>Fee Invoice:</span>

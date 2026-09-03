@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/src/hooks/useAuth";
 import { InstituteApiService } from "@/src/services/instituteApi";
 import { LogOut, Shield, Menu } from "lucide-react";
@@ -52,7 +53,13 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
             {institute?.name || "Apex Institute"}
           </div>
           <div className="admin-navbar__brand-subtitle">
-            Administrator Console
+            {institute?.tagline ? (
+              <span className="admin-navbar__tagline" title={institute.tagline} style={{ fontStyle: "italic", color: "#4f46e5" }}>
+                "{institute.tagline}"
+              </span>
+            ) : (
+              "Administrator Console"
+            )}
             <span className="admin-navbar__separator">•</span>
             <span className="admin-navbar__campus-code">
               {institute?.code || "CAMPUS-01"}
@@ -64,7 +71,12 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
       {/* Right Controls */}
       <div className="admin-navbar__actions">
         {/* User Identity Chip */}
-        <div className="admin-navbar__user-profile">
+        <Link
+          to="/admin/profile"
+          className="admin-navbar__user-profile"
+          style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+          title="View Institute & Admin Profile"
+        >
           <div className="admin-navbar__user-avatar">
             <Shield size={16} />
           </div>
@@ -77,7 +89,7 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
           </div>
 
           <span className="admin-navbar__role-badge">ADMIN</span>
-        </div>
+        </Link>
 
         {/* Logout */}
         <button
