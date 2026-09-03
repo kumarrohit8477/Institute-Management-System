@@ -11,11 +11,8 @@ import {
   Calendar,
   FolderDown,
   CheckCircle2,
-  Palette,
   X,
   Shield,
-  Sparkles,
-  Building2,
 } from "lucide-react";
 import "./AdminSidebar.css";
 
@@ -35,58 +32,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     : null;
 
   const navItems = [
-    {
-      to: "/admin/dashboard",
-      label: "Dashboard Overview",
-      icon: LayoutDashboard,
-    },
-    {
-      to: "/admin/students",
-      label: "Student Management",
-      icon: Users,
-      badge: "Active",
-    },
-    {
-      to: "/admin/teachers",
-      label: "Teacher Management",
-      icon: GraduationCap,
-      badge: "Faculty",
-    },
-    {
-      to: "/admin/courses",
-      label: "Courses",
-      icon: BookOpen,
-      badge: "Curriculum",
-    },
-    {
-      to: "/admin/batches",
-      label: "Batch Management",
-      icon: Layers,
-      badge: "Central Unit",
-    },
-    {
-      to: "/admin/rooms",
-      label: "Classrooms & Rooms",
-      icon: Shield,
-      badge: "Facilities",
-    },
-    {
-      to: "/admin/timetable",
-      label: "Timetable Scheduling",
-      icon: Calendar,
-    },
-    {
-      to: "/admin/materials",
-      label: "Study Materials",
-      icon: FolderDown,
-      badge: "Files",
-    },
-    {
-      to: "/admin/attendance",
-      label: "Attendance Tracking",
-      icon: CheckCircle2,
-    },
-
+    { to: "/admin/dashboard", label: "Dashboard Overview", icon: LayoutDashboard },
+    { to: "/admin/students", label: "Student Management", icon: Users, badge: "Active" },
+    { to: "/admin/teachers", label: "Teacher Management", icon: GraduationCap, badge: "Faculty" },
+    { to: "/admin/courses", label: "Courses", icon: BookOpen, badge: "Curriculum" },
+    { to: "/admin/batches", label: "Batch Management", icon: Layers, badge: "Central Unit" },
+    { to: "/admin/rooms", label: "Classrooms & Rooms", icon: Shield, badge: "Facilities" },
+    { to: "/admin/timetable", label: "Timetable Scheduling", icon: Calendar },
+    { to: "/admin/materials", label: "Study Materials", icon: FolderDown, badge: "Files" },
+    { to: "/admin/attendance", label: "Attendance Tracking", icon: CheckCircle2 },
   ];
 
   return (
@@ -99,12 +53,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         />
       )}
 
-      <aside
-        className={`admin-sidebar ${
-          isOpen ? "admin-sidebar--open" : ""
-        }`}
-      >
-        {/* Mobile-only header with close action */}
+      <aside className={`admin-sidebar ${isOpen ? "admin-sidebar--open" : ""}`}>
+        {/* Mobile Header */}
         <div className="admin-sidebar__mobile-header">
           <div className="admin-sidebar__brand">
             {currentLogo ? (
@@ -125,23 +75,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               <div className="admin-sidebar__title">
                 {institute?.name || "Apex Academy"}
               </div>
-              {institute?.tagline ? (
-                <div
-                  className="admin-sidebar__tagline"
-                  title={institute.tagline}
-                  style={{
-                    fontSize: "0.72rem",
-                    color: "#1085a5",
-                    fontStyle: "italic",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    maxWidth: "160px"
-                  }}
-                >
+              {institute?.tagline && (
+                <div className="admin-sidebar__tagline" title={institute.tagline}>
                   "{institute.tagline}"
                 </div>
-              ) : null}
+              )}
               <div className="admin-sidebar__institute-name">
                 Admin Console • {institute?.code || "CAMPUS"}
               </div>
@@ -158,6 +96,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           </button>
         </div>
 
+        {/* Navigation */}
         <nav className="admin-sidebar__navigation">
           <div className="admin-sidebar__section-title">
             Administration Modules
@@ -178,9 +117,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                     }
                   >
                     <Icon size={18} className="admin-sidebar__nav-icon" />
-                    <span className="admin-sidebar__nav-text">
-                      {item.label}
-                    </span>
+                    <span className="admin-sidebar__nav-text">{item.label}</span>
                     {item.badge && (
                       <span className="admin-sidebar__nav-badge">
                         {item.badge}
@@ -191,21 +128,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               );
             })}
           </ul>
-
-          {/* Quick System Badge Card */}
-          
         </nav>
 
+        {/* Footer */}
         <div className="admin-sidebar__footer">
           <div className="admin-sidebar__term-status">
             <span className="admin-sidebar__status-dot" />
-            <span className="admin-sidebar__status-text">
-              IMS Control Active
-            </span>
+            <span className="admin-sidebar__status-text">IMS Control Active</span>
           </div>
-          <div className="admin-sidebar__session">
-            Admin Suite v1.3 • Online
-          </div>
+          <div className="admin-sidebar__session">Admin Suite v1.3 • Online</div>
         </div>
       </aside>
     </>

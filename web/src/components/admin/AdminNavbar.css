@@ -7,7 +7,7 @@
 
   width: 100%;
   max-width: 100vw;
-  height: 72px;
+  height: 80px;
 
   padding: 0 2rem;
   box-sizing: border-box;
@@ -82,8 +82,8 @@
 
 .admin-navbar__logo-image,
 .admin-navbar__logo-fallback {
-  width: 44px;
-  height: 44px;
+  width: 60px;
+  height: 60px;
 
   flex-shrink: 0;
 
@@ -135,7 +135,7 @@
   color: #172033;
 
   font-family: "Manrope", sans-serif;
-  font-size: 0.95rem;
+  font-size: 1.25rem;
   font-weight: 800;
 
   letter-spacing: -0.025em;
@@ -147,23 +147,12 @@
 
 .admin-navbar__brand-subtitle {
   margin-top: 3px;
-
   color: #94a3b8;
-
-  font-size: 0.72rem;
+  font-size: 0.86rem;
   font-weight: 600;
 }
 
-.admin-navbar__separator {
-  margin: 0 0.35rem;
 
-  color: #cbd5e1;
-}
-
-.admin-navbar__campus-code {
-  color: #2563eb;
-  font-weight: 700;
-}
 
 /* ================= ACTIONS ================= */
 
