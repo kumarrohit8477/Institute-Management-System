@@ -60,10 +60,6 @@ export const AdminNavbar: React.FC<AdminNavbarProps> = ({
             ) : (
               "Administrator Console"
             )}
-            <span className="admin-navbar__separator">•</span>
-            <span className="admin-navbar__campus-code">
-              {institute?.code || "CAMPUS-01"}
-            </span>
           </div>
         </div>
       </div>

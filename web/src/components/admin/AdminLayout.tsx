@@ -24,7 +24,7 @@ export const AdminLayout: React.FC = () => {
       <div className="admin-layout__container">
         <AdminSidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} />
         <main className="admin-layout__main">
-          <Outlet />
+          <Outlet/>
         </main>
       </div>
     </div>

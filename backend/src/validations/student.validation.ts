@@ -47,6 +47,7 @@ export const studentQuerySchema = z.object({
     status: z.nativeEnum(StudentStatus).optional(),
     gender: z.nativeEnum(Gender).optional(),
     batchId: z.string().optional(),
+    courseId: z.string().optional(),
     page: z.coerce.number().min(1).default(1),
     limit: z.coerce.number().min(1).max(100).default(20)
   })

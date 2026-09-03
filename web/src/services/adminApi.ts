@@ -1,5 +1,26 @@
 import ApiService from "@/src/services/api";
 
+export interface AdminStudentBatchEnrollment {
+  id: string;
+  studentId: string;
+  batchId: string;
+  rollNumber?: string | null;
+  status: string;
+  enrolledAt: string;
+  batch: {
+    id: string;
+    name: string;
+    code: string;
+    courseId: string;
+    maxStrength?: number;
+    course?: {
+      id: string;
+      name: string;
+      code: string;
+    };
+  };
+}
+
 export interface AdminStudent {
   id: string;
   admissionNumber: string;
@@ -10,6 +31,7 @@ export interface AdminStudent {
   gender?: string;
   status: string;
   batch?: { id: string; name: string; code: string } | null;
+  batches?: AdminStudentBatchEnrollment[];
   createdAt: string;
 }
 
@@ -182,8 +204,17 @@ export interface AdminMaterial {
 
 export class AdminApiService {
   // Students
-  static async getStudents(): Promise<AdminStudent[]> {
-    const res = await ApiService.request<any>("/students");
+  static async getStudents(params?: { search?: string; status?: string; batchId?: string; courseId?: string; page?: number; limit?: number }): Promise<AdminStudent[]> {
+    const query = new URLSearchParams();
+    if (params?.search) query.append("search", params.search);
+    if (params?.status) query.append("status", params.status);
+    if (params?.batchId) query.append("batchId", params.batchId);
+    if (params?.courseId) query.append("courseId", params.courseId);
+    if (params?.page) query.append("page", String(params.page));
+    if (params?.limit) query.append("limit", String(params.limit));
+    const queryString = query.toString() ? `?${query.toString()}` : "";
+
+    const res = await ApiService.request<any>(`/students${queryString}`);
     return Array.isArray(res) ? res : res.students || [];
   }
 

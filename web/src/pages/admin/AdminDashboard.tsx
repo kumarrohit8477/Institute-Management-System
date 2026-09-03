@@ -198,7 +198,7 @@ export const AdminDashboard: React.FC = () => {
       {/* 1. Hero Banner */}
       <div
         style={{
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+          background: "linear-gradient(135deg, #093292 0%, #536e99 100%)",
           borderRadius: "var(--radius-lg)",
           padding: "2rem 2.25rem",
           color: "#ffffff",
@@ -227,10 +227,6 @@ export const AdminDashboard: React.FC = () => {
           >
             <Shield size={13} />
             <span>Campus Administration</span>
-            <span>•</span>
-            <span style={{ color: "#ffffff" }}>
-              {institute?.code || "INST001"}
-            </span>
           </div>
 
           <h1

@@ -136,7 +136,7 @@ export class StudentService {
    * Paginated student query with search and filters
    */
   static async getStudents(instituteId: string, params: StudentQueryParams) {
-    const { search, status, gender, batchId, page = 1, limit = 20 } = params;
+    const { search, status, gender, batchId, courseId, page = 1, limit = 20 } = params;
     const skip = (page - 1) * limit;
 
     const where: Prisma.StudentWhereInput = {
@@ -147,6 +147,16 @@ export class StudentService {
         ? {
             batches: {
               some: { batchId, status: "ACTIVE" }
+            }
+          }
+        : {}),
+      ...(courseId
+        ? {
+            batches: {
+              some: {
+                batch: { courseId },
+                status: "ACTIVE"
+              }
             }
           }
         : {}),
@@ -177,7 +187,16 @@ export class StudentService {
           batches: {
             include: {
               batch: {
-                select: { id: true, name: true, code: true, courseId: true }
+                select: {
+                  id: true,
+                  name: true,
+                  code: true,
+                  courseId: true,
+                  maxStrength: true,
+                  course: {
+                    select: { id: true, name: true, code: true }
+                  }
+                }
               }
             }
           }
