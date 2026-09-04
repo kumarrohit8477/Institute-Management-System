@@ -129,6 +129,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             })}
           </ul>
         </nav>
+        
 
         {/* Footer */}
         <div className="admin-sidebar__footer">

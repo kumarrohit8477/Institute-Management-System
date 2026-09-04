@@ -54,7 +54,9 @@ export class CourseService {
    */
   static async getCourses(instituteId: string, params: { search?: string; status?: CourseStatus; page?: number; limit?: number }) {
     const { search, status, page = 1, limit = 50 } = params;
-    const skip = (page - 1) * limit;
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 50;
+    const skip = (pageNum - 1) * limitNum;
 
     const where: Prisma.CourseWhereInput = {
       instituteId,
@@ -75,7 +77,7 @@ export class CourseService {
       prisma.course.findMany({
         where,
         skip,
-        take: limit,
+        take: limitNum,
         orderBy: { createdAt: "desc" },
         include: {
           courseSubjects: {
@@ -88,7 +90,8 @@ export class CourseService {
             select: {
               subjects: true,
               courseSubjects: true,
-              batches: true
+              batches: true,
+              studyMaterials: true
             }
           }
         }
@@ -98,10 +101,10 @@ export class CourseService {
     return {
       courses,
       meta: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limitNum)
       }
     };
   }

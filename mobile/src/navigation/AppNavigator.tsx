@@ -1,27 +1,40 @@
-import React, { useState } from "react";
+import React from "react";
+import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../hooks/useAuth";
-import { ScreenWrapper } from "../components/ScreenWrapper";
-import { BottomTabBar } from "../components/Header";
+import { Colors } from "../theme/colors";
+import { Typography } from "../theme/typography";
+
+// Auth
 import { LoginScreen } from "../screens/auth/LoginScreen";
-import { DashboardScreen } from "../screens/main/DashboardScreen";
-import { CoursesScreen } from "../screens/main/CoursesScreen";
-import { SubjectsScreen, TeachersScreen } from "../screens/main/SubjectsScreen";
-import { TimetableScreen, MaterialsScreen, AttendanceScreen } from "../screens/main/TimetableScreen";
-import { TestsScreen } from "../screens/main/TestsScreen";
-import { ExamAttemptScreen, ResultScreen } from "../screens/main/ExamAttemptScreen";
-import { FeesScreen, NotificationsScreen, ProfileScreen } from "../screens/main/FeesScreen";
+
+// Student
+import { StudentNavigator } from "./StudentNavigator";
+
+// Teacher
+import { TeacherNavigator } from "./TeacherNavigator";
+
+// Admin
+import { AdminNavigator } from "./AdminNavigator";
+
+// Super Admin
+import { SuperAdminNavigator } from "./SuperAdminNavigator";
 
 export const AppNavigator: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
-  const [currentTab, setCurrentTab] = useState<string>("dashboard");
-  const [activeSubScreen, setActiveSubScreen] = useState<string | null>(null);
-  const [screenParams, setScreenParams] = useState<any>({});
+  const { isAuthenticated, isLoading, role } = useAuth();
 
   if (isLoading) {
     return (
-      <ScreenWrapper style={{ justifyContent: "center", alignItems: "center" }}>
-        <div style={{ fontWeight: 700, fontSize: "16px", color: "#3b82f6" }}>Loading IMS Mobile...</div>
-      </ScreenWrapper>
+      <SafeAreaView style={styles.loadingContainer}>
+        <View style={styles.loadingContent}>
+          <View style={styles.logoBadge}>
+            <Text style={styles.logoEmoji}>🎓</Text>
+          </View>
+          <ActivityIndicator size="large" color={Colors.primary} style={{ marginTop: 20 }} />
+          <Text style={styles.loadingText}>IMS Portal</Text>
+          <Text style={styles.loadingSubtext}>Loading your workspace...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -29,81 +42,56 @@ export const AppNavigator: React.FC = () => {
     return <LoginScreen />;
   }
 
-  const navigateTo = (screen: string, params?: any) => {
-    setScreenParams(params || {});
-    setActiveSubScreen(screen);
-  };
-
-  const handleFinishExam = (testId: string) => {
-    setScreenParams({ testId });
-    setActiveSubScreen("result");
-  };
-
-  const renderContent = () => {
-    if (activeSubScreen) {
-      switch (activeSubScreen) {
-        case "timetable":
-          return <TimetableScreen onBack={() => setActiveSubScreen(null)} />;
-        case "materials":
-          return <MaterialsScreen onBack={() => setActiveSubScreen(null)} />;
-        case "attendance":
-          return <AttendanceScreen onBack={() => setActiveSubScreen(null)} />;
-        case "courses":
-          return <CoursesScreen onBack={() => setActiveSubScreen(null)} />;
-        case "subjects":
-          return <SubjectsScreen onBack={() => setActiveSubScreen(null)} />;
-        case "teachers":
-          return <TeachersScreen onBack={() => setActiveSubScreen(null)} />;
-        case "tests":
-          return <TestsScreen onNavigate={navigateTo} onBack={() => setActiveSubScreen(null)} />;
-        case "attempt":
-          return (
-            <ExamAttemptScreen
-              testId={screenParams.testId}
-              onFinish={handleFinishExam}
-              onBack={() => setActiveSubScreen(null)}
-            />
-          );
-        case "result":
-          return <ResultScreen testId={screenParams.testId} onBack={() => setActiveSubScreen(null)} />;
-        case "fees":
-          return <FeesScreen onBack={() => setActiveSubScreen(null)} />;
-        case "notifications":
-          return <NotificationsScreen onBack={() => setActiveSubScreen(null)} />;
-        default:
-          return <DashboardScreen onNavigate={navigateTo} />;
-      }
-    }
-
-    switch (currentTab) {
-      case "dashboard":
-        return <DashboardScreen onNavigate={navigateTo} />;
-      case "academics":
-        return <CoursesScreen onBack={() => setCurrentTab("dashboard")} />;
-      case "tests":
-        return <TestsScreen onNavigate={navigateTo} onBack={() => setCurrentTab("dashboard")} />;
-      case "fees":
-        return <FeesScreen onBack={() => setCurrentTab("dashboard")} />;
-      case "notifications":
-        return <NotificationsScreen onBack={() => setCurrentTab("dashboard")} />;
-      case "profile":
-        return <ProfileScreen onBack={() => setCurrentTab("dashboard")} />;
-      default:
-        return <DashboardScreen onNavigate={navigateTo} />;
-    }
-  };
-
-  return (
-    <ScreenWrapper>
-      <div style={{ flex: 1, overflowY: "auto" }}>{renderContent()}</div>
-      <BottomTabBar
-        currentTab={activeSubScreen ? "" : currentTab}
-        onSelectTab={(tab) => {
-          setActiveSubScreen(null);
-          setCurrentTab(tab);
-        }}
-        unreadCount={3}
-      />
-    </ScreenWrapper>
-  );
+  // Route based on user role
+  switch (role) {
+    case "STUDENT":
+      return <StudentNavigator />;
+    case "TEACHER":
+      return <TeacherNavigator />;
+    case "ADMIN":
+      return <AdminNavigator />;
+    case "SUPER_ADMIN":
+      return <SuperAdminNavigator />;
+    default:
+      return <LoginScreen />;
+  }
 };
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: Colors.primaryDark,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingContent: {
+    alignItems: "center",
+    gap: 8,
+  },
+  logoBadge: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: Colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  logoEmoji: {
+    fontSize: 40,
+  },
+  loadingText: {
+    ...Typography.h2,
+    color: Colors.textOnDark,
+    marginTop: 8,
+  },
+  loadingSubtext: {
+    ...Typography.caption,
+    color: Colors.textOnDark,
+    opacity: 0.6,
+  },
+});

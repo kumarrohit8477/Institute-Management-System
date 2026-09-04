@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Linking
+} from "react-native";
 import { useAuth } from "../../hooks/useAuth";
 import { MobileStudentService } from "../../services/studentService";
-import { Card, Badge, Header } from "../../components/Header";
+import { Card, Badge } from "../../components/Header";
 
 export const DashboardScreen: React.FC<{ onNavigate: (screen: string, params?: any) => void }> = ({ onNavigate }) => {
   const { student, institute } = useAuth();
@@ -53,141 +61,323 @@ export const DashboardScreen: React.FC<{ onNavigate: (screen: string, params?: a
   const currentBatch = academics?.batches?.[0];
   const attPercentage = attendance?.statistics?.attendancePercentage ?? 95.2;
 
+  const quickActions = [
+    { label: "Timetable", icon: "📅", screen: "timetable" },
+    { label: "Materials", icon: "📖", screen: "materials" },
+    { label: "Tests", icon: "📝", screen: "tests" },
+    { label: "Attendance", icon: "✅", screen: "attendance" }
+  ];
+
   return (
-    <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "16px", paddingBottom: "80px" }}>
+    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       {/* Student Banner */}
-      <div
-        style={{
-          background: "linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)",
-          borderRadius: "16px",
-          padding: "20px",
-          color: "#ffffff",
-          boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)"
-        }}
-      >
-        <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "#bfdbfe", marginBottom: "4px" }}>
+      <View style={styles.banner}>
+        <Text style={styles.instituteLabel}>
           {institute?.name || "Apex Academy"}
-        </div>
-        <h2 style={{ fontSize: "18px", fontWeight: 800, margin: "0 0 6px 0" }}>
+        </Text>
+        <Text style={styles.greeting}>
           Hello, {student?.firstName || "Student"}! 👋
-        </h2>
-        <div style={{ fontSize: "12px", color: "#e0e7ff", display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <span>Adm: <strong>{student?.admissionNumber || "ADM-2026-001"}</strong></span>
-          <span>•</span>
-          <span>Batch: <strong>{currentBatch?.name || "JEE Morning Star"}</strong></span>
-        </div>
-      </div>
+        </Text>
+        <View style={styles.badgeRow}>
+          <Text style={styles.metaText}>
+            Adm: <Text style={styles.boldText}>{student?.admissionNumber || "ADM-2026-001"}</Text>
+          </Text>
+          <Text style={styles.dot}>•</Text>
+          <Text style={styles.metaText}>
+            Batch: <Text style={styles.boldText}>{currentBatch?.name || "JEE Morning Star"}</Text>
+          </Text>
+        </View>
+      </View>
 
       {/* Quick Action Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
-        {[
-          { label: "Timetable", icon: "📅", screen: "timetable" },
-          { label: "Materials", icon: "📖", screen: "materials" },
-          { label: "Tests", icon: "📝", screen: "tests" },
-          { label: "Attendance", icon: "✅", screen: "attendance" }
-        ].map((item) => (
-          <div
+      <View style={styles.gridContainer}>
+        {quickActions.map((item) => (
+          <TouchableOpacity
             key={item.screen}
-            onClick={() => onNavigate(item.screen)}
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: "12px",
-              padding: "12px 6px",
-              textAlign: "center",
-              border: "1px solid #e2e8f0",
-              cursor: "pointer"
-            }}
+            onPress={() => onNavigate(item.screen)}
+            style={styles.gridItem}
+            activeOpacity={0.7}
           >
-            <div style={{ fontSize: "22px", marginBottom: "4px" }}>{item.icon}</div>
-            <div style={{ fontSize: "11px", fontWeight: 700, color: "#334155" }}>{item.label}</div>
-          </div>
+            <Text style={styles.gridIcon}>{item.icon}</Text>
+            <Text style={styles.gridLabel}>{item.label}</Text>
+          </TouchableOpacity>
         ))}
-      </div>
+      </View>
 
-      {/* Attendance Widget */}
-      <Card onClick={() => onNavigate("attendance")}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-          <div style={{ fontWeight: 700, fontSize: "14px", color: "#0f172a" }}>Attendance Standing</div>
+      {/* Attendance Standing Widget */}
+      <Card onPress={() => onNavigate("attendance")} style={styles.widgetCard}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Attendance Standing</Text>
           <Badge label="Good Standing" variant="success" />
-        </div>
+        </View>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ fontSize: "24px", fontWeight: 800, color: "#10b981" }}>{attPercentage}%</div>
-            <div style={{ fontSize: "11px", color: "#64748b" }}>Satisfies ≥ 75% requirement</div>
-          </div>
-          <div style={{ fontSize: "12px", color: "#3b82f6", fontWeight: 700 }}>
-            View Log →
-          </div>
-        </div>
+        <View style={styles.attRow}>
+          <View>
+            <Text style={styles.attPctText}>{attPercentage}%</Text>
+            <Text style={styles.attNote}>Satisfies ≥ 75% requirement</Text>
+          </View>
+          <Text style={styles.linkText}>View Log →</Text>
+        </View>
       </Card>
 
-      {/* Today's Classes */}
-      <div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-          <div style={{ fontWeight: 800, fontSize: "15px" }}>Today's Classes ({todayName})</div>
-          <span onClick={() => onNavigate("timetable")} style={{ fontSize: "12px", color: "#3b82f6", fontWeight: 700, cursor: "pointer" }}>
-            Full Week →
-          </span>
-        </div>
+      {/* Today's Schedule */}
+      <View style={styles.scheduleSection}>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>Today's Classes ({todayName})</Text>
+          <TouchableOpacity onPress={() => onNavigate("timetable")} activeOpacity={0.7}>
+            <Text style={styles.seeAllText}>Full Week →</Text>
+          </TouchableOpacity>
+        </View>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <View style={styles.classList}>
           {todayClasses.map((c: any) => (
-            <Card key={c.id}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: "14px", color: "#0f172a" }}>{c.subject.name}</div>
-                  <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
-                    👨‍🏫 {c.teacher.firstName} {c.teacher.lastName} {c.roomNumber ? `• Room ${c.roomNumber}` : ""}
-                  </div>
-                </div>
-                <Badge label={c.classType} variant={c.classType === "ONLINE" ? "primary" : "gray"} />
-              </div>
+            <Card key={c.id} style={styles.classCard}>
+              <View style={styles.cardHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.classSubject}>{c.subject?.name}</Text>
+                  <Text style={styles.classTeacher}>
+                    👨‍🏫 {c.teacher ? `${c.teacher.firstName} ${c.teacher.lastName}` : "Faculty"}
+                    {c.roomNumber ? ` • Room ${c.roomNumber}` : ""}
+                  </Text>
+                </View>
+                <Badge
+                  label={c.classType || "OFFLINE"}
+                  variant={c.classType === "ONLINE" ? "primary" : "gray"}
+                />
+              </View>
 
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px", paddingTop: "8px", borderTop: "1px solid #f1f5f9" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "#3b82f6" }}>
+              <View style={styles.classFooter}>
+                <Text style={styles.classTime}>
                   ⏰ {c.startTime} - {c.endTime}
-                </span>
+                </Text>
 
                 {c.meetingLink ? (
-                  <a
-                    href={c.meetingLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      backgroundColor: "#3b82f6",
-                      color: "#ffffff",
-                      padding: "4px 10px",
-                      borderRadius: "6px",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      textDecoration: "none"
-                    }}
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL(c.meetingLink)}
+                    style={styles.joinBtn}
                   >
-                    Join Video
-                  </a>
+                    <Text style={styles.joinBtnText}>Join Video 🎥</Text>
+                  </TouchableOpacity>
                 ) : (
-                  <span style={{ fontSize: "11px", color: "#10b981", fontWeight: 700 }}>In-Class</span>
+                  <View style={styles.inClassPill}>
+                    <Text style={styles.inClassText}>In-Class</Text>
+                  </View>
                 )}
-              </div>
+              </View>
             </Card>
           ))}
-        </div>
-      </div>
+        </View>
+      </View>
 
-      {/* Upcoming Exams Preview */}
-      <Card onClick={() => onNavigate("tests")}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-          <div style={{ fontWeight: 700, fontSize: "14px" }}>Upcoming Examinations</div>
-          <Badge label="2 Scheduled" variant="warning" />
-        </div>
-        <div style={{ fontSize: "13px", fontWeight: 700, color: "#0f172a" }}>
+      {/* Upcoming Examinations Preview */}
+      <Card onPress={() => onNavigate("tests")} style={styles.examCard}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Upcoming Examinations</Text>
+          <Badge label="Scheduled" variant="warning" />
+        </View>
+        <Text style={styles.examTitle}>
           JEE Main All-India Grand Mock Test 1
-        </div>
-        <div style={{ fontSize: "11px", color: "#64748b", marginTop: "3px" }}>
-          3 Hours • 300 Marks • Active Online
-        </div>
+        </Text>
+        <Text style={styles.examMeta}>
+          3 Hours • 300 Marks • Active CBT Online
+        </Text>
       </Card>
-    </div>
+    </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    gap: 16,
+    paddingBottom: 40
+  },
+  banner: {
+    backgroundColor: "#1e3a8a",
+    borderRadius: 18,
+    padding: 20,
+    shadowColor: "#1e3a8a",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4
+  },
+  instituteLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    color: "#93c5fd",
+    marginBottom: 4,
+    letterSpacing: 0.5
+  },
+  greeting: {
+    fontSize: 19,
+    fontWeight: "800",
+    color: "#ffffff",
+    marginBottom: 6
+  },
+  badgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 6
+  },
+  metaText: {
+    fontSize: 12,
+    color: "#e0e7ff"
+  },
+  boldText: {
+    fontWeight: "700",
+    color: "#ffffff"
+  },
+  dot: {
+    color: "#93c5fd",
+    fontSize: 12
+  },
+  gridContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10
+  },
+  gridItem: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 6,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1
+  },
+  gridIcon: {
+    fontSize: 22,
+    marginBottom: 6
+  },
+  gridLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#334155"
+  },
+  widgetCard: {
+    marginBottom: 2
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8
+  },
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0f172a"
+  },
+  attRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  attPctText: {
+    fontSize: 26,
+    fontWeight: "900",
+    color: "#10b981"
+  },
+  attNote: {
+    fontSize: 11,
+    color: "#64748b",
+    marginTop: 2
+  },
+  linkText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#3b82f6"
+  },
+  scheduleSection: {
+    gap: 10
+  },
+  sectionHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0f172a"
+  },
+  seeAllText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#3b82f6"
+  },
+  classList: {
+    gap: 10
+  },
+  classCard: {
+    marginBottom: 2
+  },
+  classSubject: {
+    fontWeight: "700",
+    fontSize: 14,
+    color: "#0f172a"
+  },
+  classTeacher: {
+    fontSize: 11,
+    color: "#64748b",
+    marginTop: 2
+  },
+  classFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#f1f5f9",
+    paddingTop: 8,
+    marginTop: 8
+  },
+  classTime: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#3b82f6"
+  },
+  joinBtn: {
+    backgroundColor: "#3b82f6",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6
+  },
+  joinBtnText: {
+    color: "#ffffff",
+    fontSize: 11,
+    fontWeight: "700"
+  },
+  inClassPill: {
+    backgroundColor: "#ecfdf5",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6
+  },
+  inClassText: {
+    color: "#059669",
+    fontSize: 11,
+    fontWeight: "700"
+  },
+  examCard: {
+    marginBottom: 4
+  },
+  examTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0f172a",
+    marginBottom: 3
+  },
+  examMeta: {
+    fontSize: 11,
+    color: "#64748b"
+  }
+});

@@ -249,7 +249,9 @@ export class BatchService {
    */
   static async getBatches(instituteId: string, params: { courseId?: string; search?: string; status?: BatchStatus; page?: number; limit?: number }) {
     const { courseId, search, status, page = 1, limit = 50 } = params;
-    const skip = (page - 1) * limit;
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 50;
+    const skip = (pageNum - 1) * limitNum;
 
     const where: Prisma.BatchWhereInput = {
       instituteId,
@@ -271,7 +273,7 @@ export class BatchService {
       prisma.batch.findMany({
         where,
         skip,
-        take: limit,
+        take: limitNum,
         orderBy: { createdAt: "desc" },
         include: {
           course: { select: { id: true, name: true, code: true } },
@@ -296,10 +298,10 @@ export class BatchService {
     return {
       batches,
       meta: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limitNum)
       }
     };
   }

@@ -130,7 +130,9 @@ export class TeacherService {
    */
   static async getTeachers(instituteId: string, params: TeacherQueryParams) {
     const { search, status, specialization, page = 1, limit = 20 } = params;
-    const skip = (page - 1) * limit;
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 20;
+    const skip = (pageNum - 1) * limitNum;
 
     const where: Prisma.TeacherWhereInput = {
       instituteId,
@@ -154,7 +156,7 @@ export class TeacherService {
       prisma.teacher.findMany({
         where,
         skip,
-        take: limit,
+        take: limitNum,
         orderBy: { createdAt: "desc" },
         include: {
           subjects: {
@@ -175,10 +177,10 @@ export class TeacherService {
     return {
       teachers,
       meta: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limitNum)
       }
     };
   }

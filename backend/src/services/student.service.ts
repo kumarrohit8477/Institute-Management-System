@@ -137,7 +137,9 @@ export class StudentService {
    */
   static async getStudents(instituteId: string, params: StudentQueryParams) {
     const { search, status, gender, batchId, courseId, page = 1, limit = 20 } = params;
-    const skip = (page - 1) * limit;
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 20;
+    const skip = (pageNum - 1) * limitNum;
 
     const where: Prisma.StudentWhereInput = {
       instituteId,
@@ -178,7 +180,7 @@ export class StudentService {
       prisma.student.findMany({
         where,
         skip,
-        take: limit,
+        take: limitNum,
         orderBy: { createdAt: "desc" },
         include: {
           user: {
@@ -207,10 +209,10 @@ export class StudentService {
     return {
       students,
       meta: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limitNum)
       }
     };
   }

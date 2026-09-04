@@ -112,12 +112,6 @@ export const StudentNavbar: React.FC<StudentNavbarProps> = ({
             ) : (
               "Student Learning Portal"
             )}
-            <span className="student-navbar__separator">
-              •
-            </span>
-            <span className="student-navbar__institute-code">
-              {institute?.code || "CAMPUS"}
-            </span>
           </div>
         </div>
       </div>

@@ -62,7 +62,9 @@ export class FeeService {
    */
   static async getFees(instituteId: string, params: FeeQueryParams) {
     const { studentId, batchId, status, search, page = 1, limit = 50 } = params;
-    const skip = (page - 1) * limit;
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 50;
+    const skip = (pageNum - 1) * limitNum;
 
     const where: Prisma.FeeWhereInput = {
       instituteId,
@@ -86,7 +88,7 @@ export class FeeService {
       prisma.fee.findMany({
         where,
         skip,
-        take: limit,
+        take: limitNum,
         orderBy: { dueDate: "asc" },
         include: {
           student: { select: { id: true, firstName: true, lastName: true, admissionNumber: true, email: true } },
@@ -100,22 +102,22 @@ export class FeeService {
       })
     ]);
 
-    const totalBilled = allMatchingFees.reduce((acc, f) => acc + Number(f.finalAmount), 0);
-    const totalCollected = allMatchingFees.reduce((acc, f) => acc + Number(f.paidAmount), 0);
-    const totalOutstanding = totalBilled - totalCollected;
+    const aggregateTotalBilled = allMatchingFees.reduce((acc, curr) => acc + Number(curr.finalAmount || 0), 0);
+    const aggregateTotalPaid = allMatchingFees.reduce((acc, curr) => acc + Number(curr.paidAmount || 0), 0);
+    const aggregateTotalOutstanding = Math.max(0, aggregateTotalBilled - aggregateTotalPaid);
 
     return {
-      summary: {
-        totalBilled,
-        totalCollected,
-        totalOutstanding
-      },
       fees,
+      summary: {
+        totalBilled: aggregateTotalBilled,
+        totalPaid: aggregateTotalPaid,
+        totalOutstanding: aggregateTotalOutstanding
+      },
       meta: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limitNum)
       }
     };
   }

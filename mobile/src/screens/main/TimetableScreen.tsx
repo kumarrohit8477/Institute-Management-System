@@ -1,4 +1,14 @@
 import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Linking,
+  Alert
+} from "react-native";
 import { MobileStudentService } from "../../services/studentService";
 import { Header, Card, Badge } from "../../components/Header";
 
@@ -16,7 +26,7 @@ export const TimetableScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) =
       id: "1",
       startTime: "09:00",
       endTime: "10:30",
-      subject: { name: "Physics" },
+      subject: { name: "Physics (Mechanics)" },
       teacher: { firstName: "Dr. Harish", lastName: "Verma" },
       roomNumber: "LH-101",
       classType: "OFFLINE"
@@ -25,85 +35,113 @@ export const TimetableScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) =
       id: "2",
       startTime: "11:00",
       endTime: "12:30",
-      subject: { name: "Mathematics" },
+      subject: { name: "Mathematics (Calculus)" },
       teacher: { firstName: "Prof. Sunita", lastName: "Ramanujan" },
       meetingLink: "https://meet.google.com/demo",
       classType: "ONLINE"
+    },
+    {
+      id: "3",
+      startTime: "14:00",
+      endTime: "15:30",
+      subject: { name: "Chemistry (Organic Reactions)" },
+      teacher: { firstName: "Dr. Rajesh", lastName: "Bhatnagar" },
+      roomNumber: "Lab-2",
+      classType: "OFFLINE"
     }
   ];
 
+  const handleOpenLink = async (url: string) => {
+    try {
+      const can = await Linking.canOpenURL(url);
+      if (can) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert("Cannot open link", url);
+      }
+    } catch {
+      Alert.alert("Error opening link", url);
+    }
+  };
+
   return (
-    <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "14px", paddingBottom: "80px" }}>
-      <Header title="Class Timetable" subtitle="Weekly schedule & links" onBack={onBack} />
+    <View style={styles.container}>
+      <Header title="Class Timetable" subtitle="Weekly lecture schedule & video links" onBack={onBack} />
 
       {/* Weekday Switcher */}
-      <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px" }}>
-        {days.map((d) => (
-          <button
-            key={d}
-            onClick={() => setSelectedDay(d)}
-            style={{
-              padding: "6px 12px",
-              borderRadius: "8px",
-              border: "none",
-              backgroundColor: selectedDay === d ? "#3b82f6" : "#ffffff",
-              color: selectedDay === d ? "#ffffff" : "#475569",
-              fontSize: "12px",
-              fontWeight: 700,
-              cursor: "pointer"
-            }}
-          >
-            {d.slice(0, 3)}
-          </button>
-        ))}
-      </div>
-
-      {daySlots.map((slot: any) => (
-        <Card key={slot.id}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: "14px", color: "#0f172a" }}>{slot.subject.name}</div>
-              <div style={{ fontSize: "11px", color: "#64748b" }}>
-                👨‍🏫 {slot.teacher.firstName} {slot.teacher.lastName} {slot.roomNumber ? `• Room ${slot.roomNumber}` : ""}
-              </div>
-            </div>
-            <Badge label={slot.classType} variant={slot.classType === "ONLINE" ? "primary" : "gray"} />
-          </div>
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px", paddingTop: "6px", borderTop: "1px solid #f1f5f9" }}>
-            <span style={{ fontSize: "12px", fontWeight: 700, color: "#3b82f6" }}>
-              ⏰ {slot.startTime} - {slot.endTime}
-            </span>
-            {slot.meetingLink ? (
-              <a
-                href={slot.meetingLink}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  backgroundColor: "#3b82f6",
-                  color: "#ffffff",
-                  padding: "4px 8px",
-                  borderRadius: "6px",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  textDecoration: "none"
-                }}
+      <View style={styles.dayPickerWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dayScroll}>
+          {days.map((d) => {
+            const isSelected = selectedDay === d;
+            return (
+              <TouchableOpacity
+                key={d}
+                onPress={() => setSelectedDay(d)}
+                style={[styles.dayButton, isSelected && styles.dayButtonActive]}
+                activeOpacity={0.7}
               >
-                Join Video
-              </a>
-            ) : (
-              <span style={{ fontSize: "11px", color: "#10b981", fontWeight: 700 }}>In-Person</span>
-            )}
-          </div>
-        </Card>
-      ))}
-    </div>
+                <Text style={[styles.dayText, isSelected && styles.dayTextActive]}>
+                  {d.slice(0, 3)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollList} showsVerticalScrollIndicator={false}>
+        {daySlots.length === 0 ? (
+          <Card style={styles.emptyCard}>
+            <Text style={styles.emptyText}>No lectures scheduled for {selectedDay}.</Text>
+          </Card>
+        ) : (
+          daySlots.map((slot: any) => (
+            <Card key={slot.id} style={styles.slotCard}>
+              <View style={styles.slotHeader}>
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <Text style={styles.slotSubject}>{slot.subject?.name || "Subject"}</Text>
+                  <Text style={styles.slotTeacher}>
+                    👨‍🏫 {slot.teacher ? `${slot.teacher.firstName} ${slot.teacher.lastName}` : "Faculty"}
+                    {slot.roomNumber ? ` • Room ${slot.roomNumber}` : ""}
+                  </Text>
+                </View>
+                <Badge
+                  label={slot.classType || "OFFLINE"}
+                  variant={slot.classType === "ONLINE" ? "primary" : "gray"}
+                />
+              </View>
+
+              <View style={styles.slotFooter}>
+                <Text style={styles.timeText}>
+                  ⏰ {slot.startTime} - {slot.endTime}
+                </Text>
+
+                {slot.meetingLink ? (
+                  <TouchableOpacity
+                    onPress={() => handleOpenLink(slot.meetingLink)}
+                    style={styles.joinVideoBtn}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.joinVideoText}>Join Video 🎥</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.inPersonPill}>
+                    <Text style={styles.inPersonText}>🏛 In-Person</Text>
+                  </View>
+                )}
+              </View>
+            </Card>
+          ))
+        )}
+      </ScrollView>
+    </View>
   );
 };
 
 export const MaterialsScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [materials, setMaterials] = useState<any[]>([]);
   const [search, setSearch] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState<string>("ALL");
 
   useEffect(() => {
     MobileStudentService.getMaterials({ search })
@@ -114,68 +152,98 @@ export const MaterialsScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) =
   const sampleList = materials.length > 0 ? materials : [
     {
       id: "1",
-      title: "Electrodynamics Lecture Notes",
+      title: "Electrodynamics & Gauss Law Comprehensive Lecture Notes",
       fileType: "PDF",
-      fileUrl: "https://example.com/notes.pdf",
-      subject: { name: "Physics" }
+      fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      subject: { id: "sub1", name: "Physics" }
     },
     {
       id: "2",
-      title: "Differential Calculus Video Class",
+      title: "Differential Calculus Full Problem Set with Solutions",
+      fileType: "PDF",
+      fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      subject: { id: "sub2", name: "Mathematics" }
+    },
+    {
+      id: "3",
+      title: "Organic Reaction Mechanisms Video Masterclass",
       fileType: "VIDEO",
-      fileUrl: "https://youtube.com/watch?v=demo",
-      subject: { name: "Mathematics" }
+      fileUrl: "https://www.youtube.com",
+      subject: { id: "sub3", name: "Chemistry" }
     }
   ];
 
+  const handleOpenMaterial = async (url: string) => {
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert("Cannot open file URL", url);
+    }
+  };
+
+  const filtered = sampleList.filter((m) => {
+    if (selectedSubject !== "ALL" && m.subject?.name !== selectedSubject) return false;
+    return true;
+  });
+
   return (
-    <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "14px", paddingBottom: "80px" }}>
-      <Header title="Study Materials" subtitle="Notes, PDFs & Videos" onBack={onBack} />
+    <View style={styles.container}>
+      <Header title="Study Materials" subtitle="Lecture notes, PDFs & video lectures" onBack={onBack} />
 
-      <input
-        type="text"
-        placeholder="Search notes & documents..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{
-          padding: "10px 14px",
-          borderRadius: "10px",
-          border: "1px solid #cbd5e1",
-          fontSize: "13px",
-          outline: "none"
-        }}
-      />
+      {/* Search Input */}
+      <View style={styles.searchWrapper}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="🔍 Search documents, notes, & topics..."
+          placeholderTextColor="#94a3b8"
+          value={search}
+          onChangeText={setSearch}
+        />
+      </View>
 
-      {sampleList.map((m: any) => (
-        <Card key={m.id}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-            <Badge label={m.subject.name} variant="primary" />
-            <Badge label={m.fileType} variant="gray" />
-          </div>
-          <div style={{ fontWeight: 700, fontSize: "14px", margin: "6px 0", color: "#0f172a" }}>
-            {m.title}
-          </div>
-          <a
-            href={m.fileUrl}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "inline-block",
-              backgroundColor: "#eff6ff",
-              color: "#3b82f6",
-              padding: "6px 12px",
-              borderRadius: "6px",
-              fontSize: "11px",
-              fontWeight: 700,
-              textDecoration: "none",
-              marginTop: "4px"
-            }}
-          >
-            {m.fileType === "VIDEO" ? "▶ Watch Video" : "📥 Open Document"}
-          </a>
-        </Card>
-      ))}
-    </div>
+      {/* Subject Filter Pills */}
+      <View style={styles.filterPillsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+          {["ALL", "Physics", "Mathematics", "Chemistry"].map((sub) => {
+            const isSelected = selectedSubject === sub;
+            return (
+              <TouchableOpacity
+                key={sub}
+                onPress={() => setSelectedSubject(sub)}
+                style={[styles.filterPill, isSelected && styles.filterPillActive]}
+              >
+                <Text style={[styles.filterPillText, isSelected && styles.filterPillTextActive]}>
+                  {sub}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollList} showsVerticalScrollIndicator={false}>
+        {filtered.map((m: any) => (
+          <Card key={m.id} style={styles.materialCard}>
+            <View style={styles.materialHeader}>
+              <Badge label={m.subject?.name || "Subject"} variant="primary" />
+              <Badge label={m.fileType || "DOC"} variant="gray" />
+            </View>
+
+            <Text style={styles.materialTitle}>{m.title}</Text>
+
+            <TouchableOpacity
+              onPress={() => handleOpenMaterial(m.fileUrl)}
+              style={styles.openMaterialBtn}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.openMaterialText}>
+                {m.fileType === "VIDEO" ? "▶ Watch Video Lecture" : "📥 Open Study PDF"}
+              </Text>
+            </TouchableOpacity>
+          </Card>
+        ))}
+      </ScrollView>
+    </View>
   );
 };
 
@@ -190,48 +258,318 @@ export const AttendanceScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) 
     attendancePercentage: 95.2,
     presentCount: 38,
     absentCount: 2,
-    totalDays: 40
+    lateCount: 1,
+    totalDays: 41
   };
 
   const records = attData?.records || [
-    { id: "1", date: "2026-09-01", status: "PRESENT", batch: { name: "JEE Morning Star" } },
-    { id: "2", date: "2026-08-31", status: "PRESENT", batch: { name: "JEE Morning Star" } },
-    { id: "3", date: "2026-08-29", status: "LATE", batch: { name: "JEE Morning Star" } },
-    { id: "4", date: "2026-08-27", status: "ABSENT", batch: { name: "JEE Morning Star" } }
+    { id: "1", date: "2026-09-04", status: "PRESENT", batch: { name: "JEE Morning Star" } },
+    { id: "2", date: "2026-09-03", status: "PRESENT", batch: { name: "JEE Morning Star" } },
+    { id: "3", date: "2026-09-02", status: "LATE", batch: { name: "JEE Morning Star" } },
+    { id: "4", date: "2026-09-01", status: "PRESENT", batch: { name: "JEE Morning Star" } },
+    { id: "5", date: "2026-08-31", status: "ABSENT", batch: { name: "JEE Morning Star" } }
   ];
 
+  const isGoodStanding = (stats.attendancePercentage ?? 0) >= 75;
+
   return (
-    <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "14px", paddingBottom: "80px" }}>
-      <Header title="Attendance" subtitle="Presence logs & percentage" onBack={onBack} />
+    <View style={styles.container}>
+      <Header title="Attendance Tracking" subtitle="Presence log & percentage" onBack={onBack} />
 
-      <Card>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "11px", color: "#64748b", fontWeight: 700, textTransform: "uppercase" }}>Overall Attendance</div>
-          <div style={{ fontSize: "32px", fontWeight: 800, color: stats.attendancePercentage >= 75 ? "#10b981" : "#ef4444", margin: "4px 0" }}>
+      <ScrollView contentContainerStyle={styles.scrollList} showsVerticalScrollIndicator={false}>
+        {/* Overall Percentage Card */}
+        <Card style={styles.attOverviewCard}>
+          <Text style={styles.overviewSubtitle}>ACADEMIC ATTENDANCE STANDING</Text>
+          <Text style={[styles.overviewPct, { color: isGoodStanding ? "#10b981" : "#ef4444" }]}>
             {stats.attendancePercentage}%
-          </div>
-          <div style={{ fontSize: "12px", color: "#475569" }}>
-            {stats.presentCount} Days Present / {stats.totalDays} Sessions Total
-          </div>
-        </div>
-      </Card>
+          </Text>
+          <Text style={styles.overviewStatus}>
+            {isGoodStanding
+              ? "✓ Satisfies the mandatory ≥ 75% requirement"
+              : "⚠ Below 75% mandatory requirement! Attend upcoming classes."}
+          </Text>
 
-      <div style={{ fontWeight: 800, fontSize: "14px", color: "#0f172a" }}>Daily Logs</div>
-
-      {records.map((r: any) => (
-        <Card key={r.id} style={{ padding: "12px 14px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: "13px" }}>{new Date(r.date).toLocaleDateString()}</div>
-              <div style={{ fontSize: "11px", color: "#64748b" }}>{r.batch?.name}</div>
-            </div>
-            <Badge
-              label={r.status}
-              variant={r.status === "PRESENT" ? "success" : r.status === "ABSENT" ? "danger" : "warning"}
-            />
-          </div>
+          <View style={styles.statsRow}>
+            <View style={styles.statCol}>
+              <Text style={styles.statVal}>{stats.presentCount}</Text>
+              <Text style={styles.statLbl}>Present</Text>
+            </View>
+            <View style={styles.statCol}>
+              <Text style={[styles.statVal, { color: "#ef4444" }]}>{stats.absentCount}</Text>
+              <Text style={styles.statLbl}>Absent</Text>
+            </View>
+            <View style={styles.statCol}>
+              <Text style={[styles.statVal, { color: "#f59e0b" }]}>{stats.lateCount || 0}</Text>
+              <Text style={styles.statLbl}>Late</Text>
+            </View>
+            <View style={styles.statCol}>
+              <Text style={styles.statVal}>{stats.totalDays}</Text>
+              <Text style={styles.statLbl}>Total</Text>
+            </View>
+          </View>
         </Card>
-      ))}
-    </div>
+
+        <Text style={styles.sectionHeader}>Session Attendance Logs</Text>
+
+        {records.map((r: any) => (
+          <Card key={r.id} style={styles.logCard}>
+            <View style={styles.logRow}>
+              <View>
+                <Text style={styles.logDate}>
+                  📅 {new Date(r.date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+                </Text>
+                <Text style={styles.logBatch}>{r.batch?.name || "Enrolled Batch"}</Text>
+              </View>
+              <Badge
+                label={r.status}
+                variant={r.status === "PRESENT" ? "success" : r.status === "ABSENT" ? "danger" : "warning"}
+              />
+            </View>
+          </Card>
+        ))}
+      </ScrollView>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f8fafc"
+  },
+  dayPickerWrapper: {
+    backgroundColor: "#ffffff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e8f0",
+    paddingVertical: 10
+  },
+  dayScroll: {
+    paddingHorizontal: 16,
+    gap: 8
+  },
+  dayButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: "#f1f5f9"
+  },
+  dayButtonActive: {
+    backgroundColor: "#3b82f6"
+  },
+  dayText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#475569"
+  },
+  dayTextActive: {
+    color: "#ffffff"
+  },
+  scrollList: {
+    padding: 16,
+    gap: 12,
+    paddingBottom: 40
+  },
+  emptyCard: {
+    alignItems: "center",
+    paddingVertical: 32
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "#64748b"
+  },
+  slotCard: {
+    marginBottom: 4
+  },
+  slotHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 10
+  },
+  slotSubject: {
+    fontWeight: "800",
+    fontSize: 15,
+    color: "#0f172a"
+  },
+  slotTeacher: {
+    fontSize: 12,
+    color: "#64748b",
+    marginTop: 2
+  },
+  slotFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#f1f5f9",
+    paddingTop: 10
+  },
+  timeText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#3b82f6"
+  },
+  joinVideoBtn: {
+    backgroundColor: "#3b82f6",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8
+  },
+  joinVideoText: {
+    color: "#ffffff",
+    fontSize: 11,
+    fontWeight: "700"
+  },
+  inPersonPill: {
+    backgroundColor: "#ecfdf5",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8
+  },
+  inPersonText: {
+    color: "#059669",
+    fontSize: 11,
+    fontWeight: "700"
+  },
+  searchWrapper: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 6
+  },
+  searchInput: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: "#0f172a"
+  },
+  filterPillsWrapper: {
+    paddingVertical: 6
+  },
+  filterScroll: {
+    paddingHorizontal: 16,
+    gap: 8
+  },
+  filterPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#e2e8f0"
+  },
+  filterPillActive: {
+    backgroundColor: "#3b82f6",
+    borderColor: "#3b82f6"
+  },
+  filterPillText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#64748b"
+  },
+  filterPillTextActive: {
+    color: "#ffffff",
+    fontWeight: "700"
+  },
+  materialCard: {
+    marginBottom: 4
+  },
+  materialHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8
+  },
+  materialTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0f172a",
+    marginBottom: 12,
+    lineHeight: 20
+  },
+  openMaterialBtn: {
+    backgroundColor: "#eff6ff",
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    alignItems: "center"
+  },
+  openMaterialText: {
+    color: "#2563eb",
+    fontWeight: "700",
+    fontSize: 12
+  },
+  attOverviewCard: {
+    alignItems: "center",
+    paddingVertical: 20
+  },
+  overviewSubtitle: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#64748b",
+    letterSpacing: 0.8
+  },
+  overviewPct: {
+    fontSize: 38,
+    fontWeight: "900",
+    marginVertical: 4
+  },
+  overviewStatus: {
+    fontSize: 12,
+    color: "#475569",
+    textAlign: "center",
+    marginBottom: 16
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    borderTopWidth: 1,
+    borderTopColor: "#f1f5f9",
+    paddingTop: 12
+  },
+  statCol: {
+    alignItems: "center"
+  },
+  statVal: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0f172a"
+  },
+  statLbl: {
+    fontSize: 11,
+    color: "#64748b",
+    marginTop: 2
+  },
+  sectionHeader: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0f172a",
+    marginTop: 6,
+    marginBottom: 2
+  },
+  logCard: {
+    paddingVertical: 12,
+    paddingHorizontal: 14
+  },
+  logRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  logDate: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#0f172a"
+  },
+  logBatch: {
+    fontSize: 11,
+    color: "#64748b",
+    marginTop: 2
+  }
+});

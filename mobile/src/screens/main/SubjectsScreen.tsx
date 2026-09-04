@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { MobileStudentService } from "../../services/studentService";
 import { Header, Card, Badge } from "../../components/Header";
 
@@ -10,27 +11,27 @@ export const SubjectsScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
   }, []);
 
   const subjects = academics?.subjects || [
-    { id: "1", name: "Physics", code: "PHY-JEE", description: "Mechanics, Electrodynamics & Ray Optics." },
-    { id: "2", name: "Mathematics", code: "MATH-JEE", description: "Calculus, Coordinate Geometry & Vectors." },
-    { id: "3", name: "Chemistry", code: "CHEM-JEE", description: "Organic, Inorganic & Physical Chemistry." }
+    { id: "1", name: "Physics", code: "PHY-JEE", description: "Mechanics, Electrodynamics, Thermodynamics & Ray Optics." },
+    { id: "2", name: "Mathematics", code: "MATH-JEE", description: "Calculus, Coordinate Geometry, Vectors & Algebra." },
+    { id: "3", name: "Chemistry", code: "CHEM-JEE", description: "Organic Chemistry, Inorganic Coordination & Physical Chemistry." }
   ];
 
   return (
-    <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "14px", paddingBottom: "80px" }}>
+    <View style={styles.container}>
       <Header title="My Subjects" subtitle="Course curriculum disciplines" onBack={onBack} />
 
-      {subjects.map((s: any) => (
-        <Card key={s.id}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-            <span style={{ fontWeight: 700, fontSize: "15px", color: "#0f172a" }}>{s.name}</span>
-            <Badge label={s.code} variant="primary" />
-          </div>
-          <p style={{ fontSize: "12px", color: "#64748b", lineHeight: "1.4", margin: 0 }}>
-            {s.description}
-          </p>
-        </Card>
-      ))}
-    </div>
+      <ScrollView contentContainerStyle={styles.scrollList} showsVerticalScrollIndicator={false}>
+        {subjects.map((s: any) => (
+          <Card key={s.id} style={styles.cardItem}>
+            <View style={styles.subjectHeader}>
+              <Text style={styles.subjectName}>{s.name}</Text>
+              <Badge label={s.code} variant="primary" />
+            </View>
+            <Text style={styles.subjectDesc}>{s.description}</Text>
+          </Card>
+        ))}
+      </ScrollView>
+    </View>
   );
 };
 
@@ -48,7 +49,8 @@ export const TeachersScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
       lastName: "Verma",
       qualification: "Ph.D. IIT Kanpur",
       specialization: "Quantum & Classical Mechanics",
-      subjectName: "Physics"
+      subjectName: "Physics",
+      email: "h.verma@institute.local"
     },
     {
       id: "2",
@@ -56,47 +58,121 @@ export const TeachersScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
       lastName: "Ramanujan",
       qualification: "M.Sc Gold Medalist",
       specialization: "Calculus & Geometry",
-      subjectName: "Mathematics"
+      subjectName: "Mathematics",
+      email: "s.ramanujan@institute.local"
+    },
+    {
+      id: "3",
+      firstName: "Dr. Rajesh",
+      lastName: "Bhatnagar",
+      qualification: "Ph.D. Organic Chemistry",
+      specialization: "Reaction Mechanisms & Spectroscopy",
+      subjectName: "Chemistry",
+      email: "r.bhatnagar@institute.local"
     }
   ];
 
   return (
-    <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "14px", paddingBottom: "80px" }}>
-      <Header title="Faculty Directory" subtitle="My Teachers & Mentors" onBack={onBack} />
+    <View style={styles.container}>
+      <Header title="Faculty Directory" subtitle="My Teachers & Academic Mentors" onBack={onBack} />
 
-      {teachers.map((t: any) => (
-        <Card key={t.id}>
-          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <div
-              style={{
-                width: "44px",
-                height: "44px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #6366f1, #3b82f6)",
-                color: "#ffffff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 800,
-                fontSize: "16px"
-              }}
-            >
-              {t.firstName[0]}
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: "14px", color: "#0f172a" }}>
-                {t.firstName} {t.lastName}
-              </div>
-              <div style={{ fontSize: "11px", color: "#3b82f6", fontWeight: 700 }}>
-                {t.subjectName} • {t.qualification}
-              </div>
-              <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
-                {t.specialization}
-              </div>
-            </div>
-          </div>
-        </Card>
-      ))}
-    </div>
+      <ScrollView contentContainerStyle={styles.scrollList} showsVerticalScrollIndicator={false}>
+        {teachers.map((t: any) => (
+          <Card key={t.id} style={styles.teacherCard}>
+            <View style={styles.teacherRow}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{t.firstName?.[0] || "T"}</Text>
+              </View>
+              <View style={styles.teacherInfo}>
+                <Text style={styles.teacherName}>
+                  {t.firstName} {t.lastName}
+                </Text>
+                <Text style={styles.teacherSubject}>
+                  {t.subjectName || "Faculty"} • {t.qualification}
+                </Text>
+                <Text style={styles.teacherSpec}>{t.specialization}</Text>
+                {t.email ? <Text style={styles.teacherEmail}>✉ {t.email}</Text> : null}
+              </View>
+            </View>
+          </Card>
+        ))}
+      </ScrollView>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f8fafc"
+  },
+  scrollList: {
+    padding: 16,
+    gap: 12,
+    paddingBottom: 40
+  },
+  cardItem: {
+    marginBottom: 4
+  },
+  subjectHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6
+  },
+  subjectName: {
+    fontWeight: "800",
+    fontSize: 15,
+    color: "#0f172a"
+  },
+  subjectDesc: {
+    fontSize: 12,
+    color: "#64748b",
+    lineHeight: 18
+  },
+  teacherCard: {
+    marginBottom: 4
+  },
+  teacherRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 14
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#3b82f6",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  avatarText: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  teacherInfo: {
+    flex: 1
+  },
+  teacherName: {
+    fontWeight: "700",
+    fontSize: 15,
+    color: "#0f172a"
+  },
+  teacherSubject: {
+    fontSize: 12,
+    color: "#3b82f6",
+    fontWeight: "700",
+    marginTop: 2
+  },
+  teacherSpec: {
+    fontSize: 12,
+    color: "#64748b",
+    marginTop: 3
+  },
+  teacherEmail: {
+    fontSize: 11,
+    color: "#94a3b8",
+    marginTop: 4
+  }
+});

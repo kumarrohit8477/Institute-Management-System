@@ -245,9 +245,11 @@ export class SaasService {
   /**
    * Get all registered Institute Tenants (Super Admin)
    */
-  static async getAllInstitutes(params: SaasQueryParams) {
-    const { status, planTier, search, page = 1, limit = 50 } = params;
-    const skip = (page - 1) * limit;
+  static async getAllInstitutes(params: { search?: string; status?: InstituteStatus; planTier?: PlanTier; page?: number; limit?: number }) {
+    const { search, status, planTier, page = 1, limit = 20 } = params;
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 20;
+    const skip = (pageNum - 1) * limitNum;
 
     const where: Prisma.InstituteWhereInput = {
       ...(status ? { status } : {}),
@@ -269,7 +271,7 @@ export class SaasService {
       prisma.institute.findMany({
         where,
         skip,
-        take: limit,
+        take: limitNum,
         orderBy: { createdAt: "desc" },
         include: {
           subscription: {
@@ -291,10 +293,10 @@ export class SaasService {
     return {
       institutes,
       meta: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limitNum)
       }
     };
   }
@@ -505,9 +507,11 @@ export class SaasService {
   /**
    * Get all B2B Platform Invoices (Super Admin)
    */
-  static async getPlatformInvoices(params: { status?: InvoiceStatus; page?: number; limit?: number }) {
+  static async getAllInvoices(params: { status?: InvoiceStatus; page?: number; limit?: number }) {
     const { status, page = 1, limit = 50 } = params;
-    const skip = (page - 1) * limit;
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 50;
+    const skip = (pageNum - 1) * limitNum;
 
     const where: Prisma.PlatformInvoiceWhereInput = {
       ...(status ? { status } : {})
@@ -518,7 +522,7 @@ export class SaasService {
       prisma.platformInvoice.findMany({
         where,
         skip,
-        take: limit,
+        take: limitNum,
         orderBy: { createdAt: "desc" },
         include: {
           institute: { select: { id: true, name: true, code: true, email: true } },
@@ -530,10 +534,10 @@ export class SaasService {
     return {
       invoices,
       meta: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limitNum)
       }
     };
   }

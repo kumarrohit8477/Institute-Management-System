@@ -14,7 +14,7 @@ export interface MobileAuthResponse {
     id: string;
     name?: string;
     email: string;
-    role: "SUPER_ADMIN" | "ADMIN" | "STUDENT";
+    role: "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT";
     organizationId?: string | null;
     status: string;
   };
@@ -33,6 +33,16 @@ export interface MobileAuthResponse {
     email: string;
     phone?: string | null;
   } | null;
+  teacher?: {
+    id: string;
+    employeeCode: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string | null;
+    qualification?: string | null;
+    specialization?: string | null;
+  } | null;
   tokens?: {
     accessToken: string;
     refreshToken: string;
@@ -44,7 +54,7 @@ export class MobileAuthService {
     const data = await MobileApiService.request<any>("/auth/login", {
       method: "POST",
       body: JSON.stringify(credentials),
-      requiresAuth: false
+      requiresAuth: false,
     });
 
     const accessToken = data.tokens?.accessToken || data.accessToken || data.token;
@@ -54,31 +64,34 @@ export class MobileAuthService {
       throw new Error("Invalid response from authentication server");
     }
 
-    // Ensure only students authenticate into the student mobile application
-    if (data.user.role !== "STUDENT") {
-      throw new Error(
-        `Access Restricted: This mobile app is exclusively designed for students. (${data.user.role} accounts should use the Web Admin Portal).`
-      );
+    // All 4 roles are now supported in the mobile app
+    const allowedRoles = ["STUDENT", "TEACHER", "ADMIN", "SUPER_ADMIN"];
+    if (!allowedRoles.includes(data.user.role)) {
+      throw new Error(`Unsupported account role: ${data.user.role}`);
     }
 
     await StorageService.setItem("ims_mobile_access_token", accessToken);
     await StorageService.setItem("ims_mobile_refresh_token", refreshToken);
     await StorageService.setItem("ims_mobile_user", JSON.stringify(data.user));
+
     if (data.institute) {
       await StorageService.setItem("ims_mobile_institute", JSON.stringify(data.institute));
     }
     if (data.student) {
       await StorageService.setItem("ims_mobile_student", JSON.stringify(data.student));
     }
+    if (data.teacher) {
+      await StorageService.setItem("ims_mobile_teacher", JSON.stringify(data.teacher));
+    }
 
     return {
       ...data,
       accessToken,
-      refreshToken
+      refreshToken,
     };
   }
 
-  static async getMe(): Promise<{ user: any; institute: any; student: any }> {
+  static async getMe(): Promise<{ user: any; institute: any; student: any; teacher: any }> {
     return MobileApiService.request("/auth/me");
   }
 
@@ -88,7 +101,7 @@ export class MobileAuthService {
       if (refreshToken) {
         await MobileApiService.request("/auth/logout", {
           method: "POST",
-          body: JSON.stringify({ refreshToken })
+          body: JSON.stringify({ refreshToken }),
         });
       }
     } catch (e) {

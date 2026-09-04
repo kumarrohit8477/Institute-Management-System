@@ -16,11 +16,10 @@
   display: flex;
   flex-direction: column;
   background: #d1e8f1;
+   box-shadow: 4px 0 20px rgba(15, 23, 42, 0.04);
   color: #334155;
-  border-right: 1px solid #e8edf5;
-  box-shadow: 8px 0 30px rgba(15, 23, 42, 0.025);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-family: "Manrope", sans-serif;
+
 }
 
 /* ================= MOBILE HEADER ================= */
@@ -32,75 +31,6 @@
   padding: 1rem;
   border-bottom: 1px solid #e8edf5;
 }
-
-.admin-sidebar__brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-width: 0;
-}
-
-.admin-sidebar__logo-image,
-.admin-sidebar__logo-fallback {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: 12px;
-}
-
-.admin-sidebar__logo-image {
-  object-fit: contain;
-  background: #ffffff;
-  border: 1px solid #e8edf5;
-  padding: 2px;
-}
-
-.admin-sidebar__logo-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-  color: #ffffff;
-  font-family: "Manrope", sans-serif;
-  font-size: 0.9rem;
-  font-weight: 800;
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.2);
-}
-
-.admin-sidebar__brand-info {
-  min-width: 0;
-}
-
-.admin-sidebar__title {
-  color: #172033;
-  font-family: "Manrope", sans-serif;
-  font-size: 1.25rem;
-  font-weight: 800;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.admin-sidebar__tagline {
-  font-size: 0.72rem;
-  color: #1085a5;
-  font-style: italic;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 160px;
-}
-
-.admin-sidebar__institute-name {
-  margin-top: 2px;
-  color: #94a3b8;
-  font-size: 0.68rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .admin-sidebar__close-button {
   width: 36px;
   height: 36px;
@@ -125,29 +55,27 @@
 
 .admin-sidebar__navigation {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem 0.9rem;
+  padding: 1.5rem 0.75rem;
   overflow-y: auto;
 }
 
 .admin-sidebar__navigation::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 .admin-sidebar__navigation::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
-  border-radius: 999px;
+  background: #cbd5e1;
+border-radius: 10px;
 }
 
 .admin-sidebar__section-title {
-  padding: 0 0.7rem 0.35rem;
+ padding: 0 0.75rem;
+  margin-bottom: 0.75rem;
   color: #94a3b8;
-  font-size: 0.65rem;
-  font-weight: 800;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
 }
 
 .admin-sidebar__nav-list {
@@ -290,9 +218,9 @@
 
 @media (min-width: 1024px) {
   .admin-sidebar {
-    position: relative;
-    height: 100%;
-    max-height: 100%;
+   position: sticky;
+    top: 72px;
+    height: calc(100vh - 72px);
     overflow: hidden;
     transform: none !important;
     z-index: 30;
@@ -301,7 +229,6 @@
   .admin-sidebar__overlay {
     display: none !important;
   }
-
   .admin-sidebar__mobile-header {
     display: none;
   }
@@ -315,11 +242,11 @@
     top: 0;
     left: 0;
     bottom: 0;
-    width: min(310px, 86vw);
+    width: min(290px, 85vw);
     height: 100vh;
     z-index: 50;
-    transform: translateX(-105%);
-    box-shadow: 20px 0 50px rgba(15, 23, 42, 0.18);
+    transform: translateX(-100%);
+    box-shadow: 12px 0 35px rgba(15, 23, 42, 0.15);
   }
 
   .admin-sidebar--open {

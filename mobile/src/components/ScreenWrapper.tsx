@@ -1,23 +1,38 @@
 import React, { ReactNode } from "react";
+import { View, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Colors } from "../theme/colors";
 
-export const ScreenWrapper: React.FC<{ children: ReactNode; style?: React.CSSProperties }> = ({ children, style }) => {
+interface ScreenWrapperProps {
+  children: ReactNode;
+  style?: any;
+  noPadding?: boolean;
+}
+
+export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
+  children,
+  style,
+  noPadding = false,
+}) => {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        backgroundColor: "#f8fafc",
-        fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-        color: "#0f172a",
-        maxWidth: "480px",
-        margin: "0 auto",
-        boxShadow: "0 0 20px rgba(0,0,0,0.05)",
-        position: "relative",
-        ...style
-      }}
-    >
-      {children}
-    </div>
+    <SafeAreaView style={[styles.safeArea, style]} edges={["top"]}>
+      <View style={[styles.content, noPadding && styles.noPadding]}>
+        {children}
+      </View>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  content: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  noPadding: {
+    padding: 0,
+  },
+});
