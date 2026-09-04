@@ -9,6 +9,13 @@ interface RateLimitStore {
 const ipStore: Map<string, RateLimitStore> = new Map();
 
 /**
+ * Reset all rate limit counters (useful for development/testing)
+ */
+export const clearRateLimitStore = () => {
+  ipStore.clear();
+};
+
+/**
  * Creates an in-memory rate limiting middleware
  * @param windowMs Time window in milliseconds (default: 15 minutes)
  * @param max Max allowed requests within windowMs (default: 100)
@@ -19,13 +26,19 @@ export const createRateLimiter = (options: {
   max?: number;
   message?: string;
 } = {}) => {
+  const isDev = process.env.NODE_ENV !== "production";
   const {
     windowMs = 15 * 60 * 1000, // 15 mins
-    max = 100,
+    max = isDev ? 10000 : 100, // Generous limit in development to prevent lockouts
     message = "Too many requests from this IP, please try again later."
   } = options;
 
   return (req: Request, res: Response, next: NextFunction) => {
+    // Skip rate limiting in development mode
+    if (isDev) {
+      return next();
+    }
+
     const ip = req.ip || req.socket.remoteAddress || "unknown_ip";
     const now = Date.now();
 
@@ -70,11 +83,11 @@ export const createRateLimiter = (options: {
 // Preset limiters for sensitive endpoints
 export const authRateLimiter = createRateLimiter({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 30, // 30 login attempts per 5 mins
+  max: process.env.NODE_ENV === "production" ? 30 : 10000, // 30 in prod, 10,000 in dev
   message: "Too many login attempts. For security reasons, please wait before trying again."
 });
 
 export const apiGeneralRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  max: 1000
+  max: 10000
 });
