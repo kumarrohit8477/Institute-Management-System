@@ -400,6 +400,7 @@ model User {
   recordedAttendances Attendance[]
   collectedPayments   Payment[]
   notifications       Notification[]
+  passwordResetTokens PasswordResetToken[]
 
   @@unique([instituteId, email])
   @@index([instituteId, status])
@@ -1093,3 +1094,23 @@ model Notification {
   @@index([instituteId, createdAt])
   @@map("notifications")
 }
+
+// ------------------------------------------------------------------------------
+// 28. PASSWORD RESET TOKEN (Forgot / Reset Password Security Tokens)
+// ------------------------------------------------------------------------------
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  userId    String    @db.VarChar(36)
+  tokenHash String    @unique @db.VarChar(255)
+  expiresAt DateTime  @db.DateTime(3)
+  usedAt    DateTime? @db.DateTime(3)
+  createdAt DateTime  @default(now()) @db.DateTime(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("password_reset_tokens")
+}
+
