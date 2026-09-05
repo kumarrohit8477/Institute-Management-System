@@ -4,7 +4,7 @@ import { ResponseHandler } from "../utils/apiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AuthenticatedRequest } from "../types";
 import { AppError } from "../utils/appError";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 
 export class InstituteController {
   /**

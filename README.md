@@ -4,89 +4,51 @@ A robust, enterprise-grade, multi-tenant Institute Management System designed fo
 
 ---
 
-## 📁 Monorepo Structure
+## 📁 Independent Applications Structure
+
+This project contains three **independent standalone applications**:
 
 ```
 institute-management-system/
-├── backend/                  # Node.js + Express / NestJS + Prisma REST API
-│   ├── src/                  # Controllers, Services, Middlewares, Routes
-│   ├── package.json          # @ims/backend
+├── backend/                  # Standalone Node.js + Express REST API (institute-backend)
+│   ├── src/                  # Controllers, Services, Middlewares, Routes, Types, Common
+│   ├── package.json
 │   └── tsconfig.json
-├── web/                      # React Admin & Student Web Portal
-│   ├── src/                  # Views, Components, Hooks, API client
-│   ├── package.json          # @ims/web
+├── web/                      # Standalone React Admin & Student Web Portal (institute-web)
+│   ├── src/                  # Views, Components, Hooks, API client, Types, Common
+│   ├── package.json
 │   └── tsconfig.json
-├── mobile/                   # React Native / Expo Student Mobile App
-│   ├── src/                  # Screens, Navigation, Components
-│   ├── package.json          # @ims/mobile
+├── mobile/                   # Standalone React Native / Expo Student Mobile App (institute-mobile)
+│   ├── src/                  # Screens, Navigation, Components, Types, Common
+│   ├── package.json
 │   └── tsconfig.json
-├── packages/                 # Shared Monorepo Packages
-│   ├── types/                # @ims/types (Data models, enums & DTOs)
-│   ├── common/               # @ims/common (Constants, validators, helpers)
-│   └── tsconfig/             # @ims/tsconfig (Base TS configs)
 ├── architecture/             # Architectural Blueprint & Specifications
-│   ├── database-entities.md
-│   ├── entity-relationships.md
-│   └── module-dependency-order.md
-├── package.json              # Monorepo root workspace config
-├── tsconfig.json             # Root TypeScript config
-├── .gitignore                # Universal Git ignore rules
-└── .env.example              # Centralized environment template
+└── .gitignore                # Universal Git ignore rules
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- **Node.js**: `v20+` (v24.x recommended)
-- **npm**: `v10+` (v11.x recommended)
+Each application is completely independent and can be installed and executed from its respective directory.
 
-### Installation
+### 1. Backend API (`backend/`)
 ```bash
-# Install all dependencies across workspaces
+cd backend
 npm install
+npm run dev
 ```
 
-### Running Applications
+### 2. Web Portal (`web/`)
 ```bash
-# Start backend service
-npm run dev:backend
-
-# Start web portal
-npm run dev:web
-
-# Start mobile application
-npm run dev:mobile
+cd web
+npm install
+npm run dev
 ```
 
----
-
-## 🗺️ Roadmap & Module Sequence
-
-1. **Phase 1: Foundation & Identity**
-   - Step 1: Root Project & Monorepo Structure (Backend, Web, Mobile, Packages)
-   - Step 2: Tenant (`Institute`) & `User` Database Base with Prisma
-   - Step 3: Authentication & RBAC Engine (`ADMIN` & `STUDENT`)
-2. **Phase 2: Academic Core & Faculty**
-   - Courses & Subjects Catalog
-   - Teacher / Faculty Directory (No login credentials)
-   - Batches & Faculty Assignment
-3. **Phase 3: Student Enrollment**
-   - Student Profiles & Credentials
-   - Batch Enrollment
-4. **Phase 4: Classroom Operations**
-   - Timetable & Class Schedules
-   - Attendance Tracking
-   - Study Material Upload & Distribution
-5. **Phase 5: Examination Engine**
-   - Question Bank & Difficulty Levels
-   - Test Scheduling & Section Builders
-   - Online Test Attempt Engine
-   - Automated Grading & Results Analytics
-6. **Phase 6: Financials & Communications**
-   - Fee Structures, Invoices & Payment Tracking
-   - Multi-channel Notification System
-7. **Phase 7: Dashboards & Client Portals**
-   - Admin Management & Analytics Dashboard
-   - Student Self-Service Web & Mobile Portals
+### 3. Mobile Application (`mobile/`)
+```bash
+cd mobile
+npm install
+npm run start
+```

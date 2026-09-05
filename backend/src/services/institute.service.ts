@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 import { UploadLogoInput, UpdateInstituteProfileInput } from "../validations/institute.validation";
 import fs from "fs";
 import path from "path";

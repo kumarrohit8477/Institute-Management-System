@@ -1,7 +1,8 @@
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
 import { PasswordUtil } from "../utils/password";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
+import { PlanTier } from "../types";
 import {
   InstituteStatus,
   SubscriptionStatus,
@@ -507,6 +508,10 @@ export class SaasService {
   /**
    * Get all B2B Platform Invoices (Super Admin)
    */
+  static async getPlatformInvoices(params: { status?: InvoiceStatus; page?: number; limit?: number }) {
+    return this.getAllInvoices(params);
+  }
+
   static async getAllInvoices(params: { status?: InvoiceStatus; page?: number; limit?: number }) {
     const { status, page = 1, limit = 50 } = params;
     const pageNum = Number(page) || 1;

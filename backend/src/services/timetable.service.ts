@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 import { ScheduleStatus, Prisma, DayOfWeek, ClassType } from "@prisma/client";
 import { CreateTimetableInput, UpdateTimetableInput, TimetableQueryParams } from "../validations/timetable.validation";
 import { TimeUtil } from "../utils/timeUtil";

@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 import { SubjectStatus, Prisma } from "@prisma/client";
 import { CreateSubjectInput, UpdateSubjectInput } from "../validations/subject.validation";
 

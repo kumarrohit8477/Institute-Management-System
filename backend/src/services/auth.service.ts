@@ -2,7 +2,7 @@ import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
 import { PasswordUtil } from "../utils/password";
 import { TokenUtil, TokenPayload } from "../utils/token";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 import { UserStatus, InstituteStatus, UserRole } from "@prisma/client";
 import { LoginInput } from "../validations/auth.validation";
 
@@ -47,7 +47,8 @@ export class AuthService {
           },
           include: {
             institute: true,
-            student: true
+            student: true,
+            teacher: true
           }
         });
       } else {
@@ -56,7 +57,8 @@ export class AuthService {
           where: { email: identifier.toLowerCase() },
           include: {
             institute: true,
-            student: true
+            student: true,
+            teacher: true
           }
         });
 
@@ -73,7 +75,12 @@ export class AuthService {
       }
     } else {
       // 3. Identifier is not an email — Check Student Admission Number or Teacher Employee Code
-      const studentWhere: any = { admissionNumber: identifier };
+      const studentWhere: any = {
+        OR: [
+          { admissionNumber: identifier },
+          { admissionNumber: identifier.toUpperCase() }
+        ]
+      };
       if (targetInstituteId) {
         studentWhere.instituteId = targetInstituteId;
       }
@@ -96,7 +103,12 @@ export class AuthService {
         user = studentProfile.user;
       } else {
         // Check Teacher Employee Code
-        const teacherWhere: any = { employeeCode: identifier.toUpperCase() };
+        const teacherWhere: any = {
+          OR: [
+            { employeeCode: identifier },
+            { employeeCode: identifier.toUpperCase() }
+          ]
+        };
         if (targetInstituteId) {
           teacherWhere.instituteId = targetInstituteId;
         }

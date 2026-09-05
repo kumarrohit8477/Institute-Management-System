@@ -1,4 +1,4 @@
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 
 export class AppError extends Error {
   public readonly statusCode: number;

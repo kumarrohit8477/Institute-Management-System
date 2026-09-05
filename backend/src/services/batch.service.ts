@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 import { BatchStatus, Prisma } from "@prisma/client";
 import { CreateBatchInput, CreateBatchWizardInput, UpdateBatchInput } from "../validations/batch.validation";
 import { BatchSubjectStatus, AssignmentStatus, ScheduleStatus, DayOfWeek, ClassType } from "@prisma/client";

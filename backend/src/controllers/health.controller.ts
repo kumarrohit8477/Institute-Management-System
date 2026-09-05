@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ResponseHandler } from "../utils/apiResponse";
-import { APP_NAME, API_VERSION } from "@ims/common";
+import { APP_NAME, API_VERSION } from "../common";
 import { testDatabaseConnection } from "../config/prisma";
 
 export class HealthController {

@@ -1,7 +1,9 @@
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
-import { HTTP_STATUS } from "@ims/common";
-import { StudentBatchStatus } from "@prisma/client";
+import { HTTP_STATUS } from "../common";
+import { StudentBatchStatus, UserRole, UserStatus } from "@prisma/client";
+import { EmailService } from "./email.service";
+import { PasswordUtil } from "../utils/password";
 
 export class StudentBatchService {
   /**
@@ -37,13 +39,35 @@ export class StudentBatchService {
       throw new AppError("Batch capacity has been reached.", HTTP_STATUS.BAD_REQUEST);
     }
 
-    // Verify student
-    const student = await prisma.student.findFirst({
-      where: { id: studentId, instituteId }
+    // Verify student and check user account
+    let student = await prisma.student.findFirst({
+      where: { id: studentId, instituteId },
+      include: { user: true }
     });
 
     if (!student) {
       throw new AppError("Student not found in this institute", HTTP_STATUS.NOT_FOUND);
+    }
+
+    // Auto-create User account if missing
+    let generatedPassword: string | undefined;
+    if (!student.userId || !student.user) {
+      generatedPassword = "StudentPassword123!";
+      const passwordHash = await PasswordUtil.hash(generatedPassword);
+      const user = await prisma.user.create({
+        data: {
+          instituteId,
+          email: student.email.toLowerCase(),
+          passwordHash,
+          role: UserRole.STUDENT,
+          status: UserStatus.ACTIVE
+        }
+      });
+      student = await prisma.student.update({
+        where: { id: student.id },
+        data: { userId: user.id },
+        include: { user: true }
+      });
     }
 
     const existing = await prisma.studentBatch.findUnique({
@@ -55,12 +79,13 @@ export class StudentBatchService {
       }
     });
 
+    let studentBatch;
     if (existing) {
       if (existing.status === StudentBatchStatus.ACTIVE) {
         throw new AppError("Student is already actively enrolled in this batch", HTTP_STATUS.CONFLICT);
       }
       // Re-activate
-      return prisma.studentBatch.update({
+      studentBatch = await prisma.studentBatch.update({
         where: { id: existing.id },
         data: {
           status: StudentBatchStatus.ACTIVE,
@@ -69,21 +94,42 @@ export class StudentBatchService {
         },
         include: { student: true, batch: true }
       });
+    } else {
+      studentBatch = await prisma.studentBatch.create({
+        data: {
+          batchId,
+          studentId,
+          rollNumber: rollNumber || student.admissionNumber,
+          enrolledAt: enrolledAt ? new Date(enrolledAt) : new Date(),
+          status: StudentBatchStatus.ACTIVE
+        },
+        include: {
+          student: true,
+          batch: true
+        }
+      });
     }
 
-    const studentBatch = await prisma.studentBatch.create({
-      data: {
-        batchId,
-        studentId,
-        rollNumber: rollNumber || student.admissionNumber,
-        enrolledAt: enrolledAt ? new Date(enrolledAt) : new Date(),
-        status: StudentBatchStatus.ACTIVE
-      },
-      include: {
-        student: true,
-        batch: true
+    // Send email with student credentials and batch enrollment info
+    (async () => {
+      try {
+        const institute = await prisma.institute.findUnique({
+          where: { id: instituteId },
+          select: { name: true }
+        });
+
+        await EmailService.sendStudentCredentials({
+          toEmail: student.email,
+          studentName: `${student.firstName} ${student.lastName}`,
+          admissionNumber: student.admissionNumber,
+          password: generatedPassword,
+          instituteName: institute?.name || "Institute Management System",
+          batchName: batch.name
+        });
+      } catch (err) {
+        console.error("[BATCH ENROLLMENT EMAIL FAILED]", err);
       }
-    });
+    })();
 
     return studentBatch;
   }

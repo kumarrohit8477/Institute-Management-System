@@ -80,7 +80,13 @@ async function runStudentEnrollmentVerification() {
     // TEST 3: Enroll student into batch
     // -------------------------------------------------------------------------
     console.log("\n▶ 3. ASSIGN STUDENT TO BATCH");
-    const testStudent = res.students[0];
+    let testStudent = res.students.find(s => !s.batches.some(b => b.batchId === batch.id));
+    if (!testStudent) {
+      testStudent = res.students[0];
+      await prisma.studentBatch.deleteMany({
+        where: { studentId: testStudent.id, batchId: batch.id }
+      });
+    }
     const rollNo = `TEST-ROLL-${Date.now().toString().slice(-4)}`;
 
     // Try assigning

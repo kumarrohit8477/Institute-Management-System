@@ -1,11 +1,10 @@
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
-import { HTTP_STATUS } from "@ims/common";
-import { Prisma } from "@prisma/client";
+import { HTTP_STATUS } from "../common";
+import { Prisma, UserRole, UserStatus } from "@prisma/client";
 import { CreateTeacherInput, UpdateTeacherInput, TeacherQueryParams } from "../validations/teacher.validation";
-
 import { PasswordUtil } from "../utils/password";
-import { UserRole, UserStatus } from "@prisma/client";
+import { EmailService } from "./email.service";
 
 export class TeacherService {
   /**
@@ -64,28 +63,28 @@ export class TeacherService {
       }
     }
 
-    // Optionally create User login account
+    // Always ensure User login account is created for added Teacher
     let userId: string | null = null;
-    if (createUserAccount || password) {
-      const existingUser = await prisma.user.findFirst({
-        where: { email: email.toLowerCase(), instituteId }
+    const teacherPassword = password || "Teacher@123";
+
+    const existingUser = await prisma.user.findFirst({
+      where: { email: email.toLowerCase(), instituteId }
+    });
+
+    if (existingUser) {
+      userId = existingUser.id;
+    } else {
+      const passwordHash = await PasswordUtil.hash(teacherPassword);
+      const newUser = await prisma.user.create({
+        data: {
+          instituteId,
+          email: email.toLowerCase(),
+          passwordHash,
+          role: UserRole.TEACHER,
+          status: UserStatus.ACTIVE
+        }
       });
-      if (existingUser) {
-        userId = existingUser.id;
-      } else {
-        const defaultPassword = password || "Teacher@123";
-        const passwordHash = await PasswordUtil.hash(defaultPassword);
-        const newUser = await prisma.user.create({
-          data: {
-            instituteId,
-            email: email.toLowerCase(),
-            passwordHash,
-            role: UserRole.TEACHER,
-            status: UserStatus.ACTIVE
-          }
-        });
-        userId = newUser.id;
-      }
+      userId = newUser.id;
     }
 
     const teacher = await prisma.teacher.create({
@@ -121,6 +120,26 @@ export class TeacherService {
         user: { select: { id: true, email: true, role: true, status: true } }
       }
     });
+
+    // Send welcome credentials email to added teacher asynchronously
+    (async () => {
+      try {
+        const institute = await prisma.institute.findUnique({
+          where: { id: instituteId },
+          select: { name: true }
+        });
+
+        await EmailService.sendTeacherCredentials({
+          toEmail: teacher.email,
+          teacherName: `${teacher.firstName} ${teacher.lastName}`,
+          employeeCode: teacher.employeeCode,
+          password: existingUser ? undefined : teacherPassword,
+          instituteName: institute?.name || "Institute Management System"
+        });
+      } catch (err) {
+        console.error("[TEACHER CREATION EMAIL FAILED]", err);
+      }
+    })();
 
     return teacher;
   }

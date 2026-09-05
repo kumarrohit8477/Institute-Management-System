@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 import { AttemptStatus } from "@prisma/client";
 import { SaveAnswerInput } from "../validations/attempt.validation";
 import { EvaluationService } from "./evaluation.service";

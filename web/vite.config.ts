@@ -7,9 +7,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "."),
-      "@ims/common": path.resolve(__dirname, "../packages/common/src"),
-      "@ims/types": path.resolve(__dirname, "../packages/types/src")
+      "@": path.resolve(__dirname, ".")
     }
   },
   server: {

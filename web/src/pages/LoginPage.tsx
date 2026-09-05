@@ -93,10 +93,10 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          {/* Email or Student ID field */}
+          {/* Email or Student/Teacher ID field */}
           <div className="login-form__field">
             <label className="login-form__label">
-              Email Address or Student ID
+              Email Address or User ID (Student / Teacher)
             </label>
             <div className="login-form__input-wrapper">
               <Mail size={18} className="login-form__input-icon" />
@@ -105,7 +105,7 @@ export const LoginPage: React.FC = () => {
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="you@institute.local or ADM-2026-0001"
+                placeholder="you@institute.local, ADM-2026-0001, or FAC-2026-0001"
                 className="login-form__input"
               />
             </div>
@@ -216,9 +216,21 @@ export const LoginPage: React.FC = () => {
               >
                 <div className="login-demo__role">
                   <span>👨‍🏫</span>
-                  <strong>Faculty / Teacher</strong>
+                  <strong>Teacher Email</strong>
                 </div>
                 <code className="login-demo__code">amit.sharma@apexacademy.local (INST001)</code>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fillQuickCredentials("FAC-2026-0001", "Teacher@123", "INST001")}
+                className="login-demo__item"
+              >
+                <div className="login-demo__role">
+                  <span>🆔</span>
+                  <strong>Teacher ID</strong>
+                </div>
+                <code className="login-demo__code">FAC-2026-0001 (INST001)</code>
               </button>
 
               <button

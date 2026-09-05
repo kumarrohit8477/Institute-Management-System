@@ -1,5 +1,5 @@
 {
-  "name": "@ims/mobile",
+  "name": "institute-mobile",
   "version": "1.0.0",
   "private": true,
   "description": "Student Mobile Application for Institute Management System",
@@ -13,8 +13,6 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@ims/common": "*",
-    "@ims/types": "*",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.18.18",
     "@react-navigation/native": "^7.3.18",

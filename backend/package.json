@@ -1,5 +1,5 @@
 {
-  "name": "@ims/backend",
+  "name": "institute-backend",
   "version": "1.0.0",
   "private": true,
   "description": "Backend API Service for Institute Management System",
@@ -18,14 +18,14 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@ims/common": "*",
-    "@ims/types": "*",
     "@prisma/client": "^5.14.0",
+    "@types/nodemailer": "^8.0.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^10.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

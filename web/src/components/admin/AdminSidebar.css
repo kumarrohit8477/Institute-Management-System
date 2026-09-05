@@ -2,13 +2,11 @@
   position: fixed;
   inset: 0;
   z-index: 45;
-  background: rgba(15, 23, 42, 0.42);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  animation: admin-sidebar-fade-in 0.25s ease-out;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: admin-sidebar-fade-in 0.2s ease;
 }
-
-/* ================= SIDEBAR ================= */
 
 .admin-sidebar {
   width: 290px;
@@ -16,30 +14,31 @@
   display: flex;
   flex-direction: column;
   background: #d1e8f1;
-   box-shadow: 4px 0 20px rgba(15, 23, 42, 0.04);
-  color: #334155;
+  box-shadow: 4px 0 20px rgba(15, 23, 42, 0.04);
+  color: #1e293b;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
 }
 
-/* ================= MOBILE HEADER ================= */
-
+/* Mobile Header */
 .admin-sidebar__mobile-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  border-bottom: 1px solid #e8edf5;
+  justify-content: flex-end;
+  height: 64px;
+  padding: 0 1rem;
+  border-bottom: 1px solid #e5e7eb;
 }
+
 .admin-sidebar__close-button {
-  width: 36px;
-  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
-  border: 1px solid #e8edf5;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: none;
   border-radius: 10px;
+  background: #f8fafc;
   color: #64748b;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -47,12 +46,10 @@
 
 .admin-sidebar__close-button:hover {
   background: #f1f5f9;
-  color: #1e293b;
-  transform: rotate(90deg);
+  color: #0f172a;
 }
 
 /* ================= NAVIGATION ================= */
-
 .admin-sidebar__navigation {
   flex: 1;
   padding: 1.5rem 0.75rem;
@@ -65,11 +62,11 @@
 
 .admin-sidebar__navigation::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-border-radius: 10px;
+  border-radius: 10px;
 }
 
 .admin-sidebar__section-title {
- padding: 0 0.75rem;
+  padding: 0 0.75rem;
   margin-bottom: 0.75rem;
   color: #94a3b8;
   font-size: 0.7rem;
@@ -81,7 +78,7 @@ border-radius: 10px;
 .admin-sidebar__nav-list {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.35rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -92,7 +89,6 @@ border-radius: 10px;
 }
 
 /* ================= NAV LINK ================= */
-
 .admin-sidebar__nav-link {
   position: relative;
   display: flex;
@@ -116,34 +112,24 @@ border-radius: 10px;
   transform: translateX(2px);
 }
 
-/* ================= ACTIVE LINK ================= */
-
+/* Active Navigation */
 .admin-sidebar__nav-link--active {
-  background: linear-gradient(135deg, #eff6ff, #f8fbff);
-  border-color: #dbeafe;
+  background: #eff6ff;
   color: #2563eb;
   font-weight: 700;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.07);
 }
 
-.admin-sidebar__nav-link--active::before {
-  content: "";
-  position: absolute;
-  left: -1px;
-  top: 9px;
-  bottom: 9px;
-  width: 3px;
-  background: #2563eb;
-  border-radius: 0 4px 4px 0;
+.admin-sidebar__nav-link--active:hover {
+  background: #dbeafe;
 }
 
 .admin-sidebar__nav-icon {
   flex-shrink: 0;
-  transition: transform 0.2s ease;
+  transition: color 0.2s ease;
 }
 
-.admin-sidebar__nav-link:hover .admin-sidebar__nav-icon {
-  transform: scale(1.08);
+.admin-sidebar__nav-icon--active {
+  color: #2563eb;
 }
 
 .admin-sidebar__nav-text {
@@ -170,12 +156,11 @@ border-radius: 10px;
 }
 
 /* ================= FOOTER ================= */
-
 .admin-sidebar__footer {
   flex-shrink: 0;
   padding: 1rem 1.25rem;
-  background: #fafbfd;
-  border-top: 1px solid #e8edf5;
+  background: rgba(255, 255, 255, 0.4);
+  border-top: 1px solid #e5e7eb;
 }
 
 .admin-sidebar__term-status {
@@ -207,18 +192,16 @@ border-radius: 10px;
   font-weight: 500;
 }
 
-/* ================= ANIMATION ================= */
-
+/* Animation */
 @keyframes admin-sidebar-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-/* ================= DESKTOP ================= */
-
+/* Desktop */
 @media (min-width: 1024px) {
   .admin-sidebar {
-   position: sticky;
+    position: sticky;
     top: 72px;
     height: calc(100vh - 72px);
     overflow: hidden;
@@ -226,16 +209,13 @@ border-radius: 10px;
     z-index: 30;
   }
 
-  .admin-sidebar__overlay {
-    display: none !important;
-  }
+  .admin-sidebar__overlay,
   .admin-sidebar__mobile-header {
-    display: none;
+    display: none !important;
   }
 }
 
-/* ================= MOBILE DRAWER ================= */
-
+/* Tablet & Mobile */
 @media (max-width: 1023px) {
   .admin-sidebar {
     position: fixed;

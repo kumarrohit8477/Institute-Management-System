@@ -1,9 +1,10 @@
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
 import { PasswordUtil } from "../utils/password";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 import { UserRole, UserStatus, StudentStatus, Prisma } from "@prisma/client";
 import { CreateStudentInput, UpdateStudentInput, StudentQueryParams } from "../validations/student.validation";
+import { EmailService } from "./email.service";
 
 export class StudentService {
   /**
@@ -128,6 +129,36 @@ export class StudentService {
         initialPassword: password
       };
     });
+
+    // Send welcome email with login credentials asynchronously
+    (async () => {
+      try {
+        const institute = await prisma.institute.findUnique({
+          where: { id: instituteId },
+          select: { name: true }
+        });
+
+        let batchName: string | undefined;
+        if (batchId) {
+          const batch = await prisma.batch.findUnique({
+            where: { id: batchId },
+            select: { name: true }
+          });
+          batchName = batch?.name;
+        }
+
+        await EmailService.sendStudentCredentials({
+          toEmail: result.email,
+          studentName: `${result.firstName} ${result.lastName}`,
+          admissionNumber: result.admissionNumber,
+          password: password,
+          instituteName: institute?.name || "Institute Management System",
+          batchName
+        });
+      } catch (err) {
+        console.error("[STUDENT CREATION EMAIL FAILED]", err);
+      }
+    })();
 
     return result;
   }

@@ -1,40 +1,99 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --student-primary: #2563eb;
+  --student-primary-dark: #1d4ed8;
+  --student-primary-light: #eff6ff;
+
+  --student-bg: #f6f8fc;
+  --student-surface: #ffffff;
+  --student-border: #e8edf5;
+
+  --student-text: #172033;
+  --student-text-secondary: #64748b;
+  --student-text-muted: #94a3b8;
+
+  --student-radius-sm: 10px;
+  --student-radius-md: 14px;
+  --student-radius-lg: 20px;
+}
+
+* {
+  box-sizing: border-box;
+}
 
 .student-layout {
   display: flex;
   flex-direction: column;
+
   height: 100vh;
   max-height: 100vh;
+
   width: 100%;
   max-width: 100vw;
-  background-color: #f8fafc;
-  color: #0f172a;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  color: var(--student-text);
+  font-family: "DM Sans", sans-serif;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(37, 99, 235, 0.05),
+      transparent 30%
+    ),
+    #FFF5F5;
+
   overflow: hidden;
 }
 
-/* Container below navbar dividing into Sidebar (left) and Main Content (right) */
 .student-layout__container {
   display: flex;
   flex-direction: row;
+
   flex: 1;
+  min-height: 0;
+
   width: 100%;
   height: calc(100vh - 72px);
-  min-height: 0;
+
   overflow: hidden;
   position: relative;
 }
 
-/* Main Content Area on the right - only this area scrolls */
 .student-layout__main {
   flex: 1;
   min-width: 0;
+  min-height: 0;
+
   height: 100%;
+
   display: flex;
   flex-direction: column;
-  padding: 2rem;
-  background-color: #f8fafc;
+
+  padding: 2rem 2.25rem;
+
   overflow-y: auto;
   overflow-x: hidden;
+
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.student-layout__main::-webkit-scrollbar {
+  width: 8px;
+}
+
+.student-layout__main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.student-layout__main::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.student-layout__main::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 @media (max-width: 1024px) {
@@ -52,4 +111,3 @@
     padding: 1rem;
   }
 }
-

@@ -1,6 +1,6 @@
 import { Response } from "express";
-import { HTTP_STATUS } from "@ims/common";
-import { ApiResponse } from "@ims/types";
+import { HTTP_STATUS } from "../common";
+import { ApiResponse } from "../types";
 
 export class ResponseHandler {
   static success<T>(

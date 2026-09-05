@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
 import { TokenUtil } from "../utils/token";
 import { AppError } from "../utils/appError";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 import { AuthenticatedRequest } from "../types";
 import { prisma } from "../config/prisma";
 import { UserRole, UserStatus } from "@prisma/client";

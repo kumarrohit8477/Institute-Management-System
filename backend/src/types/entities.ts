@@ -140,4 +140,3 @@ export interface IRoom extends ITenantEntity {
   type: RoomType;
   status: RoomStatus;
 }
-

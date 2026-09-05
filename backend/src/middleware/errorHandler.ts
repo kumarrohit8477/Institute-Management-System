@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 import { AppError } from "../utils/appError";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 import { config } from "../config/env";
 
 export const errorHandler: ErrorRequestHandler = (

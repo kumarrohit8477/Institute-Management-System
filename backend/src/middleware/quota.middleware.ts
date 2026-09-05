@@ -2,7 +2,7 @@ import { Response, NextFunction } from "express";
 import { AuthenticatedRequest } from "../types";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/appError";
-import { HTTP_STATUS } from "@ims/common";
+import { HTTP_STATUS } from "../common";
 import { SubscriptionPlan, UserRole } from "@prisma/client";
 
 /**
