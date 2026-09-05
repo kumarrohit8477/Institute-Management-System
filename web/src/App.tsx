@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/src/context/AuthContext";
+import { useAuth } from "@/src/hooks/useAuth";
 import { ProtectedRoute } from "@/src/components/ProtectedRoute";
 import { RoleRoute } from "@/src/components/RoleRoute";
 import { StudentLayout } from "@/src/components/student/StudentLayout";
@@ -52,96 +53,112 @@ import { StudentResultsPage } from "@/src/pages/student/StudentResultsPage";
 import { StudentFeesPage } from "@/src/pages/student/StudentFeesPage";
 import { StudentNotificationsPage } from "@/src/pages/student/StudentNotificationsPage";
 
+/**
+ * Keyed by the authenticated user's id so that switching accounts (login as
+ * a different user without a full page reload) forces every route/page
+ * component to unmount and remount. Without this, React Router keeps the
+ * same component instances mounted when the new session redirects to the
+ * same path (e.g. ADMIN -> ADMIN), so any page that loads its data in a
+ * mount-only useEffect keeps rendering data fetched for the previous user.
+ */
+const AppRoutes: React.FC = () => {
+  const { user } = useAuth();
+
+  return (
+    <Routes key={user?.id ?? "anonymous"}>
+      {/* Public Routes */}
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+      {/* Platform Super Admin Protected Routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<RoleRoute allowedRole="SUPER_ADMIN" />}>
+          <Route path="/superadmin" element={<SuperAdminLayout />}>
+            <Route index element={<Navigate to="/superadmin/dashboard" replace />} />
+            <Route path="dashboard" element={<SuperAdminDashboard />} />
+            <Route path="institutes" element={<InstitutesManagementPage />} />
+            <Route path="plans" element={<SubscriptionPlansPage />} />
+            <Route path="invoices" element={<PlatformBillingPage />} />
+          </Route>
+        </Route>
+      </Route>
+
+      {/* Institute Admin Protected Routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<RoleRoute allowedRole="ADMIN" />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="students" element={<AdminStudentsPage />} />
+            <Route path="teachers" element={<AdminTeachersPage />} />
+            <Route path="courses" element={<AdminCoursesPage />} />
+            <Route path="subjects" element={<AdminSubjectsPage />} />
+            <Route path="batches" element={<AdminBatchesPage />} />
+            <Route path="batches/new" element={<AdminCreateBatchPage />} />
+            <Route path="batches/:id" element={<AdminBatchDetailPage />} />
+            <Route path="rooms" element={<AdminRoomsPage />} />
+            <Route path="timetable" element={<AdminTimetablePage />} />
+            <Route path="materials" element={<AdminMaterialsPage />} />
+            <Route path="attendance" element={<AdminAttendancePage />} />
+            <Route path="branding" element={<AdminBrandingPage />} />
+            <Route path="profile" element={<AdminProfilePage />} />
+            <Route path="institute" element={<Navigate to="/admin/profile" replace />} />
+          </Route>
+        </Route>
+      </Route>
+
+      {/* Teacher Portal Protected Routes */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<RoleRoute allowedRole="TEACHER" />}>
+          <Route path="/teacher" element={<TeacherLayout />}>
+            <Route index element={<Navigate to="/teacher/dashboard" replace />} />
+            <Route path="dashboard" element={<TeacherDashboardPage />} />
+            <Route path="batches" element={<TeacherBatchesPage />} />
+            <Route path="timetable" element={<TeacherTimetablePage />} />
+          </Route>
+        </Route>
+      </Route>
+
+      {/* Student Dedicated Full-Screen Exam Attempt */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<RoleRoute allowedRole="STUDENT" />}>
+          <Route path="/student/tests/:testId/attempt" element={<OnlineExamInterfacePage />} />
+        </Route>
+      </Route>
+
+      {/* Student Protected Routes with StudentLayout */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<RoleRoute allowedRole="STUDENT" />}>
+          <Route path="/student" element={<StudentLayout />}>
+            <Route index element={<Navigate to="/student/dashboard" replace />} />
+            <Route path="dashboard" element={<StudentDashboard />} />
+            <Route path="courses" element={<MyCoursesPage />} />
+            <Route path="subjects" element={<MySubjectsPage />} />
+            <Route path="teachers" element={<MyTeachersPage />} />
+            <Route path="timetable" element={<StudentTimetablePage />} />
+            <Route path="materials" element={<StudentMaterialsPage />} />
+            <Route path="attendance" element={<StudentAttendancePage />} />
+            <Route path="tests" element={<StudentTestsPage />} />
+            <Route path="results" element={<StudentResultsPage />} />
+            <Route path="results/:testId" element={<StudentResultsPage />} />
+            <Route path="fees" element={<StudentFeesPage />} />
+            <Route path="notifications" element={<StudentNotificationsPage />} />
+          </Route>
+        </Route>
+      </Route>
+
+      {/* Default fallback route */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+};
+
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/unauthorized" element={<UnauthorizedPage />} />
-
-          {/* Platform Super Admin Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<RoleRoute allowedRole="SUPER_ADMIN" />}>
-              <Route path="/superadmin" element={<SuperAdminLayout />}>
-                <Route index element={<Navigate to="/superadmin/dashboard" replace />} />
-                <Route path="dashboard" element={<SuperAdminDashboard />} />
-                <Route path="institutes" element={<InstitutesManagementPage />} />
-                <Route path="plans" element={<SubscriptionPlansPage />} />
-                <Route path="invoices" element={<PlatformBillingPage />} />
-              </Route>
-            </Route>
-          </Route>
-
-          {/* Institute Admin Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<RoleRoute allowedRole="ADMIN" />}>
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<Navigate to="/admin/dashboard" replace />} />
-                <Route path="dashboard" element={<AdminDashboard />} />
-                <Route path="students" element={<AdminStudentsPage />} />
-                <Route path="teachers" element={<AdminTeachersPage />} />
-                <Route path="courses" element={<AdminCoursesPage />} />
-                <Route path="subjects" element={<AdminSubjectsPage />} />
-                <Route path="batches" element={<AdminBatchesPage />} />
-                <Route path="batches/new" element={<AdminCreateBatchPage />} />
-                <Route path="batches/:id" element={<AdminBatchDetailPage />} />
-                <Route path="rooms" element={<AdminRoomsPage />} />
-                <Route path="timetable" element={<AdminTimetablePage />} />
-                <Route path="materials" element={<AdminMaterialsPage />} />
-                <Route path="attendance" element={<AdminAttendancePage />} />
-                <Route path="branding" element={<AdminBrandingPage />} />
-                <Route path="profile" element={<AdminProfilePage />} />
-                <Route path="institute" element={<Navigate to="/admin/profile" replace />} />
-              </Route>
-            </Route>
-          </Route>
-
-          {/* Teacher Portal Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<RoleRoute allowedRole="TEACHER" />}>
-              <Route path="/teacher" element={<TeacherLayout />}>
-                <Route index element={<Navigate to="/teacher/dashboard" replace />} />
-                <Route path="dashboard" element={<TeacherDashboardPage />} />
-                <Route path="batches" element={<TeacherBatchesPage />} />
-                <Route path="timetable" element={<TeacherTimetablePage />} />
-              </Route>
-            </Route>
-          </Route>
-
-          {/* Student Dedicated Full-Screen Exam Attempt */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<RoleRoute allowedRole="STUDENT" />}>
-              <Route path="/student/tests/:testId/attempt" element={<OnlineExamInterfacePage />} />
-            </Route>
-          </Route>
-
-          {/* Student Protected Routes with StudentLayout */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<RoleRoute allowedRole="STUDENT" />}>
-              <Route path="/student" element={<StudentLayout />}>
-                <Route index element={<Navigate to="/student/dashboard" replace />} />
-                <Route path="dashboard" element={<StudentDashboard />} />
-                <Route path="courses" element={<MyCoursesPage />} />
-                <Route path="subjects" element={<MySubjectsPage />} />
-                <Route path="teachers" element={<MyTeachersPage />} />
-                <Route path="timetable" element={<StudentTimetablePage />} />
-                <Route path="materials" element={<StudentMaterialsPage />} />
-                <Route path="attendance" element={<StudentAttendancePage />} />
-                <Route path="tests" element={<StudentTestsPage />} />
-                <Route path="results" element={<StudentResultsPage />} />
-                <Route path="results/:testId" element={<StudentResultsPage />} />
-                <Route path="fees" element={<StudentFeesPage />} />
-                <Route path="notifications" element={<StudentNotificationsPage />} />
-              </Route>
-            </Route>
-          </Route>
-
-          {/* Default fallback route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AppRoutes />
       </AuthProvider>
     </BrowserRouter>
   );

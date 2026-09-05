@@ -4,22 +4,22 @@ const API_BASE_URL = "http://localhost:5000/api/v1";
 
 class ApiService {
   private static getAccessToken(): string | null {
-    return localStorage.getItem("ims_access_token");
+    return sessionStorage.getItem("ims_access_token");
   }
 
   private static getRefreshToken(): string | null {
-    return localStorage.getItem("ims_refresh_token");
+    return sessionStorage.getItem("ims_refresh_token");
   }
 
   private static setTokens(accessToken: string, refreshToken: string): void {
-    localStorage.setItem("ims_access_token", accessToken);
-    localStorage.setItem("ims_refresh_token", refreshToken);
+    sessionStorage.setItem("ims_access_token", accessToken);
+    sessionStorage.setItem("ims_refresh_token", refreshToken);
   }
 
   static clearTokens(): void {
-    localStorage.removeItem("ims_access_token");
-    localStorage.removeItem("ims_refresh_token");
-    localStorage.removeItem("ims_user_profile");
+    sessionStorage.removeItem("ims_access_token");
+    sessionStorage.removeItem("ims_refresh_token");
+    sessionStorage.removeItem("ims_user_profile");
   }
 
   /**
@@ -86,7 +86,7 @@ class ApiService {
 
     if (data.tokens) {
       this.setTokens(data.tokens.accessToken, data.tokens.refreshToken);
-      localStorage.setItem("ims_user_profile", JSON.stringify(data));
+      sessionStorage.setItem("ims_user_profile", JSON.stringify(data));
     }
 
     return data;

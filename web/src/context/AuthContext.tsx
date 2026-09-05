@@ -31,11 +31,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize from localStorage and verify session
+  // Initialize from sessionStorage and verify session
   useEffect(() => {
-    const initializeAuth = async () => {
-      const stored = localStorage.getItem("ims_user_profile");
-      const token = localStorage.getItem("ims_access_token");
+    // Mirrors whatever is currently in sessionStorage into state.
+    const syncFromStorage = () => {
+      const stored = sessionStorage.getItem("ims_user_profile");
+      const token = sessionStorage.getItem("ims_access_token");
 
       if (stored && token) {
         try {
@@ -43,7 +44,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser(parsed.user || null);
           setStudent(parsed.student || null);
           setInstitute(parsed.institute || null);
+        } catch {
+          setUser(null);
+          setStudent(null);
+          setInstitute(null);
+        }
+      } else {
+        setUser(null);
+        setStudent(null);
+        setInstitute(null);
+      }
+    };
 
+    const initializeAuth = async () => {
+      syncFromStorage();
+      const token = sessionStorage.getItem("ims_access_token");
+
+      if (token) {
+        try {
           // Verify with backend
           const me = await ApiService.getMe();
           if (me) {
@@ -109,13 +127,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const updateInstituteLogo = (logoUrl: string | null) => {
     setInstitute((prev) => (prev ? { ...prev, logoUrl } : null));
-    const stored = localStorage.getItem("ims_user_profile");
+    const stored = sessionStorage.getItem("ims_user_profile");
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         if (parsed.institute) {
           parsed.institute.logoUrl = logoUrl;
-          localStorage.setItem("ims_user_profile", JSON.stringify(parsed));
+          sessionStorage.setItem("ims_user_profile", JSON.stringify(parsed));
         }
       } catch {}
     }
@@ -123,13 +141,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const updateInstituteTagline = (tagline: string | null) => {
     setInstitute((prev) => (prev ? { ...prev, tagline } : null));
-    const stored = localStorage.getItem("ims_user_profile");
+    const stored = sessionStorage.getItem("ims_user_profile");
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         if (parsed.institute) {
           parsed.institute.tagline = tagline;
-          localStorage.setItem("ims_user_profile", JSON.stringify(parsed));
+          sessionStorage.setItem("ims_user_profile", JSON.stringify(parsed));
         }
       } catch {}
     }
@@ -140,12 +158,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const me = await ApiService.getMe();
       if (me?.institute) {
         setInstitute(me.institute);
-        const stored = localStorage.getItem("ims_user_profile");
+        const stored = sessionStorage.getItem("ims_user_profile");
         if (stored) {
           try {
             const parsed = JSON.parse(stored);
             parsed.institute = me.institute;
-            localStorage.setItem("ims_user_profile", JSON.stringify(parsed));
+            sessionStorage.setItem("ims_user_profile", JSON.stringify(parsed));
           } catch {}
         }
       }
