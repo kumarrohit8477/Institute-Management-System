@@ -189,7 +189,6 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({ onOpenEnquiry }) =
                 style={{ width: "100%", justifyContent: "center" }}
               >
                 <span>Send Enquiry</span>
-                <Send size={15} />
               </button>
             </div>
           </div>
