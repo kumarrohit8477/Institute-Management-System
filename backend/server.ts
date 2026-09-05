@@ -7,10 +7,12 @@ const server = http.createServer(app);
 
 const startServer = async () => {
   try {
-    server.listen(config.port, () => {
-      console.log(`🚀 IMS Backend Server running on port ${config.port} [${config.nodeEnv}]`);
-      console.log(`📡 Health check available at: http://localhost:${config.port}/health`);
-      console.log(`🔗 API Base route: http://localhost:${config.port}/api/v1`);
+    server.listen(config.port, "0.0.0.0", () => {
+      console.log(
+        `🚀 IMS Backend Server running on port ${config.port} [${config.nodeEnv}]`
+      );
+      console.log(`📡 Health check available at: /health`);
+      console.log(`🔗 API Base route: /api/v1`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);
