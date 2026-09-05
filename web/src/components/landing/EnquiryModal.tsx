@@ -143,10 +143,6 @@ export const EnquiryModal: React.FC<EnquiryModalProps> = ({ isOpen, onClose, ini
         {/* Header */}
         <div className="enquiry-modal__header">
           <div>
-            <div className="enquiry-modal__badge">
-              <Building2 size={14} />
-              <span>Eduvora SaaS Onboarding</span>
-            </div>
             <h2 id="enquiry-modal-title" className="enquiry-modal__title">
               {isSuccess
                 ? "Enquiry Sent!"
