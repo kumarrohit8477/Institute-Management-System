@@ -1,26 +1,48 @@
 import React, { useEffect, useState } from "react";
 import { SaasApi, SaasKPIs, InstituteTenantItem, PlatformInvoiceItem } from "@/src/services/saasApi";
+import { api } from "@/src/services/api";
+import { useAuth } from "@/src/hooks/useAuth";
 import {
   Building2,
   Users,
   IndianRupee,
   TrendingUp,
   AlertCircle,
-  ArrowUpRight
+  ArrowUpRight,
+  ShieldAlert,
+  KeyRound,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  Lock
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import "./SuperAdminDashboard.css";
 
 export const SuperAdminDashboard: React.FC = () => {
+  const { user } = useAuth();
   const [kpis, setKpis] = useState<SaasKPIs | null>(null);
   const [recentInstitutes, setRecentInstitutes] = useState<InstituteTenantItem[]>([]);
   const [recentInvoices, setRecentInvoices] = useState<PlatformInvoiceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Password Change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [pwdLoading, setPwdLoading] = useState(false);
+  const [pwdSuccess, setPwdSuccess] = useState<string | null>(null);
+  const [pwdError, setPwdError] = useState<string | null>(null);
+  const [mustChangePwdState, setMustChangePwdState] = useState<boolean>(user?.mustChangePassword ?? false);
+
   useEffect(() => {
     fetchOverview();
-  }, []);
+    if (user?.mustChangePassword !== undefined) {
+      setMustChangePwdState(user.mustChangePassword);
+    }
+  }, [user]);
 
   const fetchOverview = async () => {
     try {
@@ -36,6 +58,63 @@ export const SuperAdminDashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const handlePasswordChangeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwdError(null);
+    setPwdSuccess(null);
+
+    if (!currentPassword) {
+      setPwdError("Please enter your current password.");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPwdError("New password must be at least 8 characters long.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPwdError("New password and confirmation do not match.");
+      return;
+    }
+
+    setPwdLoading(true);
+
+    try {
+      const res = await api.post("/auth/change-password", {
+        currentPassword,
+        newPassword,
+        confirmPassword
+      });
+
+      setPwdSuccess(res?.message || "Password updated successfully! Your account credentials have been secured.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setMustChangePwdState(false);
+      if (user) {
+        user.mustChangePassword = false;
+      }
+    } catch (err: any) {
+      const msg = err.message || "Failed to update password. Please check your current password.";
+      setPwdError(msg);
+    } finally {
+      setPwdLoading(false);
+    }
+  };
+
+  const getStrength = (pwd: string) => {
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[a-z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    return score;
+  };
+
+  const pwdStrength = getStrength(newPassword);
 
   if (loading) {
     return (
@@ -113,6 +192,27 @@ export const SuperAdminDashboard: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {/* Mandatory Password Change Alert Banner */}
+      {mustChangePwdState && (
+        <div className="mb-6 p-4 rounded-2xl bg-amber-950/80 border border-amber-500/40 text-amber-200 text-sm flex items-start gap-3.5 shadow-lg">
+          <ShieldAlert className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h4 className="font-bold text-amber-300 text-base mb-1">
+              Security Action Required: Update Temporary Password
+            </h4>
+            <p className="text-amber-200/90 text-xs leading-relaxed">
+              You logged in using a temporary setup password. For account safety, please change your password using the Security Settings panel below.
+            </p>
+          </div>
+          <a
+            href="#security-settings"
+            className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs transition-all shrink-0 self-center shadow"
+          >
+            Change Now
+          </a>
+        </div>
+      )}
 
       {/* KPI Cards Grid */}
       <div className="superadmin-dashboard__kpis">
@@ -243,6 +343,123 @@ export const SuperAdminDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Super Admin Security & Password Settings Panel */}
+      <div id="security-settings" className="mt-8">
+        <div className="superadmin-dashboard__card border border-indigo-500/20 shadow-xl">
+          <div className="superadmin-dashboard__card-header border-b border-slate-800 pb-4">
+            <div className="superadmin-dashboard__card-title-row">
+              <KeyRound className="w-5 h-5 text-indigo-500" />
+              <div>
+                <h2 className="superadmin-dashboard__card-title">Super Admin Security Settings</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Manage and update your platform Super Admin password</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6">
+            {pwdSuccess && (
+              <div className="mb-5 p-4 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2.5">
+                <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
+                <span>{pwdSuccess}</span>
+              </div>
+            )}
+
+            {pwdError && (
+              <div className="mb-5 p-4 rounded-xl bg-rose-950/70 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2.5">
+                <AlertCircle size={18} className="text-rose-400 shrink-0" />
+                <span>{pwdError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handlePasswordChangeSubmit} className="max-w-xl space-y-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                  Current Password *
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                    className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                    New Password *
+                  </label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    minLength={8}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                  />
+                  {newPassword && (
+                    <div className="mt-1.5">
+                      <div className="flex gap-1 h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                        <div className={`h-full transition-all ${pwdStrength >= 1 ? "w-1/4 bg-rose-500" : ""}`}></div>
+                        <div className={`h-full transition-all ${pwdStrength >= 3 ? "w-1/4 bg-amber-500" : ""}`}></div>
+                        <div className={`h-full transition-all ${pwdStrength >= 4 ? "w-1/4 bg-indigo-500" : ""}`}></div>
+                        <div className={`h-full transition-all ${pwdStrength >= 5 ? "w-1/4 bg-emerald-500" : ""}`}></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                    Confirm New Password *
+                  </label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    minLength={8}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={pwdLoading}
+                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2 disabled:opacity-50"
+                >
+                  {pwdLoading ? (
+                    <span>Updating Password...</span>
+                  ) : (
+                    <>
+                      <Lock size={14} />
+                      <span>Update Super Admin Password</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
+
+export default SuperAdminDashboard;

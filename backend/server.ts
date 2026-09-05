@@ -1,12 +1,16 @@
 import { app } from "./src/app";
 import { config } from "./src/config/env";
 import { prisma } from "./src/config/prisma";
+import { BootstrapService } from "./src/services/bootstrap.service";
 import http from "http";
 
 const server = http.createServer(app);
 
 const startServer = async () => {
   try {
+    // Perform initial Super Admin bootstrap check before accepting requests
+    await BootstrapService.checkAndBootstrapSuperAdmin();
+
     server.listen(config.port, "0.0.0.0", () => {
       console.log(
         `🚀 IMS Backend Server running on port ${config.port} [${config.nodeEnv}]`

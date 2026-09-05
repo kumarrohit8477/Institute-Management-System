@@ -389,6 +389,7 @@ model User {
   status       UserStatus @default(ACTIVE)
   lastLoginAt  DateTime?  @db.DateTime(3)
   refreshToken String?    @db.Text
+  mustChangePassword Boolean @default(false)
   createdAt    DateTime   @default(now()) @db.DateTime(3)
   updatedAt    DateTime   @updatedAt @db.DateTime(3)
 

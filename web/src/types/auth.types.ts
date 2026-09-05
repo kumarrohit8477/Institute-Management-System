@@ -7,6 +7,7 @@ export interface User {
   email: string;
   role: UserRole;
   status: UserStatus;
+  mustChangePassword?: boolean;
   lastLoginAt?: string | null;
   teacher?: {
     id: string;

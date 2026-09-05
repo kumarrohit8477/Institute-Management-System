@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
+import { BootstrapService } from "../services/bootstrap.service";
 import { ResponseHandler } from "../utils/apiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AuthenticatedRequest } from "../types";
@@ -42,5 +43,47 @@ export class AuthController {
     const userId = req.user?.id as string;
     const profile = await AuthService.getMe(userId);
     return ResponseHandler.success(res, profile, "Profile fetched successfully");
+  });
+
+  /**
+   * GET /api/v1/auth/super-admin/bootstrap-status
+   */
+  static getBootstrapStatus = asyncHandler(async (_req: Request, res: Response) => {
+    const status = await BootstrapService.getBootstrapStatus();
+    return ResponseHandler.success(res, status, "Bootstrap status retrieved successfully");
+  });
+
+  /**
+   * POST /api/v1/auth/super-admin/bootstrap
+   * Single-use retrieval of initial temporary password
+   */
+  static claimOneTimeBootstrap = asyncHandler(async (_req: Request, res: Response) => {
+    const result = BootstrapService.claimOneTimeSetup();
+    return ResponseHandler.success(res, result, result.message);
+  });
+
+  /**
+   * POST /api/v1/auth/change-password
+   */
+  static changePassword = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const userId = req.user?.id as string;
+    const result = await AuthService.changePassword(userId, req.body);
+    return ResponseHandler.success(res, result, result.message);
+  });
+
+  /**
+   * POST /api/v1/auth/forgot-password or /api/v1/auth/super-admin/forgot-password
+   */
+  static forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+    const result = await AuthService.forgotPassword(req.body);
+    return ResponseHandler.success(res, result, result.message);
+  });
+
+  /**
+   * POST /api/v1/auth/reset-password or /api/v1/auth/super-admin/reset-password
+   */
+  static resetPassword = asyncHandler(async (req: Request, res: Response) => {
+    const result = await AuthService.resetPassword(req.body);
+    return ResponseHandler.success(res, result, result.message);
   });
 }

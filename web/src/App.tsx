@@ -9,6 +9,10 @@ import { SuperAdminLayout } from "@/src/components/superadmin/SuperAdminLayout";
 import { AdminLayout } from "@/src/components/admin/AdminLayout";
 import { LandingPage } from "@/src/pages/LandingPage";
 import { LoginPage } from "@/src/pages/LoginPage";
+import { RegisterPage } from "@/src/pages/RegisterPage";
+import { ForgotPasswordPage } from "@/src/pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "@/src/pages/ResetPasswordPage";
+import { SuperAdminSetupPage } from "@/src/pages/superadmin/SuperAdminSetupPage";
 import { UnauthorizedPage } from "@/src/pages/UnauthorizedPage";
 
 // Super Admin Pages
@@ -69,6 +73,12 @@ const AppRoutes: React.FC = () => {
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/super-admin/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/super-admin/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/super-admin/setup" element={<SuperAdminSetupPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
       {/* Platform Super Admin Protected Routes */}

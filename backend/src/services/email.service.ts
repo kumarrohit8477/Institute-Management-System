@@ -19,6 +19,13 @@ export interface TeacherCredentialsEmailInput {
   loginUrl?: string;
 }
 
+export interface PasswordResetEmailInput {
+  toEmail: string;
+  userName?: string;
+  resetUrl: string;
+  expiresMinutes?: number;
+}
+
 export class EmailService {
   private static transporter: any = null;
 
@@ -172,6 +179,54 @@ export class EmailService {
       return true;
     } catch (err) {
       console.error(`[EMAIL SERVICE ERROR] Failed to send teacher email to ${toEmail}:`, err);
+      return false;
+    }
+  }
+
+  /**
+   * Send Password Reset Email with Token Link
+   */
+  static async sendPasswordResetEmail(input: PasswordResetEmailInput): Promise<boolean> {
+    const { toEmail, userName = "User", resetUrl, expiresMinutes = 60 } = input;
+    const fromAddress = process.env.SMTP_FROM || process.env.EMAIL_FROM || '"Institute Management System" <no-reply@ims.local>';
+    const subject = "Password Reset Request - Institute Management System";
+
+    const htmlBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #ffffff;">
+        <h2 style="color: #4f46e5; margin-top: 0;">Password Reset Request</h2>
+        <p style="color: #374151; font-size: 16px;">Hello <strong>${userName}</strong>,</p>
+        <p style="color: #374151; line-height: 1.5;">We received a request to reset your password for your Institute Management System account.</p>
+        
+        <div style="margin: 28px 0; text-align: center;">
+          <a href="${resetUrl}" style="background-color: #4f46e5; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);">Reset Password</a>
+        </div>
+
+        <p style="color: #6b7280; font-size: 14px; line-height: 1.4;">
+          This link will expire in <strong>${expiresMinutes} minutes</strong>. If the button above does not work, copy and paste the following URL into your browser:
+        </p>
+        <p style="word-break: break-all; font-size: 13px; color: #4f46e5; background-color: #f3f4f6; padding: 10px; border-radius: 4px;">${resetUrl}</p>
+
+        <hr style="margin-top: 30px; border: 0; border-top: 1px solid #e5e7eb;" />
+        <p style="font-size: 12px; color: #9ca3af;">
+          If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.
+        </p>
+      </div>
+    `;
+
+    try {
+      const transporter = this.getTransporter();
+      const info = await transporter.sendMail({
+        from: fromAddress,
+        to: toEmail,
+        subject,
+        html: htmlBody,
+        text: `Password Reset Request\n\nHello ${userName},\n\nReset your password using the link below:\n${resetUrl}\n\nThis link expires in ${expiresMinutes} minutes.\n\nIf you did not request this, please ignore this email.`
+      });
+
+      console.log(`[EMAIL SERVICE] Password reset email sent to ${toEmail}. Link: ${resetUrl}. MessageId: ${info.messageId || "console-log"}`);
+      return true;
+    } catch (err) {
+      console.error(`[EMAIL SERVICE ERROR] Failed to send password reset email to ${toEmail}:`, err);
       return false;
     }
   }

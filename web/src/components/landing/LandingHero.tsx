@@ -18,18 +18,18 @@ export const LandingHero: React.FC = () => {
 
         <div className="landing-hero__cta-group">
           <Link
-            to="/login"
+            to="/register"
             className="landing-hero__btn-primary"
           >
-            <span>Sign In</span>
+            <span>Register Your Institute</span>
             <ArrowRight size={16} />
           </Link>
-          <a
-            href="#features"
+          <Link
+            to="/login"
             className="landing-hero__btn-secondary"
           >
-            <span>Explore Capabilities</span>
-          </a>
+            <span>Sign In</span>
+          </Link>
         </div>
 
         {/* Key Metrics Strip */}

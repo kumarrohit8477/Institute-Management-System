@@ -1,10 +1,18 @@
+import crypto from "crypto";
 import { prisma } from "../config/prisma";
+import { config } from "../config/env";
 import { AppError } from "../utils/appError";
 import { PasswordUtil } from "../utils/password";
 import { TokenUtil, TokenPayload } from "../utils/token";
+import { EmailService } from "./email.service";
 import { HTTP_STATUS } from "../common";
 import { UserStatus, InstituteStatus, UserRole } from "@prisma/client";
-import { LoginInput } from "../validations/auth.validation";
+import {
+  LoginInput,
+  ChangePasswordInput,
+  ForgotPasswordInput,
+  ResetPasswordInput
+} from "../validations/auth.validation";
 
 export class AuthService {
   /**
@@ -219,6 +227,7 @@ export class AuthService {
         organizationId: user.instituteId || null,
         instituteId: user.instituteId || null,
         status: user.status,
+        mustChangePassword: user.mustChangePassword ?? false,
         lastLoginAt: user.lastLoginAt
       },
       token: accessToken,
@@ -371,6 +380,7 @@ export class AuthService {
       organizationId: user.instituteId || null,
       instituteId: user.instituteId || null,
       status: user.status,
+      mustChangePassword: user.mustChangePassword ?? false,
       lastLoginAt: user.lastLoginAt,
       institute: user.institute
         ? {
@@ -408,6 +418,142 @@ export class AuthService {
             avatarUrl: (user as any).teacher.avatarUrl
           }
         : null
+    };
+  }
+
+  /**
+   * Change user password (authenticated user)
+   */
+  static async changePassword(userId: string, input: ChangePasswordInput) {
+    const { currentPassword, newPassword } = input;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      throw new AppError("User not found", HTTP_STATUS.NOT_FOUND);
+    }
+
+    const isCurrentPasswordValid = await PasswordUtil.compare(currentPassword, user.passwordHash);
+    if (!isCurrentPasswordValid) {
+      throw new AppError("Current password is incorrect. Please try again.", HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const isSameAsCurrent = await PasswordUtil.compare(newPassword, user.passwordHash);
+    if (isSameAsCurrent) {
+      throw new AppError("New password must be different from current password.", HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const newHashedPassword = await PasswordUtil.hash(newPassword);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash: newHashedPassword,
+        mustChangePassword: false,
+        refreshToken: null // Revoke existing refresh token session to require re-authentication if needed
+      }
+    });
+
+    return {
+      success: true,
+      message: "Password updated successfully."
+    };
+  }
+
+  /**
+   * Request password reset token email
+   */
+  static async forgotPassword(input: ForgotPasswordInput) {
+    const email = input.email.trim().toLowerCase();
+
+    // Look up user by email (supports Super Admin and Institute users)
+    const user = await prisma.user.findFirst({
+      where: { email },
+      orderBy: { createdAt: "asc" }
+    });
+
+    if (user) {
+      // Generate 32-byte secure random token
+      const rawToken = crypto.randomBytes(32).toString("hex");
+      const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour validity
+
+      // Invalidate any active unused tokens for this user
+      await prisma.passwordResetToken.deleteMany({
+        where: { userId: user.id }
+      });
+
+      // Save token hash to database
+      await prisma.passwordResetToken.create({
+        data: {
+          userId: user.id,
+          tokenHash,
+          expiresAt
+        }
+      });
+
+      const clientUrl = config.clientUrl || "http://localhost:3000";
+      const resetUrl = `${clientUrl}/reset-password?token=${rawToken}`;
+
+      // Dispatch password reset email asynchronously
+      await EmailService.sendPasswordResetEmail({
+        toEmail: user.email,
+        userName: user.role === UserRole.SUPER_ADMIN ? "Super Admin" : user.email.split("@")[0],
+        resetUrl,
+        expiresMinutes: 60
+      });
+    }
+
+    // Generic response to prevent email enumeration attacks
+    return {
+      success: true,
+      message: "If an account exists with this email address, a password reset link has been sent."
+    };
+  }
+
+  /**
+   * Reset user password using valid token
+   */
+  static async resetPassword(input: ResetPasswordInput) {
+    const { token, newPassword } = input;
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const resetTokenRecord = await prisma.passwordResetToken.findFirst({
+      where: {
+        tokenHash,
+        usedAt: null,
+        expiresAt: { gt: new Date() }
+      },
+      include: { user: true }
+    });
+
+    if (!resetTokenRecord || !resetTokenRecord.user) {
+      throw new AppError("Invalid or expired password reset token. Please request a new reset link.", HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const newHashedPassword = await PasswordUtil.hash(newPassword);
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: resetTokenRecord.userId },
+        data: {
+          passwordHash: newHashedPassword,
+          mustChangePassword: false,
+          refreshToken: null
+        }
+      }),
+      prisma.passwordResetToken.update({
+        where: { id: resetTokenRecord.id },
+        data: { usedAt: new Date() }
+      })
+    ]);
+
+    return {
+      success: true,
+      message: "Your password has been successfully reset. You may now log in with your new password."
     };
   }
 }

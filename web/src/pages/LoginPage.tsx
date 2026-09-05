@@ -157,6 +157,16 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Forgot Password & Setup Navigation */}
+          <div className="flex items-center justify-between text-xs my-1 px-0.5">
+            <Link to="/forgot-password" className="text-indigo-400 hover:text-indigo-300 font-medium underline underline-offset-2">
+              Forgot Password?
+            </Link>
+            <Link to="/super-admin/setup" className="text-slate-400 hover:text-slate-300">
+              Super Admin Initial Setup
+            </Link>
+          </div>
+
           {/* Submit Button */}
           <button
             type="submit"
