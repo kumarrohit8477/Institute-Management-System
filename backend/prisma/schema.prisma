@@ -1114,3 +1114,26 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
+// ------------------------------------------------------------------------------
+// 29. ENQUIRY (Public Landing Page Enquiries & Sales Leads)
+// ------------------------------------------------------------------------------
+
+model Enquiry {
+  id            String   @id @default(uuid()) @db.VarChar(36)
+  name          String   @db.VarChar(191)
+  email         String   @db.VarChar(191)
+  phone         String   @db.VarChar(50)
+  instituteName String   @db.VarChar(191)
+  role          String?  @db.VarChar(100)
+  studentCount  String?  @db.VarChar(50)
+  message       String   @db.Text
+  status        String   @default("PENDING") @db.VarChar(50)
+  createdAt     DateTime @default(now()) @db.DateTime(3)
+  updatedAt     DateTime @updatedAt @db.DateTime(3)
+
+  @@index([email])
+  @@index([createdAt])
+  @@map("enquiries")
+}
+
+

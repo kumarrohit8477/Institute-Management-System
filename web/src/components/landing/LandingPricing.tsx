@@ -1,9 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 import "./LandingPricing.css";
 
-export const LandingPricing: React.FC = () => {
+interface LandingPricingProps {
+  onSelectPlan?: (planName: string) => void;
+}
+
+export const LandingPricing: React.FC<LandingPricingProps> = ({ onSelectPlan }) => {
   const plans = [
     {
       name: "Free Trial",
@@ -79,9 +83,6 @@ export const LandingPricing: React.FC = () => {
     <section id="plans" className="landing-pricing">
       <div className="landing-pricing__container">
         <div className="landing-pricing__header">
-          <span className="landing-pricing__tag">
-            Transparent Pricing
-          </span>
           <h2 className="landing-pricing__title">
             Scalable Plans for Any Institute Size
           </h2>
@@ -130,14 +131,28 @@ export const LandingPricing: React.FC = () => {
               </div>
 
               <div>
-                <Link
-                  to="/login"
-                  className={`landing-pricing__btn ${
-                    p.highlight ? "btn--featured" : "btn--normal"
-                  }`}
-                >
-                  Select Plan
-                </Link>
+                {onSelectPlan ? (
+                  <button
+                    type="button"
+                    onClick={() => onSelectPlan(p.name)}
+                    className={`landing-pricing__btn ${
+                      p.highlight ? "btn--featured" : "btn--normal"
+                    }`}
+                    style={{ width: "100%", cursor: "pointer", border: "none" }}
+                  >
+                    <span>Enquire for {p.name}</span>
+                    <ArrowRight size={14} style={{ marginLeft: "6px" }} />
+                  </button>
+                ) : (
+                  <Link
+                    to="/login"
+                    className={`landing-pricing__btn ${
+                      p.highlight ? "btn--featured" : "btn--normal"
+                    }`}
+                  >
+                    Select Plan
+                  </Link>
+                )}
               </div>
             </div>
           ))}

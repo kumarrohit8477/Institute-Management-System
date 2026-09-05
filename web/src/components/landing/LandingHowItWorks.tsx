@@ -29,9 +29,6 @@ export const LandingHowItWorks: React.FC = () => {
     <section id="how-it-works" className="landing-how">
       <div className="landing-how__container">
         <div className="landing-how__header">
-          <span className="landing-how__tag">
-            Simple 4-Step Flow
-          </span>
           <h2 className="landing-how__title">
             How Institutes Operate on IMS Cloud
           </h2>

@@ -7,9 +7,6 @@ export const LandingRoles: React.FC = () => {
     <section id="roles" className="landing-roles">
       <div className="landing-roles__container">
         <div className="landing-roles__header">
-          <span className="landing-roles__tag">
-            Unified Architecture
-          </span>
           <h2 className="landing-roles__title">
             One Universal Login. Three Tailored Experiences.
           </h2>

@@ -74,9 +74,6 @@ export const LandingFeatures: React.FC = () => {
     <section id="features" className="landing-features">
       <div className="landing-features__container">
         <div className="landing-features__header">
-          <span className="landing-features__tag">
-            Comprehensive Modules
-          </span>
           <h2 className="landing-features__title">
             Everything Your Institute Needs to Run Smoothly
           </h2>

@@ -6,22 +6,10 @@ import "./LandingHero.css";
 export const LandingHero: React.FC = () => {
   return (
     <section className="landing-hero">
-      {/* Background Glows */}
-      <div className="landing-hero__glow-1" />
-      <div className="landing-hero__glow-2" />
-
       <div className="landing-hero__container">
-        <div className="landing-hero__badge">
-          <Sparkles size={14} />
-          <span>Multi-Tenant Educational ERP & Computer-Based Testing</span>
-        </div>
-
         <h1 className="landing-hero__title">
-          Manage Your Institute{" "}
-          <span className="landing-hero__title-gradient">
-            Smarter
-          </span>
-          , Scale Faster.
+          Manage Your Institute
+            Smarter, Scale Faster.
         </h1>
 
         <p className="landing-hero__desc">
@@ -33,7 +21,7 @@ export const LandingHero: React.FC = () => {
             to="/login"
             className="landing-hero__btn-primary"
           >
-            <span>Universal Sign In</span>
+            <span>Sign In</span>
             <ArrowRight size={16} />
           </Link>
           <a

@@ -4,13 +4,10 @@ import "./LandingSecurity.css";
 
 export const LandingSecurity: React.FC = () => {
   return (
-    <section id="multi-tenant" className="landing-security">
+    <section id="security" className="landing-security">
       <div className="landing-security__container">
         <div className="landing-security__grid">
           <div className="landing-security__content">
-            <span className="landing-security__tag">
-              Enterprise Security
-            </span>
             <h2 className="landing-security__title">
               Strict Multi-Tenant Isolation by Design
             </h2>

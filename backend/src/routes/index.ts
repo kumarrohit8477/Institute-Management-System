@@ -22,12 +22,15 @@ import { instituteRoutes } from "./institute.routes";
 import { batchSubjectRoutes } from "./batchSubject.routes";
 import { roomRoutes } from "./room.routes";
 import { teacherPortalRoutes } from "./teacherPortal.routes";
+import { enquiryRoutes } from "./enquiry.routes";
 
 const router = Router();
 
 // Routes registry
 router.use("/health", healthRoutes);
 router.use("/auth", authRoutes);
+router.use("/enquiries", enquiryRoutes);
+router.use("/enquiry", enquiryRoutes);
 router.use("/institute", instituteRoutes);
 router.use("/students", studentRoutes);
 router.use("/teachers", teacherRoutes);

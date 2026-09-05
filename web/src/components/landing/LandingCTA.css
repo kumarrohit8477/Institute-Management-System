@@ -1,7 +1,6 @@
 .landing-cta {
-  padding: 5.5rem 1.5rem;
-  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
-  border-top: 1px solid #e8edf5;
+  padding: 3rem 1.5rem;
+  background-color: #f8fafc
 }
 
 .landing-cta__container {
@@ -37,7 +36,7 @@
   gap: 0.6rem;
   padding: 0.9rem 2.2rem;
   border-radius: 12px;
-  background: #4f46e5;
+  background: #3f8db4;
   color: #ffffff;
   font-size: 0.92rem;
   font-weight: 700;
@@ -48,7 +47,7 @@
 }
 
 .landing-cta__btn:hover {
-  background: #4338ca;
+  background: #295c76;
   transform: translateY(-2px);
   box-shadow: 0 12px 28px rgba(79, 70, 229, 0.4);
 }
@@ -57,6 +56,7 @@
   .landing-cta {
     padding: 3.5rem 1rem;
   }
+
   .landing-cta__btn {
     width: 100%;
   }

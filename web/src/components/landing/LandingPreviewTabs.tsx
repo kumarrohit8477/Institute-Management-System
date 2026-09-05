@@ -8,9 +8,6 @@ export const LandingPreviewTabs: React.FC = () => {
     <section id="preview" className="landing-preview">
       <div className="landing-preview__container">
         <div className="landing-preview__header">
-          <span className="landing-preview__tag">
-            Interactive Preview
-          </span>
           <h2 className="landing-preview__title">Designed for Every Stakeholder</h2>
         </div>
 
