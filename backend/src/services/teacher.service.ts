@@ -30,23 +30,18 @@ export class TeacherService {
       subjectIds = []
     } = input;
 
-    // Auto-generate employee code if not provided
-    let employeeCode = input.employeeCode;
-    if (!employeeCode) {
-      const year = new Date().getFullYear();
-      const count = await prisma.teacher.count({ where: { instituteId } });
-      employeeCode = `FAC-${year}-${String(count + 1).padStart(4, "0")}`;
-    } else {
+    // Validate provided employee code uniqueness (auto-gen handled inside transaction)
+    if (input.employeeCode) {
       const existing = await prisma.teacher.findUnique({
         where: {
           instituteId_employeeCode: {
             instituteId,
-            employeeCode
+            employeeCode: input.employeeCode
           }
         }
       });
       if (existing) {
-        throw new AppError(`Employee code '${employeeCode}' is already in use`, HTTP_STATUS.CONFLICT);
+        throw new AppError(`Employee code '${input.employeeCode}' is already in use`, HTTP_STATUS.CONFLICT);
       }
     }
 
@@ -91,7 +86,12 @@ export class TeacherService {
       data: {
         instituteId,
         userId,
-        employeeCode: employeeCode!,
+        employeeCode: (input.employeeCode || await (async () => {
+          // Auto-generate inside a fresh count — best-effort (race window is small since user creation serialises)
+          const year = new Date().getFullYear();
+          const count = await prisma.teacher.count({ where: { instituteId } });
+          return `FAC-${year}-${String(count + 1).padStart(4, "0")}`;
+        })()),
         firstName,
         lastName,
         email: email.toLowerCase(),

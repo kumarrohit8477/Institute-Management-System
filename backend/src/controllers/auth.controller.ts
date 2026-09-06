@@ -1,11 +1,25 @@
 import { Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
 import { BootstrapService } from "../services/bootstrap.service";
+import { SaasService } from "../services/saas.service";
 import { ResponseHandler } from "../utils/apiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AuthenticatedRequest } from "../types";
 
 export class AuthController {
+  /**
+   * POST /api/v1/auth/register-institute
+   * Public self-registration endpoint for new Institute Tenants
+   */
+  static registerInstitute = asyncHandler(async (req: Request, res: Response) => {
+    const result = await SaasService.onboardInstituteTenant(req.body);
+    return ResponseHandler.created(
+      res,
+      result,
+      "Institute tenant registered successfully with admin credentials"
+    );
+  });
+
   /**
    * POST /api/v1/auth/login or /api/auth/login
    */

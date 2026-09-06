@@ -22,40 +22,7 @@ export const TestsScreen: React.FC<{
     }).catch(console.warn);
   }, []);
 
-  const fallbackTests: any[] = [
-    {
-      id: "test-jee-01",
-      title: "JEE Main All-India Grand Mock Test 1",
-      durationMinutes: 180,
-      totalMarks: 300,
-      passingMarks: 100,
-      isPublished: true,
-      myAttempt: null,
-      subject: { name: "Full Mock" }
-    },
-    {
-      id: "test-phy-02",
-      title: "Physics Mechanics & Gravitation Sectional Quiz",
-      durationMinutes: 60,
-      totalMarks: 100,
-      passingMarks: 35,
-      isPublished: true,
-      myAttempt: { status: "EVALUATED", score: 84 },
-      subject: { name: "Physics" }
-    },
-    {
-      id: "test-math-03",
-      title: "Mathematics Calculus & Differential Equations Practice",
-      durationMinutes: 90,
-      totalMarks: 120,
-      passingMarks: 40,
-      isPublished: true,
-      myAttempt: null,
-      subject: { name: "Mathematics" }
-    }
-  ];
-
-  const sourceTests = tests.length > 0 ? tests : fallbackTests;
+  const sourceTests = tests;
 
   const filteredTests = sourceTests.filter((t: any) => {
     const isCompleted = t.myAttempt?.status === "EVALUATED" || t.myAttempt?.status === "SUBMITTED";

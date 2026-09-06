@@ -113,8 +113,12 @@ export class EvaluationService {
         if (isCorrect) {
           marksAwarded = marks;
           totalCorrect++;
-        } else {
+        } else if (q.type !== QuestionType.SUBJECTIVE) {
+          // SUBJECTIVE questions are manually reviewed — never apply negative marks automatically
           marksAwarded = -negativeMarks;
+          totalIncorrect++;
+        } else {
+          // SUBJECTIVE: attempted but awaiting manual review — no marks, no penalty
           totalIncorrect++;
         }
       }
@@ -132,7 +136,7 @@ export class EvaluationService {
 
     const testTotalMarks = Number(test.totalMarks);
     const passingMarks = Number(test.passingMarks);
-    const percentage = testTotalMarks > 0 ? (totalScore / testTotalMarks) * 100 : 0;
+    const percentage = testTotalMarks > 0 ? Math.max(0, (totalScore / testTotalMarks) * 100) : 0;
     const isPassed = totalScore >= passingMarks;
 
     // Apply updates in transaction

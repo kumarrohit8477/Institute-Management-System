@@ -21,35 +21,7 @@ export const TimetableScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) =
     MobileStudentService.getSchedule().then(setSchedule).catch(console.warn);
   }, []);
 
-  const daySlots = schedule?.scheduleByDay?.[selectedDay] || [
-    {
-      id: "1",
-      startTime: "09:00",
-      endTime: "10:30",
-      subject: { name: "Physics (Mechanics)" },
-      teacher: { firstName: "Dr. Harish", lastName: "Verma" },
-      roomNumber: "LH-101",
-      classType: "OFFLINE"
-    },
-    {
-      id: "2",
-      startTime: "11:00",
-      endTime: "12:30",
-      subject: { name: "Mathematics (Calculus)" },
-      teacher: { firstName: "Prof. Sunita", lastName: "Ramanujan" },
-      meetingLink: "https://meet.google.com/demo",
-      classType: "ONLINE"
-    },
-    {
-      id: "3",
-      startTime: "14:00",
-      endTime: "15:30",
-      subject: { name: "Chemistry (Organic Reactions)" },
-      teacher: { firstName: "Dr. Rajesh", lastName: "Bhatnagar" },
-      roomNumber: "Lab-2",
-      classType: "OFFLINE"
-    }
-  ];
+  const daySlots = schedule?.scheduleByDay?.[selectedDay] || [];
 
   const handleOpenLink = async (url: string) => {
     try {
@@ -149,29 +121,7 @@ export const MaterialsScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) =
       .catch(console.warn);
   }, [search]);
 
-  const sampleList = materials.length > 0 ? materials : [
-    {
-      id: "1",
-      title: "Electrodynamics & Gauss Law Comprehensive Lecture Notes",
-      fileType: "PDF",
-      fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-      subject: { id: "sub1", name: "Physics" }
-    },
-    {
-      id: "2",
-      title: "Differential Calculus Full Problem Set with Solutions",
-      fileType: "PDF",
-      fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-      subject: { id: "sub2", name: "Mathematics" }
-    },
-    {
-      id: "3",
-      title: "Organic Reaction Mechanisms Video Masterclass",
-      fileType: "VIDEO",
-      fileUrl: "https://www.youtube.com",
-      subject: { id: "sub3", name: "Chemistry" }
-    }
-  ];
+  const sampleList = materials;
 
   const handleOpenMaterial = async (url: string) => {
     try {
@@ -255,20 +205,14 @@ export const AttendanceScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) 
   }, []);
 
   const stats = attData?.statistics || {
-    attendancePercentage: 95.2,
-    presentCount: 38,
-    absentCount: 2,
-    lateCount: 1,
-    totalDays: 41
+    attendancePercentage: 0,
+    presentCount: 0,
+    absentCount: 0,
+    lateCount: 0,
+    totalDays: 0
   };
 
-  const records = attData?.records || [
-    { id: "1", date: "2026-09-04", status: "PRESENT", batch: { name: "JEE Morning Star" } },
-    { id: "2", date: "2026-09-03", status: "PRESENT", batch: { name: "JEE Morning Star" } },
-    { id: "3", date: "2026-09-02", status: "LATE", batch: { name: "JEE Morning Star" } },
-    { id: "4", date: "2026-09-01", status: "PRESENT", batch: { name: "JEE Morning Star" } },
-    { id: "5", date: "2026-08-31", status: "ABSENT", batch: { name: "JEE Morning Star" } }
-  ];
+  const records = attData?.records || [];
 
   const isGoodStanding = (stats.attendancePercentage ?? 0) >= 75;
 

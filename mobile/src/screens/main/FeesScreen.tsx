@@ -40,47 +40,15 @@ export const FeesScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   }, []);
 
   const summary = feeData?.summary || {
-    totalBilled: 160000,
-    totalPaid: 90000,
-    totalDiscount: 10000,
-    totalOutstanding: 70000,
-    nextDueDate: "2026-11-15"
+    totalBilled: 0,
+    totalPaid: 0,
+    totalDiscount: 0,
+    totalOutstanding: 0,
+    nextDueDate: null
   };
 
-  const invoices = feeData?.invoices?.length ? feeData.invoices : [
-    {
-      id: "inv-1",
-      title: "Year 1 Tuition & Material Comprehensive Fee",
-      totalAmount: 100000,
-      discountAmount: 10000,
-      finalAmount: 90000,
-      paidAmount: 90000,
-      status: "PAID",
-      dueDate: "2026-04-15"
-    },
-    {
-      id: "inv-2",
-      title: "Year 2 Advanced CBT Mock & Laboratory Fee",
-      totalAmount: 70000,
-      discountAmount: 0,
-      finalAmount: 70000,
-      paidAmount: 0,
-      status: "PENDING",
-      dueDate: "2026-11-15"
-    }
-  ];
-
-  const receipts = feeData?.paymentHistory?.length ? feeData.paymentHistory : [
-    {
-      id: "pay-1",
-      receiptNumber: "REC-2026-0891",
-      feeTitle: "Year 1 Tuition & Material Fee",
-      amount: 90000,
-      paymentMethod: "UPI",
-      transactionReference: "UPI/392019481029",
-      paymentDate: "2026-04-10"
-    }
-  ];
+  const invoices = feeData?.invoices || [];
+  const receipts = feeData?.paymentHistory || [];
 
   const handleOpenPay = (inv: any) => {
     setSelectedInvoice(inv);
@@ -298,32 +266,7 @@ export const NotificationsScreen: React.FC<{ onBack?: () => void }> = ({ onBack 
     loadNotifications();
   }, []);
 
-  const sampleNotifications: NotificationItem[] = notifications.length > 0 ? notifications : [
-    {
-      id: "notif-1",
-      title: "JEE Main Grand Mock Test 1 is Live 📝",
-      message: "The all-India mock exam is active in your CBT portal. Complete your 3-hour attempt before the deadline.",
-      type: "TEST",
-      isRead: false,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: "notif-2",
-      title: "Physics Lecture Notes Uploaded 📚",
-      message: "Dr. Harish Verma added Chapter 4 Electrodynamics & Ray Optics notes to Study Materials.",
-      type: "ACADEMIC",
-      isRead: false,
-      createdAt: new Date(Date.now() - 3600000 * 4).toISOString()
-    },
-    {
-      id: "notif-3",
-      title: "Installment Fee Due Reminder 💳",
-      message: "Your Year 2 Advance Mock & Lab Fee installment is due on Nov 15, 2026.",
-      type: "FEE",
-      isRead: true,
-      createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
-    }
-  ];
+  const sampleNotifications: NotificationItem[] = notifications;
 
   const handleMarkRead = async (id: string) => {
     try {

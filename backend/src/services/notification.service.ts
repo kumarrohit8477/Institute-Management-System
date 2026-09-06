@@ -129,7 +129,7 @@ export class NotificationService {
     const where: Prisma.NotificationWhereInput = {
       instituteId,
       recipientId: userId,
-      ...(isRead ? { isRead: isRead === "true" } : {}),
+      ...(isRead !== undefined ? { isRead: isRead === "true" } : {}),
       ...(type ? { type } : {})
     };
 

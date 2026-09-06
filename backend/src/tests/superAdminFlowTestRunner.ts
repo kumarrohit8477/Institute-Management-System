@@ -24,7 +24,7 @@ async function runSuperAdminTestSuite() {
     console.log("Claimed payload (First Time):", {
       exists: claimedPayload.exists,
       newlyCreated: claimedPayload.newlyCreated,
-      email: claimedPayload.email,
+      email: "email" in claimedPayload ? claimedPayload.email : undefined,
       hasTemporaryPassword: !!claimedPayload.temporaryPassword,
       message: claimedPayload.message
     });

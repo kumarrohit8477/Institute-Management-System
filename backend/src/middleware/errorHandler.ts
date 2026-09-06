@@ -42,11 +42,25 @@ export const errorHandler: ErrorRequestHandler = (
       break;
   }
 
-  // Handle Prisma Known Request Errors
+  // Handle Prisma Known Request Errors (e.g. unique constraint, foreign key)
   if (err.name === "PrismaClientKnownRequestError") {
     statusCode = HTTP_STATUS.BAD_REQUEST;
     errorCode = "DATABASE_CONSTRAINT_ERROR";
     message = "Database operation constraint violated";
+  }
+
+  // Handle Prisma Validation Errors (e.g. invalid query arguments)
+  if (err.name === "PrismaClientValidationError") {
+    statusCode = HTTP_STATUS.BAD_REQUEST;
+    errorCode = "DATABASE_VALIDATION_ERROR";
+    message = "Invalid database query arguments";
+  }
+
+  // Handle Prisma Unknown Request Errors
+  if (err.name === "PrismaClientUnknownRequestError") {
+    statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    errorCode = "DATABASE_ERROR";
+    message = "An unexpected database error occurred";
   }
 
   // Log in console

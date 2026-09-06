@@ -1,9 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { useAuth } from "@/src/hooks/useAuth";
+import { ArrowRight } from "lucide-react";
 import "./LandingHero.css";
 
 export const LandingHero: React.FC = () => {
+  const { isAuthenticated, role } = useAuth();
+
+  const getDashboardLink = () => {
+    if (role === "SUPER_ADMIN") return "/superadmin/dashboard";
+    if (role === "ADMIN") return "/admin/dashboard";
+    if (role === "TEACHER") return "/teacher/dashboard";
+    if (role === "STUDENT") return "/student/dashboard";
+    return "/login";
+  };
+
   return (
     <section className="landing-hero">
       <div className="landing-hero__container">
@@ -17,19 +28,31 @@ export const LandingHero: React.FC = () => {
         </p>
 
         <div className="landing-hero__cta-group">
-          <Link
-            to="/register"
-            className="landing-hero__btn-primary"
-          >
-            <span>Register Your Institute</span>
-            <ArrowRight size={16} />
-          </Link>
-          <Link
-            to="/login"
-            className="landing-hero__btn-secondary"
-          >
-            <span>Sign In</span>
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              to={getDashboardLink()}
+              className="landing-hero__btn-primary"
+            >
+              <span>Go to Dashboard</span>
+              <ArrowRight size={16} />
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/register"
+                className="landing-hero__btn-primary"
+              >
+                <span>Register Your Institute</span>
+                <ArrowRight size={16} />
+              </Link>
+              <Link
+                to="/login"
+                className="landing-hero__btn-secondary"
+              >
+                <span>Sign In</span>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Key Metrics Strip */}

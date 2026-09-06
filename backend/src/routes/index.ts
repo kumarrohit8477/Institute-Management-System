@@ -37,7 +37,7 @@ router.use("/teachers", teacherRoutes);
 router.use("/courses", courseRoutes);
 router.use("/subjects", subjectRoutes);
 router.use("/batches", batchRoutes);
-router.use("/", batchSubjectRoutes);
+router.use("/batch-subjects", batchSubjectRoutes);
 router.use("/rooms", roomRoutes);
 router.use("/teacher-portal", teacherPortalRoutes);
 router.use("/assignments", assignmentRoutes);

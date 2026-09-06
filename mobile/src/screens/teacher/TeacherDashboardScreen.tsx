@@ -21,37 +21,6 @@ interface Props {
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const FALLBACK_SCHEDULE = [
-  {
-    id: "1",
-    subject: "Mathematics",
-    batch: "Grade 10-A",
-    startTime: "09:00 AM",
-    endTime: "10:00 AM",
-    room: "Room 201",
-    isOnline: false,
-  },
-  {
-    id: "2",
-    subject: "Physics",
-    batch: "Grade 11-B",
-    startTime: "11:00 AM",
-    endTime: "12:00 PM",
-    room: "Online",
-    isOnline: true,
-    meetingLink: "https://meet.google.com/abc-xyz",
-  },
-  {
-    id: "3",
-    subject: "Mathematics",
-    batch: "Grade 9-C",
-    startTime: "02:00 PM",
-    endTime: "03:00 PM",
-    room: "Room 103",
-    isOnline: false,
-  },
-];
-
 const QUICK_ACTIONS = [
   {
     id: "batches",
@@ -90,7 +59,7 @@ const QUICK_ACTIONS = [
 export const TeacherDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
   const { teacher, institute, user } = useAuth();
   const [dashboard, setDashboard] = useState<any>(null);
-  const [schedule, setSchedule] = useState<any[]>(FALLBACK_SCHEDULE);
+  const [schedule, setSchedule] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -126,9 +95,7 @@ export const TeacherDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
           timetable.value?.[dayKey] ||
           timetable.value?.today ||
           [];
-        if (todayClasses.length > 0) {
-          setSchedule(todayClasses);
-        }
+        setSchedule(todayClasses);
       }
     } catch (err: any) {
       setError(err?.message || "Failed to load dashboard");

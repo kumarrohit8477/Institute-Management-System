@@ -44,8 +44,8 @@ export const LandingPreviewTabs: React.FC = () => {
             <div>
               <div className="landing-preview__canvas-header">
                 <div>
-                  <h4 className="landing-preview__canvas-title">Apex Academy Campus • Admin Console</h4>
-                  <p className="landing-preview__canvas-sub">Institute Code: INST001 • Academic Year 2026-2027</p>
+                  <h4 className="landing-preview__canvas-title">Institute Admin Console</h4>
+                  <p className="landing-preview__canvas-sub">Tenant Workspace • Academic Management</p>
                 </div>
                 <span className="landing-preview__status-badge status--emerald">
                   Tenant Active
@@ -54,17 +54,17 @@ export const LandingPreviewTabs: React.FC = () => {
               <div className="landing-preview__cards-grid">
                 <div className="landing-preview__mini-card">
                   <div className="landing-preview__mini-label">ENROLLED STUDENTS</div>
-                  <div className="landing-preview__mini-val">150 Students</div>
+                  <div className="landing-preview__mini-val">Active Roster</div>
                   <div className="landing-preview__mini-sub text--emerald">Batch capacity healthy</div>
                 </div>
                 <div className="landing-preview__mini-card">
                   <div className="landing-preview__mini-label">AVERAGE ATTENDANCE</div>
-                  <div className="landing-preview__mini-val" style={{ color: "#4f46e5" }}>94.2%</div>
-                  <div className="landing-preview__mini-sub text--slate">Across 2 Active Batches</div>
+                  <div className="landing-preview__mini-val" style={{ color: "#4f46e5" }}>Attendance Metrics</div>
+                  <div className="landing-preview__mini-sub text--slate">Across Active Batches</div>
                 </div>
                 <div className="landing-preview__mini-card">
                   <div className="landing-preview__mini-label">CBT EXAMS CONDUCTED</div>
-                  <div className="landing-preview__mini-val" style={{ color: "#d97706" }}>12 Tests</div>
+                  <div className="landing-preview__mini-val" style={{ color: "#d97706" }}>Online Exams</div>
                   <div className="landing-preview__mini-sub text--slate">Automated ranking active</div>
                 </div>
               </div>
@@ -75,28 +75,28 @@ export const LandingPreviewTabs: React.FC = () => {
             <div>
               <div className="landing-preview__canvas-header">
                 <div>
-                  <h4 className="landing-preview__canvas-title">Student Learning Portal • Rohit Kumar</h4>
-                  <p className="landing-preview__canvas-sub">Admission No: ADM-2026-0001 • Roll No: JEE-M1-01</p>
+                  <h4 className="landing-preview__canvas-title">Student Learning Portal</h4>
+                  <p className="landing-preview__canvas-sub">Student Dashboard • CBT Examination & Timetable</p>
                 </div>
                 <span className="landing-preview__status-badge status--blue">
-                  IIT-JEE 2-Year Program
+                  Enrolled Program
                 </span>
               </div>
               <div className="landing-preview__cards-grid">
                 <div className="landing-preview__mini-card">
                   <div className="landing-preview__mini-label">TODAY'S CLASSES</div>
-                  <div className="landing-preview__mini-val" style={{ fontSize: "1.2rem" }}>Physics Mechanics</div>
-                  <div className="landing-preview__mini-sub text--indigo">09:00 AM • Room LH-101</div>
+                  <div className="landing-preview__mini-val" style={{ fontSize: "1.2rem" }}>Interactive Lectures</div>
+                  <div className="landing-preview__mini-sub text--indigo">Live Schedule & Rooms</div>
                 </div>
                 <div className="landing-preview__mini-card">
                   <div className="landing-preview__mini-label">LATEST MOCK SCORE</div>
-                  <div className="landing-preview__mini-val" style={{ color: "#059669" }}>268 / 300</div>
-                  <div className="landing-preview__mini-sub text--emerald">Rank #1 • 99.2 Percentile</div>
+                  <div className="landing-preview__mini-val" style={{ color: "#059669" }}>CBT Analytics</div>
+                  <div className="landing-preview__mini-sub text--emerald">Ranks & Scorecards</div>
                 </div>
                 <div className="landing-preview__mini-card">
                   <div className="landing-preview__mini-label">TUITION BALANCE</div>
-                  <div className="landing-preview__mini-val">₹0 Dues</div>
-                  <div className="landing-preview__mini-sub text--emerald">Q1 & Q2 Installments Cleared</div>
+                  <div className="landing-preview__mini-val">Fee Overview</div>
+                  <div className="landing-preview__mini-sub text--emerald">Installment Clearance</div>
                 </div>
               </div>
             </div>

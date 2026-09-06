@@ -2,6 +2,7 @@ import { Router } from "express";
 import { AuthController } from "../controllers/auth.controller";
 import { authenticate, validateRequest } from "../middleware/auth.middleware";
 import { authRateLimiter } from "../middleware/rateLimit.middleware";
+import { createInstituteTenantSchema } from "../validations/saas.validation";
 import {
   loginSchema,
   refreshTokenSchema,
@@ -18,6 +19,13 @@ router.get("/super-admin/bootstrap-status", AuthController.getBootstrapStatus);
 router.post("/super-admin/bootstrap", AuthController.claimOneTimeBootstrap);
 
 // Public routes with rate limiting
+router.post(
+  "/register-institute",
+  authRateLimiter,
+  validateRequest(createInstituteTenantSchema),
+  AuthController.registerInstitute
+);
+
 router.post(
   "/login",
   authRateLimiter,

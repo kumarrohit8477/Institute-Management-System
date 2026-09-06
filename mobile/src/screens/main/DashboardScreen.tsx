@@ -37,29 +37,10 @@ export const DashboardScreen: React.FC<{ onNavigate: (screen: string, params?: a
 
   const daysOfWeek = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
   const todayName = daysOfWeek[new Date().getDay()];
-  const todayClasses = schedule?.scheduleByDay?.[todayName] || [
-    {
-      id: "c1",
-      startTime: "09:00",
-      endTime: "10:30",
-      subject: { name: "Physics (Mechanics)" },
-      teacher: { firstName: "Dr. Harish", lastName: "Verma" },
-      roomNumber: "LH-101",
-      classType: "OFFLINE"
-    },
-    {
-      id: "c2",
-      startTime: "11:00",
-      endTime: "12:30",
-      subject: { name: "Mathematics (Calculus)" },
-      teacher: { firstName: "Prof. Sunita", lastName: "Ramanujan" },
-      meetingLink: "https://meet.google.com/demo",
-      classType: "ONLINE"
-    }
-  ];
+  const todayClasses = schedule?.scheduleByDay?.[todayName] || [];
 
   const currentBatch = academics?.batches?.[0];
-  const attPercentage = attendance?.statistics?.attendancePercentage ?? 95.2;
+  const attPercentage = attendance?.statistics?.attendancePercentage ?? 0;
 
   const quickActions = [
     { label: "Timetable", icon: "📅", screen: "timetable" },
@@ -73,19 +54,25 @@ export const DashboardScreen: React.FC<{ onNavigate: (screen: string, params?: a
       {/* Student Banner */}
       <View style={styles.banner}>
         <Text style={styles.instituteLabel}>
-          {institute?.name || "Apex Academy"}
+          {institute?.name || "Institute Portal"}
         </Text>
         <Text style={styles.greeting}>
           Hello, {student?.firstName || "Student"}! 👋
         </Text>
         <View style={styles.badgeRow}>
-          <Text style={styles.metaText}>
-            Adm: <Text style={styles.boldText}>{student?.admissionNumber || "ADM-2026-001"}</Text>
-          </Text>
-          <Text style={styles.dot}>•</Text>
-          <Text style={styles.metaText}>
-            Batch: <Text style={styles.boldText}>{currentBatch?.name || "JEE Morning Star"}</Text>
-          </Text>
+          {student?.admissionNumber ? (
+            <Text style={styles.metaText}>
+              Adm: <Text style={styles.boldText}>{student.admissionNumber}</Text>
+            </Text>
+          ) : null}
+          {student?.admissionNumber && currentBatch?.name ? (
+            <Text style={styles.dot}>•</Text>
+          ) : null}
+          {currentBatch?.name ? (
+            <Text style={styles.metaText}>
+              Batch: <Text style={styles.boldText}>{currentBatch.name}</Text>
+            </Text>
+          ) : null}
         </View>
       </View>
 
@@ -108,13 +95,15 @@ export const DashboardScreen: React.FC<{ onNavigate: (screen: string, params?: a
       <Card onPress={() => onNavigate("attendance")} style={styles.widgetCard}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Attendance Standing</Text>
-          <Badge label="Good Standing" variant="success" />
+          <Badge label={attPercentage >= 75 ? "Good Standing" : "Attention Required"} variant={attPercentage >= 75 ? "success" : "danger"} />
         </View>
 
         <View style={styles.attRow}>
           <View>
             <Text style={styles.attPctText}>{attPercentage}%</Text>
-            <Text style={styles.attNote}>Satisfies ≥ 75% requirement</Text>
+            <Text style={styles.attNote}>
+              {attPercentage >= 75 ? "Satisfies ≥ 75% requirement" : "Below 75% requirement"}
+            </Text>
           </View>
           <Text style={styles.linkText}>View Log →</Text>
         </View>
@@ -130,56 +119,64 @@ export const DashboardScreen: React.FC<{ onNavigate: (screen: string, params?: a
         </View>
 
         <View style={styles.classList}>
-          {todayClasses.map((c: any) => (
-            <Card key={c.id} style={styles.classCard}>
-              <View style={styles.cardHeader}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.classSubject}>{c.subject?.name}</Text>
-                  <Text style={styles.classTeacher}>
-                    👨‍🏫 {c.teacher ? `${c.teacher.firstName} ${c.teacher.lastName}` : "Faculty"}
-                    {c.roomNumber ? ` • Room ${c.roomNumber}` : ""}
-                  </Text>
-                </View>
-                <Badge
-                  label={c.classType || "OFFLINE"}
-                  variant={c.classType === "ONLINE" ? "primary" : "gray"}
-                />
-              </View>
-
-              <View style={styles.classFooter}>
-                <Text style={styles.classTime}>
-                  ⏰ {c.startTime} - {c.endTime}
-                </Text>
-
-                {c.meetingLink ? (
-                  <TouchableOpacity
-                    onPress={() => Linking.openURL(c.meetingLink)}
-                    style={styles.joinBtn}
-                  >
-                    <Text style={styles.joinBtnText}>Join Video 🎥</Text>
-                  </TouchableOpacity>
-                ) : (
-                  <View style={styles.inClassPill}>
-                    <Text style={styles.inClassText}>In-Class</Text>
-                  </View>
-                )}
-              </View>
+          {todayClasses.length === 0 ? (
+            <Card style={styles.classCard}>
+              <Text style={{ color: "#64748b", textAlign: "center", paddingVertical: 12 }}>
+                No lectures scheduled for today.
+              </Text>
             </Card>
-          ))}
+          ) : (
+            todayClasses.map((c: any) => (
+              <Card key={c.id} style={styles.classCard}>
+                <View style={styles.cardHeader}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.classSubject}>{c.subject?.name}</Text>
+                    <Text style={styles.classTeacher}>
+                      👨‍🏫 {c.teacher ? `${c.teacher.firstName} ${c.teacher.lastName}` : "Faculty"}
+                      {c.roomNumber ? ` • Room ${c.roomNumber}` : ""}
+                    </Text>
+                  </View>
+                  <Badge
+                    label={c.classType || "OFFLINE"}
+                    variant={c.classType === "ONLINE" ? "primary" : "gray"}
+                  />
+                </View>
+
+                <View style={styles.classFooter}>
+                  <Text style={styles.classTime}>
+                    ⏰ {c.startTime} - {c.endTime}
+                  </Text>
+
+                  {c.meetingLink ? (
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL(c.meetingLink)}
+                      style={styles.joinBtn}
+                    >
+                      <Text style={styles.joinBtnText}>Join Video 🎥</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={styles.inClassPill}>
+                      <Text style={styles.inClassText}>In-Class</Text>
+                    </View>
+                  )}
+                </View>
+              </Card>
+            ))
+          )}
         </View>
       </View>
 
       {/* Upcoming Examinations Preview */}
       <Card onPress={() => onNavigate("tests")} style={styles.examCard}>
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Upcoming Examinations</Text>
-          <Badge label="Scheduled" variant="warning" />
+          <Text style={styles.cardTitle}>Online Examinations</Text>
+          <Badge label="Portal" variant="primary" />
         </View>
         <Text style={styles.examTitle}>
-          JEE Main All-India Grand Mock Test 1
+          View Active CBT Examinations
         </Text>
         <Text style={styles.examMeta}>
-          3 Hours • 300 Marks • Active CBT Online
+          Check scheduled mock tests, quizes & results
         </Text>
       </Card>
     </ScrollView>

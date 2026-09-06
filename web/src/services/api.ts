@@ -61,7 +61,13 @@ class ApiService {
         }
       }
 
-      const data = await response.json();
+      let data: any;
+      try {
+        data = await response.json();
+      } catch {
+        // Response body is not valid JSON (e.g. HTML error page from proxy/CDN)
+        throw new Error(`Server error (HTTP ${response.status})`);
+      }
 
       if (!response.ok || data.success === false) {
         const errorMessage =

@@ -147,7 +147,9 @@ export class StudentApiService {
    * Fetch enrolled study materials
    */
   static async getMyMaterials(params?: { subjectId?: string; fileType?: string; search?: string }): Promise<StudentMaterialsResponse> {
-    const query = new URLSearchParams(params as any).toString();
+    const query = new URLSearchParams(
+      Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== null)) as Record<string, string>
+    ).toString();
     return ApiService.request<StudentMaterialsResponse>(`/materials/my${query ? `?${query}` : ""}`);
   }
 
@@ -155,7 +157,9 @@ export class StudentApiService {
    * Fetch personal attendance profile
    */
   static async getMyAttendance(params?: { startDate?: string; endDate?: string }): Promise<StudentAttendanceResponse> {
-    const query = new URLSearchParams(params as any).toString();
+    const query = new URLSearchParams(
+      Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== null)) as Record<string, string>
+    ).toString();
     return ApiService.request<StudentAttendanceResponse>(`/attendance/my${query ? `?${query}` : ""}`);
   }
 }

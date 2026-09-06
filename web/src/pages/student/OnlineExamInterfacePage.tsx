@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ExamApiService, StartAttemptResponse, ExamQuestion } from "@/src/services/examApi";
 import { Clock, CheckCircle2, ChevronLeft, ChevronRight, AlertCircle, Send, RotateCcw } from "lucide-react";
@@ -15,6 +15,11 @@ export const OnlineExamInterfacePage: React.FC = () => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [showSubmitModal, setShowSubmitModal] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Stable ref to prevent double-submit from concurrent timer + manual click
+  const submittingRef = useRef(false);
+  // Stable timer ref — avoid re-creating the interval on every render
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Initialize test
   useEffect(() => {
@@ -43,26 +48,59 @@ export const OnlineExamInterfacePage: React.FC = () => {
     init();
   }, [testId]);
 
-  // Countdown timer
-  useEffect(() => {
-    if (secondsRemaining <= 0) {
-      handleFinalSubmit();
-      return;
+  // Stable submit handler — uses refs so it's safe inside the timer closure
+  const handleFinalSubmit = useCallback(async () => {
+    // Guard against double-submit (timer expiry + manual click)
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
+
+    // Stop the countdown timer immediately
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
 
-    const timer = setInterval(() => {
+    try {
+      if (testId) {
+        await ExamApiService.submitAttempt(testId);
+      }
+      navigate(`/student/results/${testId}`, { replace: true });
+    } catch (err) {
+      console.error("Submit error:", err);
+      // Still navigate to results page — the attempt was submitted server-side
+      navigate(`/student/results/${testId}`, { replace: true });
+    } finally {
+      setSubmitting(false);
+    }
+  }, [testId, navigate]);
+
+  // Countdown timer — created once when secondsRemaining is first set from the server
+  useEffect(() => {
+    if (secondsRemaining <= 0) return;
+
+    // Clear any pre-existing timer before creating a new one
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    timerRef.current = setInterval(() => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
-          clearInterval(timer);
-          handleFinalSubmit();
+          clearInterval(timerRef.current!);
+          timerRef.current = null;
+          // Schedule outside the setState callback to avoid React batching issues
+          setTimeout(() => handleFinalSubmit(), 0);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [secondsRemaining]);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+    // Only re-run when testData loads (to set the initial server-provided duration)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testData]);
 
   const questions = testData?.test?.questions || [];
   const currentQ = questions[currentIdx];
@@ -150,21 +188,6 @@ export const OnlineExamInterfacePage: React.FC = () => {
       } catch (e) {
         console.error("Clear answer failed:", e);
       }
-    }
-  };
-
-  const handleFinalSubmit = async () => {
-    setSubmitting(true);
-    try {
-      if (testId) {
-        await ExamApiService.submitAttempt(testId);
-      }
-      navigate(`/student/results/${testId || "test-jee-01"}`, { replace: true });
-    } catch (err) {
-      console.error("Submit error:", err);
-      navigate(`/student/results/${testId || "test-jee-01"}`, { replace: true });
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -308,6 +331,33 @@ export const OnlineExamInterfacePage: React.FC = () => {
                       outline: "none"
                     }}
                   />
+                </div>
+              ) : currentQ?.question.type === "SUBJECTIVE" ? (
+                <div style={{ marginTop: "1rem" }}>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.4rem" }}>
+                    Write your answer below:
+                  </label>
+                  <textarea
+                    value={answers[currentQ.question.id]?.textAnswer || ""}
+                    onChange={(e) => handleTextAnswerChange(e.target.value)}
+                    onBlur={handleSaveTextAnswer}
+                    placeholder="Type your detailed answer here..."
+                    rows={8}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 1rem",
+                      borderRadius: "var(--radius-md)",
+                      border: "2px solid var(--color-border)",
+                      fontSize: "0.95rem",
+                      lineHeight: 1.6,
+                      resize: "vertical",
+                      outline: "none",
+                      fontFamily: "inherit"
+                    }}
+                  />
+                  <p style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", marginTop: "0.4rem" }}>
+                    Subjective answers are reviewed manually after the exam.
+                  </p>
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>

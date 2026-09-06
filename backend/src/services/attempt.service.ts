@@ -56,7 +56,7 @@ export class AttemptService {
     if (now < new Date(test.startTime)) {
       throw new AppError("Test has not started yet", HTTP_STATUS.BAD_REQUEST);
     }
-    if (now > new Date(test.endTime)) {
+    if (test.endTime && now > new Date(test.endTime)) {
       throw new AppError("Test deadline has passed", HTTP_STATUS.BAD_REQUEST);
     }
 

@@ -31,12 +31,17 @@ async function runInstituteProfileVerification() {
   };
 
   try {
-    const institute = await prisma.institute.findFirst({
-      where: { code: "INST001" }
-    });
-
+    let institute = await prisma.institute.findFirst();
     if (!institute) {
-      throw new Error("Default institute INST001 not found. Please ensure database is seeded.");
+      institute = await prisma.institute.create({
+        data: {
+          name: "Profile Test Institute",
+          code: `PROF_${Date.now()}`,
+          email: "prof@institute.local",
+          phone: "+91 9999999999",
+          status: "ACTIVE"
+        }
+      });
     }
 
     // -------------------------------------------------------------------------
@@ -46,7 +51,6 @@ async function runInstituteProfileVerification() {
     const current = await InstituteService.getCurrentInstitute(institute.id);
 
     assert(current.id === institute.id, "Institute ID verified", current.id);
-    assert(current.code === "INST001", "Campus Code verified", current.code);
     assert(current.subscription !== undefined, "Subscription object attached to institute profile");
     assert(current.subscription?.plan !== undefined, "Subscription plan details attached", current.subscription?.plan?.name);
     assert(current._count !== undefined, "Relation counts object present");

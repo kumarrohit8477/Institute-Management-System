@@ -32,70 +32,6 @@ export const ExamAttemptScreen: React.FC<{
   const [submitModalOpen, setSubmitModalOpen] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Fallback questions for offline demo / preview
-  const fallbackQuestions: ExamQuestion[] = [
-    {
-      id: "eq1",
-      questionId: "q1",
-      sortOrder: 1,
-      marks: 4,
-      negativeMarks: 1,
-      question: {
-        id: "q1",
-        subjectId: "sub1",
-        type: "SINGLE_CHOICE",
-        difficulty: "MEDIUM",
-        questionText: "A particle is projected vertically upwards with velocity u. The ratio of time taken to reach half of the maximum height to the total time to reach the maximum height is:",
-        options: [
-          { id: "opt1", optionText: "1 - 1/√2", sortOrder: 1 },
-          { id: "opt2", optionText: "1 / √2", sortOrder: 2 },
-          { id: "opt3", optionText: "1 - √2", sortOrder: 3 },
-          { id: "opt4", optionText: "√2 - 1", sortOrder: 4 }
-        ]
-      }
-    },
-    {
-      id: "eq2",
-      questionId: "q2",
-      sortOrder: 2,
-      marks: 4,
-      negativeMarks: 1,
-      question: {
-        id: "q2",
-        subjectId: "sub1",
-        type: "MULTIPLE_CHOICE",
-        difficulty: "HARD",
-        questionText: "Which of the following statements are TRUE regarding electrostatic conservative fields?",
-        options: [
-          { id: "opt5", optionText: "Line integral over any closed loop is strictly zero", sortOrder: 1 },
-          { id: "opt6", optionText: "Electrostatic field lines can form continuous closed loops", sortOrder: 2 },
-          { id: "opt7", optionText: "Work done in moving a test charge is path-independent", sortOrder: 3 },
-          { id: "opt8", optionText: "Potential energy gradient equals negative electrostatic force", sortOrder: 4 }
-        ]
-      }
-    },
-    {
-      id: "eq3",
-      questionId: "q3",
-      sortOrder: 3,
-      marks: 4,
-      negativeMarks: 1,
-      question: {
-        id: "q3",
-        subjectId: "sub2",
-        type: "SINGLE_CHOICE",
-        difficulty: "EASY",
-        questionText: "Evaluate the limit: lim(x -> 0) [sin(3x) / x]",
-        options: [
-          { id: "opt9", optionText: "1", sortOrder: 1 },
-          { id: "opt10", optionText: "3", sortOrder: 2 },
-          { id: "opt11", optionText: "0", sortOrder: 3 },
-          { id: "opt12", optionText: "Does not exist", sortOrder: 4 }
-        ]
-      }
-    }
-  ];
-
   // Initialize test from API
   useEffect(() => {
     let mounted = true;
@@ -116,7 +52,7 @@ export const ExamAttemptScreen: React.FC<{
           setAnswers(prefilled);
         }
       } catch {
-        // Use fallbacks for smooth development and preview
+        // API error
       } finally {
         if (mounted) setLoading(false);
       }
@@ -146,11 +82,9 @@ export const ExamAttemptScreen: React.FC<{
     return () => clearInterval(timer);
   }, [secondsRemaining]);
 
-  const questions = testData?.test?.questions?.length
-    ? testData.test.questions
-    : fallbackQuestions;
-  const currentQ = questions[currentIdx] || fallbackQuestions[0];
-  const qId = currentQ.questionId || currentQ.id;
+  const questions = testData?.test?.questions || [];
+  const currentQ = questions[currentIdx];
+  const qId = currentQ?.questionId || currentQ?.id || "";
 
   const formatTimer = (totalSecs: number) => {
     const hrs = Math.floor(totalSecs / 3600);
@@ -487,73 +421,29 @@ export const ResultScreen: React.FC<{
       .finally(() => setLoading(false));
   }, [testId]);
 
-  // Fallback demo scorecard if not found in DB
-  const mockResult: TestResultData = result || {
-    id: "res-1",
-    totalMarksObtained: 248,
-    percentage: 82.67,
-    percentile: 98.4,
-    rank: 1,
-    isPassed: true,
-    remarks: "Outstanding analytical speed and accuracy across Physics & Mathematics!",
-    student: {
-      id: "std1",
-      firstName: "Rohit",
-      lastName: "Kumar",
-      admissionNumber: "ADM-2026-001"
-    },
-    test: {
-      id: testId,
-      title: "JEE Main All-India Grand Mock Test 1",
-      durationMinutes: 180,
-      totalMarks: 300,
-      passingMarks: 100
-    },
-    attempt: {
-      id: "att-1",
-      startedAt: new Date().toISOString(),
-      score: 248,
-      totalAttempted: 70,
-      totalCorrect: 64,
-      totalIncorrect: 6,
-      studentAnswers: [
-        {
-          id: "sa1",
-          questionId: "q1",
-          isCorrect: true,
-          marksAwarded: 4,
-          question: {
-            id: "q1",
-            type: "SINGLE_CHOICE",
-            questionText: "A particle is projected vertically upwards with velocity u. The ratio of time taken to reach half of the maximum height to the total time to reach the maximum height is:",
-            explanation: "Max height H = u^2/(2g). Time to reach max height T = u/g. For h = H/2, using h = ut - 1/2gt^2 gives t = (1 - 1/√2)T.",
-            options: [
-              { id: "opt1", optionText: "1 - 1/√2", sortOrder: 1, isCorrect: true },
-              { id: "opt2", optionText: "1 / √2", sortOrder: 2 },
-              { id: "opt3", optionText: "1 - √2", sortOrder: 3 },
-              { id: "opt4", optionText: "√2 - 1", sortOrder: 4 }
-            ]
-          }
-        },
-        {
-          id: "sa2",
-          questionId: "q2",
-          isCorrect: false,
-          marksAwarded: -1,
-          question: {
-            id: "q2",
-            type: "SINGLE_CHOICE",
-            questionText: "Which of the following statements are TRUE regarding electrostatic conservative fields?",
-            explanation: "Electrostatic field lines originate on positive charges and terminate on negative charges; they cannot form continuous closed loops due to curl(E) = 0.",
-            options: [
-              { id: "opt5", optionText: "Line integral over any closed loop is strictly zero", sortOrder: 1, isCorrect: true },
-              { id: "opt6", optionText: "Electrostatic field lines can form continuous closed loops", sortOrder: 2 }
-            ]
-          }
-        }
-      ]
-    }
-  };
+  const mockResult = result;
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text style={styles.loadingText}>Fetching Test Scorecard...</Text>
+      </View>
+    );
+  }
+
+  if (!mockResult) {
+    return (
+      <View style={styles.container}>
+        <Header title="Exam Scorecard" subtitle="Results & Analysis" onBack={onBack} />
+        <View style={[styles.center, { flex: 1 }]}>
+          <Text style={{ fontSize: 16, color: "#64748b", fontWeight: "700" }}>
+            No scorecard data available for this test attempt.
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -562,19 +452,23 @@ export const ResultScreen: React.FC<{
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Banner Score Card */}
         <View style={styles.scoreBanner}>
-          <Text style={styles.scoreTestName}>{mockResult.test?.title}</Text>
+          <Text style={styles.scoreTestName}>{mockResult.test?.title || "Examination"}</Text>
           <Text style={styles.scoreBig}>
-            {mockResult.totalMarksObtained}{" "}
-            <Text style={styles.scoreMax}>/ {mockResult.test?.totalMarks}</Text>
+            {mockResult.totalMarksObtained ?? 0}{" "}
+            <Text style={styles.scoreMax}>/ {mockResult.test?.totalMarks ?? 0}</Text>
           </Text>
 
           <View style={styles.scoreMetricsRow}>
+            {mockResult.rank ? (
+              <>
+                <Text style={styles.metricItem}>
+                  🏆 Rank: <Text style={styles.metricBold}>#{mockResult.rank}</Text>
+                </Text>
+                <Text style={styles.metricDot}>•</Text>
+              </>
+            ) : null}
             <Text style={styles.metricItem}>
-              🏆 Rank: <Text style={styles.metricBold}>#{mockResult.rank || 1} in Batch</Text>
-            </Text>
-            <Text style={styles.metricDot}>•</Text>
-            <Text style={styles.metricItem}>
-              📈 Percentage: <Text style={styles.metricBold}>{mockResult.percentage}%</Text>
+              📈 Percentage: <Text style={styles.metricBold}>{mockResult.percentage ?? 0}%</Text>
             </Text>
           </View>
         </View>
@@ -584,13 +478,13 @@ export const ResultScreen: React.FC<{
           <Card style={styles.breakdownCard}>
             <Text style={styles.breakdownLabel}>CORRECT</Text>
             <Text style={[styles.breakdownValue, { color: "#10b981" }]}>
-              {mockResult.attempt?.totalCorrect || 64}
+              {mockResult.attempt?.totalCorrect ?? 0}
             </Text>
           </Card>
           <Card style={styles.breakdownCard}>
             <Text style={styles.breakdownLabel}>INCORRECT</Text>
             <Text style={[styles.breakdownValue, { color: "#ef4444" }]}>
-              {mockResult.attempt?.totalIncorrect || 6}
+              {mockResult.attempt?.totalIncorrect ?? 0}
             </Text>
           </Card>
         </View>
@@ -604,49 +498,52 @@ export const ResultScreen: React.FC<{
         ) : null}
 
         {/* Question-by-Question Detailed Review */}
-        <Text style={styles.reviewHeader}>Question-by-Question Solution Review</Text>
-
-        {mockResult.attempt?.studentAnswers?.map((sa, idx) => {
-          const isCorrect = sa.isCorrect;
-          return (
-            <Card key={sa.id || idx} style={styles.reviewCard}>
-              <View style={styles.reviewCardTop}>
-                <Text style={styles.reviewQIndex}>Question {idx + 1}</Text>
-                <Badge
-                  label={isCorrect ? `+${sa.marksAwarded} Correct` : `${sa.marksAwarded} Incorrect`}
-                  variant={isCorrect ? "success" : "danger"}
-                />
-              </View>
-
-              <Text style={styles.reviewQText}>{sa.question?.questionText}</Text>
-
-              {/* Options status */}
-              <View style={styles.reviewOptionsList}>
-                {sa.question?.options?.map((opt) => (
-                  <View
-                    key={opt.id}
-                    style={[
-                      styles.reviewOptItem,
-                      opt.isCorrect && styles.reviewOptItemCorrect
-                    ]}
-                  >
-                    <Text style={[styles.reviewOptText, opt.isCorrect && styles.reviewOptTextCorrect]}>
-                      {opt.isCorrect ? "✓ " : "• "} {opt.optionText}
-                    </Text>
+        {mockResult.attempt?.studentAnswers?.length ? (
+          <>
+            <Text style={styles.reviewHeader}>Question-by-Question Solution Review</Text>
+            {mockResult.attempt.studentAnswers.map((sa, idx) => {
+              const isCorrect = sa.isCorrect;
+              return (
+                <Card key={sa.id || idx} style={styles.reviewCard}>
+                  <View style={styles.reviewCardTop}>
+                    <Text style={styles.reviewQIndex}>Question {idx + 1}</Text>
+                    <Badge
+                      label={isCorrect ? `+${sa.marksAwarded} Correct` : `${sa.marksAwarded} Incorrect`}
+                      variant={isCorrect ? "success" : "danger"}
+                    />
                   </View>
-                ))}
-              </View>
 
-              {/* Explanation */}
-              {sa.question?.explanation ? (
-                <View style={styles.explanationBox}>
-                  <Text style={styles.explanationTitle}>Detailed Solution:</Text>
-                  <Text style={styles.explanationText}>{sa.question.explanation}</Text>
-                </View>
-              ) : null}
-            </Card>
-          );
-        })}
+                  <Text style={styles.reviewQText}>{sa.question?.questionText}</Text>
+
+                  {/* Options status */}
+                  <View style={styles.reviewOptionsList}>
+                    {sa.question?.options?.map((opt) => (
+                      <View
+                        key={opt.id}
+                        style={[
+                          styles.reviewOptItem,
+                          opt.isCorrect && styles.reviewOptItemCorrect
+                        ]}
+                      >
+                        <Text style={[styles.reviewOptText, opt.isCorrect && styles.reviewOptTextCorrect]}>
+                          {opt.isCorrect ? "✓ " : "• "} {opt.optionText}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  {/* Explanation */}
+                  {sa.question?.explanation ? (
+                    <View style={styles.explanationBox}>
+                      <Text style={styles.explanationTitle}>Detailed Solution:</Text>
+                      <Text style={styles.explanationText}>{sa.question.explanation}</Text>
+                    </View>
+                  ) : null}
+                </Card>
+              );
+            })}
+          </>
+        ) : null}
       </ScrollView>
     </View>
   );

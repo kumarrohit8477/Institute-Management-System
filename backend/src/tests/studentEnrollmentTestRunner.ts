@@ -33,22 +33,46 @@ async function runStudentEnrollmentVerification() {
   };
 
   try {
-    const institute = await prisma.institute.findFirst({
-      where: { code: "INST001" }
-    });
-
+    let institute = await prisma.institute.findFirst();
     if (!institute) {
-      throw new Error("Default institute INST001 not found.");
+      institute = await prisma.institute.create({
+        data: {
+          name: "Enrollment Test Institute",
+          code: `ENROLL_${Date.now()}`,
+          email: "enroll@institute.local",
+          phone: "+91 9999999999",
+          status: "ACTIVE"
+        }
+      });
     }
 
-    // Find a course and batch
-    const batch = await prisma.batch.findFirst({
+    // Find or create a course and batch
+    let batch = await prisma.batch.findFirst({
       where: { instituteId: institute.id },
       include: { course: true }
     });
 
     if (!batch) {
-      throw new Error("No batches found for testing.");
+      const course = await prisma.course.create({
+        data: {
+          instituteId: institute.id,
+          name: "Test Course",
+          code: `TC_${Date.now()}`,
+          durationMonths: 12,
+          status: "ACTIVE"
+        }
+      });
+      batch = await prisma.batch.create({
+        data: {
+          instituteId: institute.id,
+          courseId: course.id,
+          name: "Test Batch A",
+          code: `TB_${Date.now()}`,
+          startDate: new Date(),
+          status: "ACTIVE"
+        },
+        include: { course: true }
+      });
     }
 
     // -------------------------------------------------------------------------

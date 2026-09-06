@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Building2, ShieldCheck, CheckCircle2, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { api } from "@/src/services/api";
+import "./RegisterPage.css";
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -46,19 +47,19 @@ export const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      // Send enquiry / registration request
-      await api.post("/enquiries", {
-        name: formData.adminName,
-        email: formData.adminEmail,
-        phone: formData.phone,
-        instituteName: formData.name,
-        role: "Institute Admin Candidate",
-        studentCount: "50-200",
-        message: `Self-registration attempt for Institute Code: ${formData.code.toUpperCase()}, Plan: ${formData.planTier}`
+      await api.post("/auth/register-institute", {
+        name: formData.name.trim(),
+        code: formData.code.trim().toUpperCase(),
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone.trim(),
+        address: formData.address.trim() || undefined,
+        adminEmail: formData.adminEmail.trim().toLowerCase(),
+        adminPassword: formData.adminPassword,
+        planTier: formData.planTier || "FREE_TRIAL"
       });
 
       setSuccessMessage(
-        `Institute Registration submitted successfully for "${formData.name}". Your account details have been recorded and will be verified by the platform team.`
+        `Institute "${formData.name}" (Code: ${formData.code.trim().toUpperCase()}) registered successfully! You can now log in using Institute Code (${formData.code.trim().toUpperCase()}), Admin Email (${formData.adminEmail.trim().toLowerCase()}), and your password.`
       );
     } catch (err: any) {
       const msg = err.message || "Failed to submit institute registration. Please try again.";
@@ -69,67 +70,51 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <Link to="/" className="inline-flex items-center gap-2 mb-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
-            <Building2 size={28} />
+    <div className="register-page-container">
+      <div className="register-card-wrapper">
+        <div className="register-card">
+          <div className="register-header-section">
+            <Link to="/" className="register-logo-link">
+              <div className="register-logo-icon">
+                <Building2 size={28} />
+              </div>
+            </Link>
+            <h2 className="register-title">Register Your Institute</h2>
           </div>
-        </Link>
-        <h2 className="text-3xl font-extrabold text-white tracking-tight">
-          Register Your Institute
-        </h2>
-        <p className="mt-2 text-sm text-slate-400">
-          Create an active tenant account for your academy or coaching center
-        </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-slate-800/80 backdrop-blur-md py-8 px-6 shadow-2xl rounded-2xl sm:px-10 border border-slate-700/60">
           {/* Security Banner */}
-          <div className="mb-6 p-4 rounded-xl bg-indigo-950/60 border border-indigo-500/30 flex items-start gap-3">
-            <ShieldCheck size={22} className="text-indigo-400 shrink-0 mt-0.5" />
-            <div className="text-xs text-indigo-200 leading-relaxed">
-              <strong>Notice:</strong> This form creates an <strong>Institute Admin</strong> tenant account. Platform <strong>Super Admin</strong> registration is not public and can only be initialized via controlled system bootstrap.
+          <div className="register-security-banner">
+            <ShieldCheck size={22} className="register-security-icon" />
+            <div className="register-security-text">
+              <strong>Notice:</strong> This form creates an <strong>Institute Admin</strong> tenant account.
             </div>
           </div>
-
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-rose-950/70 border border-rose-500/30 flex items-center gap-3 text-rose-200 text-sm">
-              <AlertCircle size={20} className="shrink-0 text-rose-400" />
+            <div className="register-error-banner">
+              <AlertCircle size={20} className="register-error-icon" />
               <span>{error}</span>
             </div>
           )}
 
           {successMessage ? (
-            <div className="text-center py-6">
-              <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/40">
+            <div className="register-success-container">
+              <div className="register-success-icon-wrapper">
                 <CheckCircle2 size={36} />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Registration Submitted!</h3>
-              <p className="text-slate-300 text-sm mb-6 leading-relaxed">
-                {successMessage}
-              </p>
-              <div className="flex gap-4 justify-center">
-                <Link
-                  to="/login"
-                  className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-600/30"
-                >
+              <h3 className="register-success-title">Registration Submitted!</h3>
+              <p className="register-success-message">{successMessage}</p>
+              <div className="register-success-actions">
+                <Link to="/login" className="register-primary-btn">
                   Proceed to Sign In
                 </Link>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="register-form">
               <div>
-                <h3 className="text-sm font-semibold text-indigo-400 uppercase tracking-wider mb-3">
-                  1. Institute Profile
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Institute Name *
-                    </label>
+                <h3 className="register-section-heading">1. Institute Profile</h3>
+                <div className="register-grid-2">
+                  <div className="register-field">
+                    <label className="register-label">Institute Name *</label>
                     <input
                       type="text"
                       name="name"
@@ -137,14 +122,12 @@ export const RegisterPage: React.FC = () => {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="e.g. Acme Academy Campus"
-                      className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                      className="register-input"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Institute Code *
-                    </label>
+                  <div className="register-field">
+                    <label className="register-label">Institute Code *</label>
                     <input
                       type="text"
                       name="code"
@@ -152,16 +135,14 @@ export const RegisterPage: React.FC = () => {
                       value={formData.code}
                       onChange={handleChange}
                       placeholder="e.g. ACME01"
-                      className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm uppercase"
+                      className="register-input uppercase-input"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Institute Email *
-                    </label>
+                <div className="register-grid-2 register-mt">
+                  <div className="register-field">
+                    <label className="register-label">Institute Email *</label>
                     <input
                       type="email"
                       name="email"
@@ -169,14 +150,12 @@ export const RegisterPage: React.FC = () => {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="contact@acme.edu"
-                      className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                      className="register-input"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Phone Number *
-                    </label>
+                  <div className="register-field">
+                    <label className="register-label">Phone Number *</label>
                     <input
                       type="tel"
                       name="phone"
@@ -184,21 +163,17 @@ export const RegisterPage: React.FC = () => {
                       value={formData.phone}
                       onChange={handleChange}
                       placeholder="+91 9876543210"
-                      className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                      className="register-input"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-700/60">
-                <h3 className="text-sm font-semibold text-indigo-400 uppercase tracking-wider mb-3">
-                  2. Admin User Details
-                </h3>
+              <div className="register-divider">
+                <h3 className="register-section-heading">2. Admin User Details</h3>
 
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Admin Full Name *
-                  </label>
+                <div className="register-field register-mb">
+                  <label className="register-label">Admin Full Name *</label>
                   <input
                     type="text"
                     name="adminName"
@@ -206,14 +181,12 @@ export const RegisterPage: React.FC = () => {
                     value={formData.adminName}
                     onChange={handleChange}
                     placeholder="John Doe"
-                    className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    className="register-input"
                   />
                 </div>
 
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Admin Login Email *
-                  </label>
+                <div className="register-field register-mb">
+                  <label className="register-label">Admin Login Email *</label>
                   <input
                     type="email"
                     name="adminEmail"
@@ -221,16 +194,14 @@ export const RegisterPage: React.FC = () => {
                     value={formData.adminEmail}
                     onChange={handleChange}
                     placeholder="admin@acme.edu"
-                    className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    className="register-input"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Password *
-                    </label>
-                    <div className="relative">
+                <div className="register-grid-2">
+                  <div className="register-field">
+                    <label className="register-label">Password *</label>
+                    <div className="register-password-wrapper">
                       <input
                         type={showPassword ? "text" : "password"}
                         name="adminPassword"
@@ -239,22 +210,20 @@ export const RegisterPage: React.FC = () => {
                         value={formData.adminPassword}
                         onChange={handleChange}
                         placeholder="••••••••"
-                        className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm pr-10"
+                        className="register-input register-password-input"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200"
+                        className="register-password-toggle"
                       >
                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">
-                      Confirm Password *
-                    </label>
+                  <div className="register-field">
+                    <label className="register-label">Confirm Password *</label>
                     <input
                       type={showPassword ? "text" : "password"}
                       name="confirmPassword"
@@ -263,21 +232,19 @@ export const RegisterPage: React.FC = () => {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="••••••••"
-                      className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                      className="register-input"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-700/60">
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Subscription Plan Tier
-                </label>
+              <div className="register-divider">
+                <label className="register-label">Subscription Plan Tier</label>
                 <select
                   name="planTier"
                   value={formData.planTier}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                  className="register-input register-select"
                 >
                   <option value="FREE_TRIAL">Free Trial (14 Days - Full Access)</option>
                   <option value="STARTER">Starter Academy Plan (Up to 150 Students)</option>
@@ -286,11 +253,11 @@ export const RegisterPage: React.FC = () => {
                 </select>
               </div>
 
-              <div className="pt-4">
+              <div className="register-submit-wrapper">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="register-primary-btn register-submit-btn"
                 >
                   {loading ? (
                     <span>Registering Institute...</span>
@@ -305,9 +272,9 @@ export const RegisterPage: React.FC = () => {
             </form>
           )}
 
-          <div className="mt-6 text-center border-t border-slate-700/60 pt-4">
-            <span className="text-xs text-slate-400">Already registered? </span>
-            <Link to="/login" className="text-xs text-indigo-400 hover:text-indigo-300 font-medium">
+          <div className="register-footer-link-wrapper">
+            <span className="register-footer-text">Already registered? </span>
+            <Link to="/login" className="register-footer-action">
               Sign In Here
             </Link>
           </div>

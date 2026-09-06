@@ -32,17 +32,7 @@ export class EnquiryApi {
         data
       };
     } catch (error: any) {
-      console.warn("Backend enquiry API error, falling back to client acknowledgement:", error.message);
-      // Fallback for offline backend / offline mode
-      return {
-        success: true,
-        message: "Thank you for your enquiry! Our team will get back to you shortly.",
-        data: {
-          id: `enq_${Date.now()}`,
-          ...payload,
-          createdAt: new Date().toISOString()
-        }
-      };
+      throw new Error(error.message || "Failed to submit enquiry. Please try again.");
     }
   }
 }

@@ -42,23 +42,18 @@ export class StudentService {
       throw new AppError("A user or student with this email already exists in the institute", HTTP_STATUS.CONFLICT);
     }
 
-    // Auto-generate admission number if not provided
-    let admissionNumber = input.admissionNumber;
-    if (!admissionNumber) {
-      const year = new Date().getFullYear();
-      const count = await prisma.student.count({ where: { instituteId } });
-      admissionNumber = `ADM-${year}-${String(count + 1).padStart(4, "0")}`;
-    } else {
+    // Validate provided admission number uniqueness (auto-gen is handled inside the transaction)
+    if (input.admissionNumber) {
       const existingAdmission = await prisma.student.findUnique({
         where: {
           instituteId_admissionNumber: {
             instituteId,
-            admissionNumber
+            admissionNumber: input.admissionNumber
           }
         }
       });
       if (existingAdmission) {
-        throw new AppError(`Admission number '${admissionNumber}' already exists`, HTTP_STATUS.CONFLICT);
+        throw new AppError(`Admission number '${input.admissionNumber}' already exists`, HTTP_STATUS.CONFLICT);
       }
     }
 
@@ -75,8 +70,19 @@ export class StudentService {
     // Hash password for User account
     const passwordHash = await PasswordUtil.hash(password);
 
+    // Determine whether to auto-generate admission number
+    const providedAdmissionNumber = input.admissionNumber;
+
     // Create User, Student, and optional StudentBatch in transaction
     const result = await prisma.$transaction(async (tx) => {
+      // Auto-generate admission number inside transaction to prevent race conditions
+      let admissionNumber = providedAdmissionNumber;
+      if (!admissionNumber) {
+        const year = new Date().getFullYear();
+        const count = await tx.student.count({ where: { instituteId } });
+        admissionNumber = `ADM-${year}-${String(count + 1).padStart(4, "0")}`;
+      }
+
       const user = await tx.user.create({
         data: {
           instituteId,

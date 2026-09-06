@@ -155,11 +155,12 @@ export class SaasService {
     const taxAmount = Number((price * 0.18).toFixed(2)); // 18% GST standard
     const totalAmount = price + taxAmount;
 
-    const invoiceCount = await prisma.platformInvoice.count();
-    const invoiceNumber = `INV-${new Date().getFullYear()}-${String(invoiceCount + 1).padStart(5, "0")}`;
-
     // Execute atomic transaction
     const result = await prisma.$transaction(async (tx) => {
+      // Generate invoice number inside transaction to prevent race conditions
+      const invoiceCount = await tx.platformInvoice.count();
+      const invoiceNumber = `INV-${new Date().getFullYear()}-${String(invoiceCount + 1).padStart(5, "0")}`;
+
       // 1. Create Institute
       const institute = await tx.institute.create({
         data: {
@@ -170,7 +171,7 @@ export class SaasService {
           phone,
           address: address || null,
           tagline: (input as any).tagline || null,
-          status: planTier === "FREE_TRIAL" ? InstituteStatus.TRIAL : InstituteStatus.ACTIVE,
+          status: planTier === PlanTier.FREE_TRIAL ? InstituteStatus.TRIAL : InstituteStatus.ACTIVE,
           settings: {
             currency: "INR",
             timezone: "Asia/Kolkata",
@@ -196,10 +197,10 @@ export class SaasService {
           instituteId: institute.id,
           planId: plan.id,
           billingCycle,
-          status: planTier === "FREE_TRIAL" ? SubscriptionStatus.TRIAL : SubscriptionStatus.ACTIVE,
+          status: planTier === PlanTier.FREE_TRIAL ? SubscriptionStatus.TRIAL : SubscriptionStatus.ACTIVE,
           startDate,
           endDate,
-          trialEndsAt: planTier === "FREE_TRIAL" ? new Date(Date.now() + 14 * 86400000) : null,
+          trialEndsAt: planTier === PlanTier.FREE_TRIAL ? new Date(Date.now() + 14 * 86400000) : null,
           autoRenew: true
         }
       });
@@ -453,10 +454,11 @@ export class SaasService {
     const taxAmount = Number((price * 0.18).toFixed(2));
     const totalAmount = price + taxAmount;
 
-    const invoiceCount = await prisma.platformInvoice.count();
-    const invoiceNumber = `INV-${new Date().getFullYear()}-${String(invoiceCount + 1).padStart(5, "0")}`;
-
     const result = await prisma.$transaction(async (tx) => {
+      // Generate invoice number inside transaction to prevent race conditions
+      const invoiceCount = await tx.platformInvoice.count();
+      const invoiceNumber = `INV-${new Date().getFullYear()}-${String(invoiceCount + 1).padStart(5, "0")}`;
+
       const updatedSub = await tx.subscription.upsert({
         where: { instituteId },
         update: {

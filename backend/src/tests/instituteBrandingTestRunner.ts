@@ -32,13 +32,17 @@ async function runInstituteBrandingVerification() {
   };
 
   try {
-    // 1. Fetch default test institute
-    const institute = await prisma.institute.findFirst({
-      where: { code: "INST001" }
-    });
-
+    let institute = await prisma.institute.findFirst();
     if (!institute) {
-      throw new Error("Default institute INST001 not found. Please ensure database is seeded.");
+      institute = await prisma.institute.create({
+        data: {
+          name: "Branding Test Institute",
+          code: `BRAND_${Date.now()}`,
+          email: "brand@institute.local",
+          phone: "+91 9999999999",
+          status: "ACTIVE"
+        }
+      });
     }
 
     // -------------------------------------------------------------------------
@@ -46,7 +50,7 @@ async function runInstituteBrandingVerification() {
     // -------------------------------------------------------------------------
     console.log("▶ 1. FETCH CURRENT INSTITUTE DETAILS & TAGLINE ATTRIBUTE");
     const current = await InstituteService.getCurrentInstitute(institute.id);
-    assert(current.id === institute.id && current.code === "INST001", "Institute Details Retrieved", current.name);
+    assert(current.id === institute.id, "Institute Details Retrieved", current.name);
     assert("tagline" in current, "Institute Details includes 'tagline' property");
 
     // -------------------------------------------------------------------------

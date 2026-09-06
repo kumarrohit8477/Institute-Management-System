@@ -36,13 +36,17 @@ async function runCredentialsAndEmailVerification() {
   };
 
   try {
-    // Locate default institute
-    const institute = await prisma.institute.findFirst({
-      where: { code: "INST001" }
-    });
-
+    let institute = await prisma.institute.findFirst();
     if (!institute) {
-      throw new Error("Default institute INST001 not found.");
+      institute = await prisma.institute.create({
+        data: {
+          name: "Test Credentials Institute",
+          code: `CRED_${Date.now()}`,
+          email: "cred@institute.local",
+          phone: "+91 9999999999",
+          status: "ACTIVE"
+        }
+      });
     }
 
     const timestamp = Date.now();

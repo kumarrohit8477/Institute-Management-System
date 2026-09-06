@@ -9,6 +9,24 @@ interface RateLimitStore {
 const ipStore: Map<string, RateLimitStore> = new Map();
 
 /**
+ * Periodically evict expired rate-limit entries to prevent unbounded Map growth.
+ * Runs every 10 minutes.
+ */
+const CLEANUP_INTERVAL_MS = 10 * 60 * 1000;
+const cleanupExpiredEntries = () => {
+  const now = Date.now();
+  for (const [ip, record] of ipStore.entries()) {
+    if (now > record.resetTime) {
+      ipStore.delete(ip);
+    }
+  }
+};
+// Only start the interval in a real server process (not during tests)
+if (process.env.NODE_ENV !== "test") {
+  setInterval(cleanupExpiredEntries, CLEANUP_INTERVAL_MS).unref();
+}
+
+/**
  * Reset all rate limit counters (useful for development/testing)
  */
 export const clearRateLimitStore = () => {

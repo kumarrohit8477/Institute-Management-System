@@ -32,16 +32,13 @@ export class PaymentService {
       );
     }
 
-    // Auto-generate receipt number: RCP-YYYYMMDD-XXXX
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    const count = await prisma.payment.count();
-    const receiptNumber = `RCP-${dateStr}-${String(count + 1).padStart(4, "0")}`;
-
-    const newPaidTotal = currentPaid + amount;
-    const newStatus = newPaidTotal >= finalAmount ? FeeStatus.PAID : FeeStatus.PARTIALLY_PAID;
-
     // Execute atomic transaction
     const result = await prisma.$transaction(async (tx) => {
+      // Auto-generate receipt number inside transaction: RCP-YYYYMMDD-XXXX
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      const count = await tx.payment.count();
+      const receiptNumber = `RCP-${dateStr}-${String(count + 1).padStart(4, "0")}`;
+
       const payment = await tx.payment.create({
         data: {
           feeId,
@@ -62,6 +59,9 @@ export class PaymentService {
           }
         }
       });
+
+      const newPaidTotal = currentPaid + amount;
+      const newStatus = newPaidTotal >= finalAmount ? FeeStatus.PAID : FeeStatus.PARTIALLY_PAID;
 
       await tx.fee.update({
         where: { id: feeId },

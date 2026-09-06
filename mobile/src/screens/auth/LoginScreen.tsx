@@ -18,50 +18,11 @@ import { Colors } from "../../theme/colors";
 import { Typography, Spacing, Radius } from "../../theme/typography";
 import { getApiBaseUrl, setCustomApiBaseUrl } from "../../services/api";
 
-const DEMO_ACCOUNTS = {
-  student: {
-    label: "👨‍🎓 Student",
-    email: "student@institute.local",
-    password: "StudentSecurePassword123!",
-    code: "INST001",
-    color: Colors.student.primary,
-    bg: Colors.student.light,
-    darkColor: Colors.student.dark,
-  },
-  teacher: {
-    label: "👨‍🏫 Teacher",
-    email: "amit.sharma@apexacademy.local",
-    password: "Teacher@123",
-    code: "INST001",
-    color: Colors.teacher.primary,
-    bg: Colors.teacher.light,
-    darkColor: Colors.teacher.dark,
-  },
-  admin: {
-    label: "🛡️ Admin",
-    email: "admin@institute.local",
-    password: "AdminSecurePassword123!",
-    code: "INST001",
-    color: Colors.admin.primary,
-    bg: Colors.admin.light,
-    darkColor: Colors.admin.dark,
-  },
-  superadmin: {
-    label: "👑 Super Admin",
-    email: "superadmin@ims.local",
-    password: "SuperAdminSecure2026!",
-    code: "",
-    color: Colors.superadmin.primary,
-    bg: Colors.superadmin.light,
-    darkColor: Colors.superadmin.dark,
-  },
-};
-
 export const LoginScreen: React.FC = () => {
   const { login } = useAuth();
-  const [identifier, setIdentifier] = useState(DEMO_ACCOUNTS.student.email);
-  const [password, setPassword] = useState(DEMO_ACCOUNTS.student.password);
-  const [instituteCode, setInstituteCode] = useState(DEMO_ACCOUNTS.student.code);
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [instituteCode, setInstituteCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -75,13 +36,7 @@ export const LoginScreen: React.FC = () => {
     getApiBaseUrl().then((url) => setServerUrl(url));
   }, []);
 
-  const fillDemo = (roleKey: keyof typeof DEMO_ACCOUNTS) => {
-    const acc = DEMO_ACCOUNTS[roleKey];
-    setIdentifier(acc.email);
-    setPassword(acc.password);
-    setInstituteCode(acc.code);
-    setError(null);
-  };
+
 
   const handleLogin = async () => {
     if (!identifier.trim() || !password.trim()) {
@@ -174,32 +129,7 @@ export const LoginScreen: React.FC = () => {
               Sign in to access your portal — Students, Teachers, Admins &amp; Super Admins
             </Text>
 
-            {/* Quick Fill Demo Chips */}
-            <View style={styles.quickFillContainer}>
-              <Text style={styles.quickFillHeader}>Quick Fill Demo Credentials:</Text>
-              <View style={styles.roleHints}>
-                {(Object.keys(DEMO_ACCOUNTS) as Array<keyof typeof DEMO_ACCOUNTS>).map((key) => {
-                  const acc = DEMO_ACCOUNTS[key];
-                  const isSelected = identifier === acc.email;
-                  return (
-                    <TouchableOpacity
-                      key={key}
-                      onPress={() => fillDemo(key)}
-                      activeOpacity={0.75}
-                      style={[
-                        styles.roleChip,
-                        { backgroundColor: acc.bg },
-                        isSelected && { borderWidth: 1.5, borderColor: acc.color },
-                      ]}
-                    >
-                      <Text style={[styles.roleChipText, { color: acc.darkColor }]}>
-                        {acc.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
+
 
             {error ? (
               <View style={styles.errorBox}>

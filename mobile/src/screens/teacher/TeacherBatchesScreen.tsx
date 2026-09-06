@@ -21,45 +21,6 @@ interface Props {
   onNavigate: (screen: string, params?: any) => void;
 }
 
-const FALLBACK_BATCHES = [
-  {
-    _id: "b1",
-    name: "Grade 10-A",
-    course: "Secondary Science",
-    studentCount: 32,
-    status: "active",
-    subject: "Mathematics, Physics",
-    schedule: "Mon, Wed, Fri",
-  },
-  {
-    _id: "b2",
-    name: "Grade 11-B",
-    course: "Senior Secondary",
-    studentCount: 28,
-    status: "active",
-    subject: "Physics",
-    schedule: "Tue, Thu",
-  },
-  {
-    _id: "b3",
-    name: "Grade 9-C",
-    course: "Secondary",
-    studentCount: 35,
-    status: "active",
-    subject: "Mathematics",
-    schedule: "Mon, Tue, Thu",
-  },
-  {
-    _id: "b4",
-    name: "Grade 12 PCM",
-    course: "Senior Secondary",
-    studentCount: 20,
-    status: "upcoming",
-    subject: "Mathematics, Physics",
-    schedule: "Mon – Sat",
-  },
-];
-
 export const TeacherBatchesScreen: React.FC<Props> = ({ onBack, onNavigate }) => {
   const [batches, setBatches] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
@@ -72,12 +33,12 @@ export const TeacherBatchesScreen: React.FC<Props> = ({ onBack, onNavigate }) =>
     try {
       setError(null);
       const data = await MobileTeacherService.getBatches();
-      const list = data?.batches ?? data?.data ?? data ?? FALLBACK_BATCHES;
-      setBatches(list.length > 0 ? list : FALLBACK_BATCHES);
-      setFiltered(list.length > 0 ? list : FALLBACK_BATCHES);
+      const list = Array.isArray(data?.batches) ? data.batches : Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+      setBatches(list);
+      setFiltered(list);
     } catch {
-      setBatches(FALLBACK_BATCHES);
-      setFiltered(FALLBACK_BATCHES);
+      setBatches([]);
+      setFiltered([]);
     } finally {
       setLoading(false);
       setRefreshing(false);

@@ -78,6 +78,10 @@ export const resolveTenantContext = async (
     }
 
     req.instituteId = tenant.id;
+    // Sync back onto req.user so downstream code using req.user.instituteId also gets the resolved value
+    if (req.user && !req.user.instituteId) {
+      (req.user as any).instituteId = tenant.id;
+    }
     next();
   } catch (error) {
     next(error);

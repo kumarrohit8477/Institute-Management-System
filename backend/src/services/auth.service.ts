@@ -43,14 +43,17 @@ export class AuthService {
       targetInstituteId = institute.id;
     }
 
-    // 2. Check if identifier is an email (contains '@')
+    // 2. Collect candidate user accounts
+    let candidates: any[] = [];
+
     if (identifier.includes("@")) {
+      const emailLower = identifier.toLowerCase();
       if (targetInstituteId) {
-        user = await prisma.user.findUnique({
+        const found = await prisma.user.findUnique({
           where: {
             instituteId_email: {
               instituteId: targetInstituteId,
-              email: identifier.toLowerCase()
+              email: emailLower
             }
           },
           include: {
@@ -59,27 +62,16 @@ export class AuthService {
             teacher: true
           }
         });
+        if (found) candidates.push(found);
       } else {
-        // Find across institutes by email (also finds Super Admin without instituteId)
-        const users = await prisma.user.findMany({
-          where: { email: identifier.toLowerCase() },
+        candidates = await prisma.user.findMany({
+          where: { email: emailLower },
           include: {
             institute: true,
             student: true,
             teacher: true
           }
         });
-
-        if (users.length > 0) {
-          user =
-            users.find((u) => u.role === UserRole.SUPER_ADMIN) ||
-            users.find(
-              (u) =>
-                u.institute?.status === InstituteStatus.ACTIVE ||
-                u.institute?.status === InstituteStatus.TRIAL
-            ) ||
-            users[0];
-        }
       }
     } else {
       // 3. Identifier is not an email — Check Student Admission Number or Teacher Employee Code
@@ -93,7 +85,7 @@ export class AuthService {
         studentWhere.instituteId = targetInstituteId;
       }
 
-      const studentProfile = await prisma.student.findFirst({
+      const studentProfiles = await prisma.student.findMany({
         where: studentWhere,
         include: {
           user: {
@@ -107,10 +99,11 @@ export class AuthService {
         }
       });
 
-      if (studentProfile?.user) {
-        user = studentProfile.user;
-      } else {
-        // Check Teacher Employee Code
+      for (const sp of studentProfiles) {
+        if (sp.user) candidates.push(sp.user);
+      }
+
+      if (candidates.length === 0) {
         const teacherWhere: any = {
           OR: [
             { employeeCode: identifier },
@@ -121,7 +114,7 @@ export class AuthService {
           teacherWhere.instituteId = targetInstituteId;
         }
 
-        const teacherProfile = await prisma.teacher.findFirst({
+        const teacherProfiles = await prisma.teacher.findMany({
           where: teacherWhere,
           include: {
             user: {
@@ -135,35 +128,26 @@ export class AuthService {
           }
         });
 
-        if (teacherProfile?.user) {
-          user = teacherProfile.user;
+        for (const tp of teacherProfiles) {
+          if (tp.user) candidates.push(tp.user);
         }
       }
     }
 
-    // If still not found, try fallback lookup across User email directly
-    if (!user) {
-      const fallbackUser = await prisma.user.findFirst({
-        where: {
-          email: identifier.toLowerCase(),
-          ...(targetInstituteId ? { instituteId: targetInstituteId } : {})
-        },
-        include: {
-          institute: true,
-          student: true,
-          teacher: true
-        }
-      });
-      if (fallbackUser) user = fallbackUser;
-    }
-
-    if (!user) {
+    if (candidates.length === 0) {
       throw new AppError("Invalid credentials. Please check your email/ID and password.", HTTP_STATUS.UNAUTHORIZED);
     }
 
-    // 4. Validate password
-    const isPasswordValid = await PasswordUtil.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
+    // 4. Test candidate accounts against provided password
+    for (const candidate of candidates) {
+      const isMatch = await PasswordUtil.compare(password, candidate.passwordHash);
+      if (isMatch) {
+        user = candidate;
+        break;
+      }
+    }
+
+    if (!user) {
       throw new AppError("Invalid credentials. Please check your email/ID and password.", HTTP_STATUS.UNAUTHORIZED);
     }
 

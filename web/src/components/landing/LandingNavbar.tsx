@@ -27,6 +27,7 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({ onOpenEnquiry }) =
   const getDashboardLink = () => {
     if (role === "SUPER_ADMIN") return "/superadmin/dashboard";
     if (role === "ADMIN") return "/admin/dashboard";
+    if (role === "TEACHER") return "/teacher/dashboard";
     if (role === "STUDENT") return "/student/dashboard";
     return "/login";
   };
@@ -72,7 +73,6 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({ onOpenEnquiry }) =
                   onClick={() => handleEnquiryClick()}
                   className="landing-navbar__btn-enquiry-outline"
                 >
-                  <Send size={15} />
                   <span>Send Enquiry</span>
                 </button>
 
@@ -80,7 +80,7 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({ onOpenEnquiry }) =
                   to={getDashboardLink()}
                   className="landing-navbar__btn-getstarted"
                 >
-                  <span>Dashboard ({role})</span>
+                  <span>Dashboard</span>
                   <ArrowRight size={14} />
                 </Link>
               </>
@@ -95,7 +95,6 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({ onOpenEnquiry }) =
                   className="landing-navbar__btn-getstarted"
                 >
                   <span>Send Enquiry</span>
-                  <ArrowRight size={16} />
                 </button>
               </>
             )}
