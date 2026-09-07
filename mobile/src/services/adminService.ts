@@ -105,7 +105,7 @@ export class MobileAdminService {
       limit: "50",
     }).toString();
     const res = await MobileApiService.request<any>(`/students?${query}`);
-    return Array.isArray(res) ? res : res.students || [];
+    return Array.isArray(res) ? res : res.students || res.data || [];
   }
 
   static async createStudent(data: any): Promise<StudentItem> {
@@ -135,7 +135,7 @@ export class MobileAdminService {
       ...(params?.status ? { status: params.status } : {}),
     }).toString();
     const res = await MobileApiService.request<any>(`/teachers?${query}`);
-    return Array.isArray(res) ? res : res.teachers || [];
+    return Array.isArray(res) ? res : res.teachers || res.data || [];
   }
 
   static async createTeacher(data: any): Promise<TeacherItem> {
@@ -172,7 +172,7 @@ export class MobileAdminService {
       ...(params?.status ? { status: params.status } : {}),
     }).toString();
     const res = await MobileApiService.request<any>(`/courses?${query}`);
-    return Array.isArray(res) ? res : res.courses || [];
+    return Array.isArray(res) ? res : res.courses || res.data || [];
   }
 
   static async createCourse(data: any): Promise<CourseItem> {
@@ -202,7 +202,7 @@ export class MobileAdminService {
       ...(params?.search ? { search: params.search } : {}),
     }).toString();
     const res = await MobileApiService.request<any>(`/subjects?${query}`);
-    return Array.isArray(res) ? res : res.subjects || [];
+    return Array.isArray(res) ? res : res.subjects || res.data || [];
   }
 
   static async createSubject(data: any): Promise<SubjectItem> {
@@ -232,7 +232,7 @@ export class MobileAdminService {
       ...(params?.status ? { status: params.status } : {}),
     }).toString();
     const res = await MobileApiService.request<any>(`/batches?${query}`);
-    return Array.isArray(res) ? res : res.batches || [];
+    return Array.isArray(res) ? res : res.batches || res.data || [];
   }
 
   static async getBatchById(id: string): Promise<any> {
@@ -316,7 +316,7 @@ export class MobileAdminService {
   // Materials
   static async getMaterials(): Promise<MaterialItem[]> {
     const res = await MobileApiService.request<any>("/materials");
-    return Array.isArray(res) ? res : res.materials || [];
+    return Array.isArray(res) ? res : res.materials || res.data || [];
   }
 
   static async createMaterial(data: any): Promise<MaterialItem> {
@@ -347,18 +347,31 @@ export class MobileAdminService {
     return MobileApiService.request("/institute");
   }
 
-  static async getDashboardStats(): Promise<any> {
-    return Promise.allSettled([
-      MobileApiService.request("/students?limit=1"),
-      MobileApiService.request("/teachers?limit=1"),
-      MobileApiService.request("/courses?limit=1"),
-      MobileApiService.request("/batches?limit=1"),
-    ]).then((results) => ({
-      students: results[0].status === "fulfilled" ? (results[0].value as any)?.total || (results[0].value as any)?.students?.length || 0 : 0,
-      teachers: results[1].status === "fulfilled" ? (results[1].value as any)?.total || (results[1].value as any)?.teachers?.length || 0 : 0,
-      courses: results[2].status === "fulfilled" ? (results[2].value as any)?.total || (results[2].value as any)?.courses?.length || 0 : 0,
-      batches: results[3].status === "fulfilled" ? (results[3].value as any)?.total || (results[3].value as any)?.batches?.length || 0 : 0,
-    }));
+  static async getDashboardStats(): Promise<{ students: number; teachers: number; courses: number; batches: number }> {
+    const extractCount = (res: any, entityKey: string): number => {
+      if (!res) return 0;
+      if (Array.isArray(res)) return res.length;
+      if (typeof res.total === "number") return res.total;
+      if (typeof res.count === "number") return res.count;
+      if (typeof res.meta?.total === "number") return res.meta.total;
+      if (Array.isArray(res[entityKey])) return res[entityKey].length;
+      if (Array.isArray(res.data)) return res.data.length;
+      return 0;
+    };
+
+    const [stuRes, teaRes, couRes, batRes] = await Promise.allSettled([
+      this.getStudents(),
+      this.getTeachers(),
+      this.getCourses(),
+      this.getBatches(),
+    ]);
+
+    return {
+      students: stuRes.status === "fulfilled" ? extractCount(stuRes.value, "students") : 0,
+      teachers: teaRes.status === "fulfilled" ? extractCount(teaRes.value, "teachers") : 0,
+      courses: couRes.status === "fulfilled" ? extractCount(couRes.value, "courses") : 0,
+      batches: batRes.status === "fulfilled" ? extractCount(batRes.value, "batches") : 0,
+    };
   }
 
   static async getStats(): Promise<any> {

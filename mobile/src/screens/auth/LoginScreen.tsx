@@ -13,12 +13,14 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { useAuth } from "../../hooks/useAuth";
 import { Colors } from "../../theme/colors";
 import { Typography, Spacing, Radius } from "../../theme/typography";
 import { getApiBaseUrl, setCustomApiBaseUrl } from "../../services/api";
 
 export const LoginScreen: React.FC = () => {
+  const router = useRouter();
   const { login } = useAuth();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -47,11 +49,30 @@ export const LoginScreen: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      await login({
+      const loggedUser = await login({
         email: identifier.trim(),
         password,
         instituteCode: instituteCode.trim() || undefined,
       });
+
+      const userRole = loggedUser?.role;
+      switch (userRole) {
+        case "SUPER_ADMIN":
+          router.replace("/(superadmin)/dashboard");
+          break;
+        case "ADMIN":
+          router.replace("/(admin)/dashboard");
+          break;
+        case "TEACHER":
+          router.replace("/(teacher)/dashboard");
+          break;
+        case "STUDENT":
+          router.replace("/(student)/dashboard");
+          break;
+        default:
+          router.replace("/");
+          break;
+      }
     } catch (err: any) {
       setError(err.message || "Invalid credentials. Please check your credentials.");
     } finally {

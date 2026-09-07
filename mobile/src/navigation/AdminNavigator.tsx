@@ -6,17 +6,17 @@ import { BottomTabBar } from "../components/Header";
 import { useAuth } from "../hooks/useAuth";
 
 // Admin Screens
-import { AdminDashboardScreen } from "../screens/admin/AdminDashboardScreen";
-import { AdminStudentsScreen } from "../screens/admin/AdminStudentsScreen";
-import { AdminTeachersScreen } from "../screens/admin/AdminTeachersScreen";
-import { AdminCoursesScreen } from "../screens/admin/AdminCoursesScreen";
-import { AdminSubjectsScreen } from "../screens/admin/AdminSubjectsScreen";
-import { AdminBatchesScreen } from "../screens/admin/AdminBatchesScreen";
-import { AdminRoomsScreen } from "../screens/admin/AdminRoomsScreen";
-import { AdminTimetableScreen } from "../screens/admin/AdminTimetableScreen";
-import { AdminMaterialsScreen } from "../screens/admin/AdminMaterialsScreen";
-import { AdminFeesScreen } from "../screens/admin/AdminFeesScreen";
-import { AdminProfileScreen } from "../screens/admin/AdminProfileScreen";
+import { AdminDashboardScreen } from "../screens/admin/dashboard";
+import { AdminStudentsScreen } from "../screens/admin/student";
+import { AdminTeachersScreen } from "../screens/admin/faculty";
+import { AdminCoursesScreen } from "../screens/admin/courses";
+import { AdminSubjectsScreen } from "../screens/admin/subjects";
+import { AdminBatchesScreen } from "../screens/admin/batch";
+import { AdminRoomsScreen } from "../screens/admin/room";
+import { AdminTimetableScreen } from "../screens/admin/schedule";
+import { AdminMaterialsScreen } from "../screens/admin/study_material";
+import { AdminFeesScreen } from "../screens/admin/fees";
+import { AdminProfileScreen } from "../screens/admin/profile";
 
 type AdminTab = "dashboard" | "students" | "academics" | "reports" | "profile";
 type AdminSubScreen =

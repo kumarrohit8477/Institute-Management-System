@@ -12,7 +12,7 @@ export interface AuthContextType {
   role: UserRole | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: MobileLoginCredentials) => Promise<void>;
+  login: (credentials: MobileLoginCredentials) => Promise<any>;
   logout: () => Promise<void>;
 }
 
@@ -68,6 +68,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setStudent(data.student || null);
     setTeacher(data.teacher || null);
     setInstitute(data.institute || null);
+    return data.user;
   };
 
   const logout = async () => {

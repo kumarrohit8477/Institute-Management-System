@@ -2,8 +2,8 @@
   "name": "institute-mobile",
   "version": "1.0.0",
   "private": true,
-  "description": "Student Mobile Application for Institute Management System",
-  "main": "index.js",
+  "description": "Mobile Application for Institute Management System",
+  "main": "expo-router/entry",
   "scripts": {
     "dev": "expo start",
     "start": "expo start",
@@ -22,6 +22,7 @@
     "expo-asset": "~57.0.16",
     "expo-constants": "~57.0.17",
     "expo-linking": "~57.0.9",
+    "expo-router": "^57.0.19",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-native": "0.86.3",
