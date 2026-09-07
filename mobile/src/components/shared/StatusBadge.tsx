@@ -6,7 +6,8 @@ import { Typography } from "../../theme/typography";
 type StatusVariant = "success" | "warning" | "danger" | "info" | "gray" | "primary";
 
 interface StatusBadgeProps {
-  label: string;
+  label?: string;
+  status?: string;
   variant?: StatusVariant;
   size?: "sm" | "md";
 }
@@ -20,21 +21,6 @@ const variantStyles: Record<StatusVariant, { bg: string; text: string }> = {
   gray: { bg: Colors.surfaceElevated, text: Colors.textSecondary },
 };
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({
-  label,
-  variant = "gray",
-  size = "sm",
-}) => {
-  const { bg, text } = variantStyles[variant] || variantStyles.gray;
-  return (
-    <View style={[styles.badge, { backgroundColor: bg }]}>
-      <Text style={[styles.text, { color: text }, size === "md" && styles.textMd]}>
-        {label}
-      </Text>
-    </View>
-  );
-};
-
 export const getStatusVariant = (status: string): StatusVariant => {
   const s = status?.toLowerCase();
   if (["active", "paid", "present", "passed", "live"].includes(s)) return "success";
@@ -42,6 +28,25 @@ export const getStatusVariant = (status: string): StatusVariant => {
   if (["overdue", "blocked", "cancelled", "failed", "absent", "suspended"].includes(s)) return "danger";
   if (["partially_paid", "in_progress", "late"].includes(s)) return "info";
   return "gray";
+};
+
+export const StatusBadge: React.FC<StatusBadgeProps> = ({
+  label,
+  status,
+  variant,
+  size = "sm",
+}) => {
+  const textLabel = label || status || "UNKNOWN";
+  const activeVariant = variant || getStatusVariant(textLabel);
+  const { bg, text } = variantStyles[activeVariant] || variantStyles.gray;
+
+  return (
+    <View style={[styles.badge, { backgroundColor: bg }]}>
+      <Text style={[styles.text, { color: text }, size === "md" && styles.textMd]}>
+        {textLabel}
+      </Text>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({

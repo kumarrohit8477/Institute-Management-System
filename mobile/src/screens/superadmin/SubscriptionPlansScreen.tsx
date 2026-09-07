@@ -1,65 +1,177 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Header, Card, Badge } from "../../components/Header";
+import { PageHeader } from "../../components/Header";
+import { Input } from "../../components/shared/Input";
 import { EmptyState } from "../../components/shared/EmptyState";
+import { LoadingScreen } from "../../components/shared/LoadingScreen";
+import { FormModal } from "../../components/shared/FormModal";
 import { Colors } from "../../theme/colors";
 import { Typography, Spacing, Radius } from "../../theme/typography";
-import { MobileSuperAdminService } from "../../services/superAdminService";
+import { MobileSuperAdminService, SubscriptionPlanItem } from "../../services/superAdminService";
 
 export const SubscriptionPlansScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-  const [plans, setPlans] = useState<any[]>([]);
+  const [plans, setPlans] = useState<SubscriptionPlanItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Edit Modal State
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlanItem | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    monthlyPrice: "",
+    annualPrice: "",
+    maxStudents: "",
+    maxCourses: "",
+  });
+
+  const loadPlans = async () => {
+    try {
+      const data = await MobileSuperAdminService.getPlans();
+      setPlans(data || []);
+    } catch (err) {
+      console.warn("Failed loading plans:", err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await MobileSuperAdminService.getPlans();
-        const list = Array.isArray(res) ? res : res?.plans || res?.data || [];
-        setPlans(list);
-      } catch (err) {
-        console.warn("Failed fetching plans:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    loadPlans();
   }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadPlans();
+  };
+
+  const handleEditClick = (plan: SubscriptionPlanItem) => {
+    setSelectedPlan(plan);
+    setForm({
+      monthlyPrice: String(plan.monthlyPrice || 0),
+      annualPrice: String(plan.annualPrice || 0),
+      maxStudents: String(plan.maxStudents || 100),
+      maxCourses: String(plan.maxCourses || 10),
+    });
+    setModalVisible(true);
+  };
+
+  const handleUpdatePlan = async () => {
+    if (!selectedPlan) return;
+    setSubmitting(true);
+    try {
+      await MobileSuperAdminService.updatePlan(selectedPlan.id, {
+        monthlyPrice: Number(form.monthlyPrice),
+        annualPrice: Number(form.annualPrice),
+        maxStudents: Number(form.maxStudents),
+        maxCourses: Number(form.maxCourses),
+      });
+      Alert.alert("Success", `Plan '${selectedPlan.name}' updated successfully!`);
+      setModalVisible(false);
+      loadPlans();
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Failed to update plan");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <Header title="Subscription Plans" subtitle="Platform Pricing Tiers" onBack={onBack} accentColor={Colors.superadmin.primary} />
+      <PageHeader title="Subscription Plans" onBack={onBack} />
 
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.superadmin.primary} />
-        </View>
-      ) : plans.length === 0 ? (
-        <EmptyState icon="💎" title="No Plans Found" subtitle="No SaaS subscription plans available." />
+        <LoadingScreen message="Fetching subscription plans..." />
       ) : (
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {plans.map((plan) => (
-            <Card key={plan.id} style={styles.planCard}>
-              <View style={styles.headerRow}>
+        <FlatList
+          data={plans}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.superadmin.primary]} />}
+          ListEmptyComponent={
+            <EmptyState icon="💎" title="No Plans Configured" message="No subscription plans found in the SaaS catalog." />
+          }
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
                 <View>
-                  <Text style={styles.planName}>{plan.name}</Text>
-                  <Text style={styles.tierTag}>{plan.tier || "STARTER"}</Text>
+                  <Text style={styles.planName}>{item.name}</Text>
+                  <Text style={styles.planTier}>Tier: {item.tier}</Text>
                 </View>
-                <Text style={styles.priceText}>₹{plan.monthlyPrice || 0}/mo</Text>
+                <View style={styles.priceBadge}>
+                  <Text style={styles.priceText}>₹{item.monthlyPrice}/mo</Text>
+                </View>
               </View>
 
-              <View style={styles.divider} />
+              {item.description && <Text style={styles.description}>{item.description}</Text>}
 
-              <View style={styles.featuresList}>
-                <Text style={styles.featureItem}>• Max Students: {plan.maxStudents || "Unlimited"}</Text>
-                <Text style={styles.featureItem}>• Max Courses: {plan.maxCourses || "Unlimited"}</Text>
-                <Text style={styles.featureItem}>• CBT Examination: {plan.hasOnlineCBT ? "✅ Included" : "❌ No"}</Text>
-                <Text style={styles.featureItem}>• Custom Domain: {plan.hasCustomDomain ? "✅ Included" : "❌ No"}</Text>
+              <View style={styles.limitsGrid}>
+                <View style={styles.limitItem}>
+                  <Text style={styles.limitValue}>{item.maxStudents}</Text>
+                  <Text style={styles.limitLabel}>Max Students</Text>
+                </View>
+                <View style={styles.limitItem}>
+                  <Text style={styles.limitValue}>{item.maxCourses}</Text>
+                  <Text style={styles.limitLabel}>Max Courses</Text>
+                </View>
+                <View style={styles.limitItem}>
+                  <Text style={styles.limitValue}>{item.maxBatches}</Text>
+                  <Text style={styles.limitLabel}>Max Batches</Text>
+                </View>
               </View>
-            </Card>
-          ))}
-        </ScrollView>
+
+              <View style={styles.featuresRow}>
+                <Text style={styles.featureItem}>{item.hasOnlineCBT ? "✅ CBT Exams" : "❌ No CBT"}</Text>
+                <Text style={styles.featureItem}>{item.hasCustomDomain ? "✅ Custom Domain" : "❌ Subdomain Only"}</Text>
+              </View>
+
+              <TouchableOpacity style={styles.editBtn} onPress={() => handleEditClick(item)}>
+                <Text style={styles.editBtnText}>✏️ Edit Pricing & Limits</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
       )}
+
+      <FormModal
+        visible={modalVisible}
+        title={`Edit Plan: ${selectedPlan?.name || ""}`}
+        onClose={() => setModalVisible(false)}
+        onSubmit={handleUpdatePlan}
+        loading={submitting}
+        submitText="Save Changes"
+      >
+        <Input
+          label="Monthly Price (₹)"
+          keyboardType="numeric"
+          value={form.monthlyPrice}
+          onChangeText={(v) => setForm({ ...form, monthlyPrice: v })}
+          required
+        />
+        <Input
+          label="Annual Price (₹)"
+          keyboardType="numeric"
+          value={form.annualPrice}
+          onChangeText={(v) => setForm({ ...form, annualPrice: v })}
+          required
+        />
+        <Input
+          label="Max Students"
+          keyboardType="numeric"
+          value={form.maxStudents}
+          onChangeText={(v) => setForm({ ...form, maxStudents: v })}
+          required
+        />
+        <Input
+          label="Max Courses"
+          keyboardType="numeric"
+          value={form.maxCourses}
+          onChangeText={(v) => setForm({ ...form, maxCourses: v })}
+          required
+        />
+      </FormModal>
     </SafeAreaView>
   );
 };
@@ -69,20 +181,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  scrollContent: {
+  listContent: {
     padding: Spacing.base,
+    gap: Spacing.base,
+  },
+  card: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.lg,
+    padding: Spacing.base,
+    borderWidth: 1,
+    borderColor: Colors.border,
     gap: Spacing.md,
   },
-  planCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.superadmin.primary,
-  },
-  headerRow: {
+  cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -91,26 +202,66 @@ const styles = StyleSheet.create({
     ...Typography.h3,
     color: Colors.textPrimary,
   },
-  tierTag: {
+  planTier: {
     ...Typography.caption,
-    fontWeight: "700",
-    color: Colors.superadmin.primary,
+    color: Colors.textMuted,
     marginTop: 2,
   },
+  priceBadge: {
+    backgroundColor: Colors.superadmin.light,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.pill,
+  },
   priceText: {
-    ...Typography.h3,
-    color: Colors.textPrimary,
+    ...Typography.bodySmall,
+    fontWeight: "700",
+    color: Colors.superadmin.primary,
   },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.borderLight,
-    marginVertical: Spacing.md,
-  },
-  featuresList: {
-    gap: 6,
-  },
-  featureItem: {
+  description: {
     ...Typography.bodySmall,
     color: Colors.textSecondary,
+  },
+  limitsGrid: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+  },
+  limitItem: {
+    flex: 1,
+    backgroundColor: Colors.surfaceVariant,
+    padding: Spacing.xs,
+    borderRadius: Radius.md,
+    alignItems: "center",
+  },
+  limitValue: {
+    ...Typography.body,
+    fontWeight: "700",
+    color: Colors.textPrimary,
+  },
+  limitLabel: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    fontSize: 10,
+  },
+  featuresRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  featureItem: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+  },
+  editBtn: {
+    backgroundColor: Colors.surfaceVariant,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.md,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  editBtnText: {
+    ...Typography.bodySmall,
+    fontWeight: "600",
+    color: Colors.textPrimary,
   },
 });

@@ -8,12 +8,13 @@ import {
   ViewStyle,
   TextStyle,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { Colors, RoleColor } from "../theme/colors";
 import { Typography, Spacing, Radius } from "../theme/typography";
 
 // ─────────────────────────────────────────────────────────
-// HEADER
+// HEADER & PAGEHEADER
 // ─────────────────────────────────────────────────────────
 export const Header: React.FC<{
   title: string;
@@ -41,6 +42,8 @@ export const Header: React.FC<{
     </View>
   );
 };
+
+export const PageHeader = Header;
 
 // ─────────────────────────────────────────────────────────
 // CARD
@@ -137,7 +140,7 @@ export const Button: React.FC<{
 };
 
 // ─────────────────────────────────────────────────────────
-// BOTTOM TAB BAR — Role-specific
+// BOTTOM TAB BAR
 // ─────────────────────────────────────────────────────────
 interface TabItem {
   id: string;
@@ -191,7 +194,7 @@ export const BottomTabBar: React.FC<{
 };
 
 // ─────────────────────────────────────────────────────────
-// ROLE BANNER (gradient-like header banner)
+// ROLE BANNER
 // ─────────────────────────────────────────────────────────
 export const RoleBanner: React.FC<{
   role: RoleColor;
@@ -228,22 +231,25 @@ export const RoleBanner: React.FC<{
 export const SectionHeader: React.FC<{
   title: string;
   action?: { label: string; onPress: () => void };
-}> = ({ title, action }) => (
-  <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    {action && (
-      <TouchableOpacity onPress={action.onPress} activeOpacity={0.7}>
-        <Text style={styles.sectionAction}>{action.label}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
-);
+  actionText?: string;
+  onAction?: () => void;
+}> = ({ title, action, actionText, onAction }) => {
+  const act = action || (actionText && onAction ? { label: actionText, onPress: onAction } : undefined);
+  return (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {act && (
+        <TouchableOpacity onPress={act.onPress} activeOpacity={0.7}>
+          <Text style={styles.sectionAction}>{act.label}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
 
 // ─────────────────────────────────────────────────────────
 // SEARCH BAR
 // ─────────────────────────────────────────────────────────
-import { TextInput } from "react-native";
-
 export const SearchBar: React.FC<{
   value: string;
   onChangeText: (text: string) => void;
@@ -267,11 +273,7 @@ export const SearchBar: React.FC<{
   </View>
 );
 
-// ─────────────────────────────────────────────────────────
-// STYLES
-// ─────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // Header
   headerContainer: {
     height: 58,
     backgroundColor: Colors.surface,
@@ -312,8 +314,6 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     marginTop: 1,
   },
-
-  // Card
   card: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
@@ -326,8 +326,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-
-  // Badge
   badge: {
     alignSelf: "flex-start",
     paddingHorizontal: 10,
@@ -340,8 +338,6 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
-
-  // Button
   button: {
     borderRadius: Radius.md,
     paddingVertical: 12,
@@ -355,8 +351,6 @@ const styles = StyleSheet.create({
   buttonText: {
     ...Typography.button,
   },
-
-  // Bottom Tab Bar
   tabBar: {
     height: 64,
     backgroundColor: Colors.surface,
@@ -422,8 +416,6 @@ const styles = StyleSheet.create({
   tabLabelActive: {
     fontWeight: "700",
   },
-
-  // Role Banner
   banner: {
     borderRadius: Radius.xl,
     overflow: "hidden",
@@ -456,8 +448,6 @@ const styles = StyleSheet.create({
   bannerEmoji: {
     fontSize: 32,
   },
-
-  // Section Header
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -473,8 +463,6 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: "700",
   },
-
-  // Search Bar
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",

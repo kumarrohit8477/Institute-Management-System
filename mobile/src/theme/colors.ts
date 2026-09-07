@@ -36,6 +36,7 @@ export const Colors = {
   // Neutrals
   background: "#F8FAFC",    // Slate-50
   surface: "#FFFFFF",       // White
+  surfaceVariant: "#F1F5F9", // Slate-100
   surfaceElevated: "#F1F5F9", // Slate-100
   border: "#E2E8F0",        // Slate-200
   borderLight: "#F1F5F9",   // Slate-100
@@ -58,6 +59,8 @@ export const Colors = {
   danger: "#EF4444",        // Red-500
   dangerLight: "#FEE2E2",   // Red-100
   dangerDark: "#991B1B",
+
+  error: "#EF4444",         // Red-500 alias
 
   info: "#3B82F6",          // Blue-500
   infoLight: "#DBEAFE",     // Blue-100

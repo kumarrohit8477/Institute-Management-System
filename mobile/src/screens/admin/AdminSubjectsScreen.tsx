@@ -3,16 +3,17 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshContr
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PageHeader } from "../../components/Header";
 import { Input } from "../../components/shared/Input";
-import { StatusBadge } from "../../components/shared/StatusBadge";
+import { SelectPicker } from "../../components/shared/SelectPicker";
 import { EmptyState } from "../../components/shared/EmptyState";
 import { LoadingScreen } from "../../components/shared/LoadingScreen";
 import { FormModal } from "../../components/shared/FormModal";
 import { ConfirmDialog } from "../../components/shared/ConfirmDialog";
 import { Colors } from "../../theme/colors";
 import { Typography, Spacing, Radius } from "../../theme/typography";
-import { MobileAdminService, CourseItem } from "../../services/adminService";
+import { MobileAdminService, SubjectItem, CourseItem } from "../../services/adminService";
 
-export const AdminCoursesScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+export const AdminSubjectsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+  const [subjects, setSubjects] = useState<SubjectItem[]>([]);
   const [courses, setCourses] = useState<CourseItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -20,26 +21,29 @@ export const AdminCoursesScreen: React.FC<{ onBack: () => void }> = ({ onBack })
 
   // Modal State
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<CourseItem | null>(null);
+  const [editingSubject, setEditingSubject] = useState<SubjectItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     name: "",
     code: "",
     description: "",
-    durationMonths: "12",
-    totalFees: "25000",
+    courseId: "",
   });
 
-  // Delete Confirm State
-  const [deleteTarget, setDeleteTarget] = useState<CourseItem | null>(null);
+  // Delete State
+  const [deleteTarget, setDeleteTarget] = useState<SubjectItem | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const loadCourses = async () => {
+  const loadData = async () => {
     try {
-      const data = await MobileAdminService.getCourses({ search: search.trim() || undefined });
-      setCourses(data || []);
+      const [sRes, cRes] = await Promise.all([
+        MobileAdminService.getSubjects({ search: search.trim() || undefined }),
+        MobileAdminService.getCourses(),
+      ]);
+      setSubjects(sRes || []);
+      setCourses(cRes || []);
     } catch (err) {
-      console.warn("Failed loading courses:", err);
+      console.warn("Failed loading subjects:", err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -47,62 +51,63 @@ export const AdminCoursesScreen: React.FC<{ onBack: () => void }> = ({ onBack })
   };
 
   useEffect(() => {
-    loadCourses();
+    loadData();
   }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadCourses();
+    loadData();
   };
 
   const handleOpenAdd = () => {
-    setEditingCourse(null);
-    setForm({ name: "", code: "", description: "", durationMonths: "12", totalFees: "25000" });
+    setEditingSubject(null);
+    setForm({
+      name: "",
+      code: "",
+      description: "",
+      courseId: courses.length > 0 ? courses[0].id : "",
+    });
     setModalVisible(true);
   };
 
-  const handleOpenEdit = (c: CourseItem) => {
-    setEditingCourse(c);
+  const handleOpenEdit = (s: SubjectItem) => {
+    setEditingSubject(s);
     setForm({
-      name: c.name,
-      code: c.code,
-      description: c.description || "",
-      durationMonths: String(c.durationMonths || 12),
-      totalFees: String(c.totalFees || 25000),
+      name: s.name,
+      code: s.code,
+      description: s.description || "",
+      courseId: s.courseId || (courses.length > 0 ? courses[0].id : ""),
     });
     setModalVisible(true);
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.code) {
-      Alert.alert("Validation Error", "Please fill in course name and code.");
+    if (!form.name || !form.code || !form.courseId) {
+      Alert.alert("Validation Error", "Please fill in name, code, and select a course.");
       return;
     }
     setSubmitting(true);
     try {
-      if (editingCourse) {
-        await MobileAdminService.updateCourse(editingCourse.id, {
+      if (editingSubject) {
+        await MobileAdminService.updateSubject(editingSubject.id, {
           name: form.name,
           code: form.code,
           description: form.description,
-          durationMonths: Number(form.durationMonths),
-          totalFees: Number(form.totalFees),
         });
-        Alert.alert("Success", "Course updated successfully!");
+        Alert.alert("Success", "Subject updated!");
       } else {
-        await MobileAdminService.createCourse({
+        await MobileAdminService.createSubject({
           name: form.name,
           code: form.code,
           description: form.description,
-          durationMonths: Number(form.durationMonths),
-          totalFees: Number(form.totalFees),
+          courseId: form.courseId,
         });
-        Alert.alert("Success", "Course created successfully!");
+        Alert.alert("Success", "Subject created!");
       }
       setModalVisible(false);
-      loadCourses();
+      loadData();
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed saving course");
+      Alert.alert("Error", err.message || "Failed saving subject");
     } finally {
       setSubmitting(false);
     }
@@ -112,12 +117,12 @@ export const AdminCoursesScreen: React.FC<{ onBack: () => void }> = ({ onBack })
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await MobileAdminService.deleteCourse(deleteTarget.id);
-      Alert.alert("Success", "Course deleted.");
+      await MobileAdminService.deleteSubject(deleteTarget.id);
+      Alert.alert("Success", "Subject deleted.");
       setDeleteTarget(null);
-      loadCourses();
+      loadData();
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed deleting course");
+      Alert.alert("Error", err.message || "Failed deleting subject");
     } finally {
       setDeleting(false);
     }
@@ -125,60 +130,53 @@ export const AdminCoursesScreen: React.FC<{ onBack: () => void }> = ({ onBack })
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <PageHeader title="Courses Catalog" onBack={onBack} />
+      <PageHeader title="Academic Subjects" onBack={onBack} />
 
       <View style={styles.topBar}>
         <View style={{ flex: 1 }}>
           <Input
-            placeholder="Search course name or code..."
+            placeholder="Search subject name or code..."
             value={search}
             onChangeText={setSearch}
-            onSubmitEditing={loadCourses}
+            onSubmitEditing={loadData}
             returnKeyType="search"
           />
         </View>
         <TouchableOpacity style={styles.addBtn} onPress={handleOpenAdd}>
-          <Text style={styles.addBtnText}>+ Create Course</Text>
+          <Text style={styles.addBtnText}>+ New Subject</Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
-        <LoadingScreen message="Loading courses..." />
+        <LoadingScreen message="Loading subjects..." />
       ) : (
         <FlatList
-          data={courses}
+          data={subjects}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.admin.primary]} />}
           ListEmptyComponent={
-            <EmptyState icon="📚" title="No Courses Found" message="No course records found in the institute catalog." />
+            <EmptyState icon="📖" title="No Subjects Found" message="No academic subjects match your search." />
           }
           renderItem={({ item }) => (
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <View>
-                  <Text style={styles.courseName}>{item.name}</Text>
-                  <Text style={styles.courseCode}>Code: {item.code}</Text>
+                  <Text style={styles.subjectName}>{item.name}</Text>
+                  <Text style={styles.subjectCode}>Code: {item.code}</Text>
                 </View>
-                <StatusBadge status={item.status || "ACTIVE"} />
+                {item.course && (
+                  <View style={styles.coursePill}>
+                    <Text style={styles.courseText}>{item.course.name}</Text>
+                  </View>
+                )}
               </View>
 
               {item.description && <Text style={styles.description}>{item.description}</Text>}
 
-              <View style={styles.infoGrid}>
-                <View style={styles.infoBadge}>
-                  <Text style={styles.infoLabel}>Duration:</Text>
-                  <Text style={styles.infoVal}>{item.durationMonths || 12} Months</Text>
-                </View>
-                <View style={styles.infoBadge}>
-                  <Text style={styles.infoLabel}>Tuition Fee:</Text>
-                  <Text style={styles.infoVal}>₹{(item.totalFees || 0).toLocaleString()}</Text>
-                </View>
-              </View>
-
               <View style={styles.actionsRow}>
                 <TouchableOpacity style={styles.editBtn} onPress={() => handleOpenEdit(item)}>
-                  <Text style={styles.editBtnText}>✏️ Edit Course</Text>
+                  <Text style={styles.editBtnText}>✏️ Edit</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.deleteBtn} onPress={() => setDeleteTarget(item)}>
                   <Text style={styles.deleteBtnText}>🗑️ Delete</Text>
@@ -192,54 +190,49 @@ export const AdminCoursesScreen: React.FC<{ onBack: () => void }> = ({ onBack })
       {/* Form Modal */}
       <FormModal
         visible={modalVisible}
-        title={editingCourse ? `Edit Course` : `Create New Course`}
+        title={editingSubject ? "Edit Subject" : "Create Academic Subject"}
         onClose={() => setModalVisible(false)}
         onSubmit={handleSave}
         loading={submitting}
-        submitText={editingCourse ? "Save Changes" : "Create Course"}
+        submitText={editingSubject ? "Save Changes" : "Create Subject"}
       >
         <Input
-          label="Course Name"
-          placeholder="e.g. Bachelor of Computer Applications"
+          label="Subject Name"
+          placeholder="e.g. Data Structures & Algorithms"
           value={form.name}
           onChangeText={(v) => setForm({ ...form, name: v })}
           required
         />
         <Input
-          label="Course Code"
-          placeholder="e.g. BCA-2026"
+          label="Subject Code"
+          placeholder="e.g. CS101"
           value={form.code}
           onChangeText={(v) => setForm({ ...form, code: v.toUpperCase() })}
           required
         />
         <Input
           label="Description"
-          placeholder="Brief course overview..."
+          placeholder="Subject outline..."
           value={form.description}
           onChangeText={(v) => setForm({ ...form, description: v })}
           multiline
         />
-        <Input
-          label="Duration (Months)"
-          keyboardType="numeric"
-          value={form.durationMonths}
-          onChangeText={(v) => setForm({ ...form, durationMonths: v })}
-          required
-        />
-        <Input
-          label="Total Fees (₹)"
-          keyboardType="numeric"
-          value={form.totalFees}
-          onChangeText={(v) => setForm({ ...form, totalFees: v })}
-          required
-        />
+        {courses.length > 0 && !editingSubject && (
+          <SelectPicker
+            label="Belongs to Course"
+            options={courses.map((c) => ({ label: `${c.name} (${c.code})`, value: c.id }))}
+            selectedValue={form.courseId}
+            onSelect={(v) => setForm({ ...form, courseId: v })}
+            required
+          />
+        )}
       </FormModal>
 
       {/* Delete Dialog */}
       <ConfirmDialog
         visible={!!deleteTarget}
-        title="Delete Course"
-        message={`Are you sure you want to delete course ${deleteTarget?.name}?`}
+        title="Delete Subject"
+        message={`Are you sure you want to delete subject ${deleteTarget?.name}?`}
         confirmText="Delete"
         loading={deleting}
         onConfirm={handleDeleteConfirm}
@@ -290,38 +283,29 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
-  courseName: {
+  subjectName: {
     ...Typography.h4,
     color: Colors.textPrimary,
   },
-  courseCode: {
+  subjectCode: {
     ...Typography.caption,
     color: Colors.textMuted,
     marginTop: 2,
   },
+  coursePill: {
+    backgroundColor: Colors.admin.light,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Radius.pill,
+  },
+  courseText: {
+    ...Typography.caption,
+    fontWeight: "700",
+    color: Colors.admin.primary,
+  },
   description: {
     ...Typography.bodySmall,
     color: Colors.textSecondary,
-  },
-  infoGrid: {
-    flexDirection: "row",
-    gap: Spacing.sm,
-  },
-  infoBadge: {
-    flex: 1,
-    backgroundColor: Colors.surfaceVariant,
-    padding: Spacing.xs,
-    borderRadius: Radius.md,
-  },
-  infoLabel: {
-    ...Typography.caption,
-    color: Colors.textMuted,
-    fontSize: 10,
-  },
-  infoVal: {
-    ...Typography.bodySmall,
-    fontWeight: "700",
-    color: Colors.textPrimary,
   },
   actionsRow: {
     flexDirection: "row",

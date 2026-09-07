@@ -7,15 +7,19 @@ interface EmptyStateProps {
   icon?: string;
   title: string;
   subtitle?: string;
+  message?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({ icon = "📭", title, subtitle }) => (
-  <View style={styles.container}>
-    <Text style={styles.icon}>{icon}</Text>
-    <Text style={styles.title}>{title}</Text>
-    {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-  </View>
-);
+export const EmptyState: React.FC<EmptyStateProps> = ({ icon = "📭", title, subtitle, message }) => {
+  const sub = subtitle || message;
+  return (
+    <View style={styles.container}>
+      <Text style={styles.icon}>{icon}</Text>
+      <Text style={styles.title}>{title}</Text>
+      {sub ? <Text style={styles.subtitle}>{sub}</Text> : null}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

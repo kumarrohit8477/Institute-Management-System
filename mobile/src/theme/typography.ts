@@ -102,4 +102,5 @@ export const Radius = {
   xl: 20,
   "2xl": 24,
   full: 9999,
+  pill: 9999,
 } as const;

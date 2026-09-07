@@ -10,18 +10,31 @@ import { AdminDashboardScreen } from "../screens/admin/AdminDashboardScreen";
 import { AdminStudentsScreen } from "../screens/admin/AdminStudentsScreen";
 import { AdminTeachersScreen } from "../screens/admin/AdminTeachersScreen";
 import { AdminCoursesScreen } from "../screens/admin/AdminCoursesScreen";
+import { AdminSubjectsScreen } from "../screens/admin/AdminSubjectsScreen";
 import { AdminBatchesScreen } from "../screens/admin/AdminBatchesScreen";
+import { AdminRoomsScreen } from "../screens/admin/AdminRoomsScreen";
+import { AdminTimetableScreen } from "../screens/admin/AdminTimetableScreen";
+import { AdminMaterialsScreen } from "../screens/admin/AdminMaterialsScreen";
 import { AdminFeesScreen } from "../screens/admin/AdminFeesScreen";
 import { AdminProfileScreen } from "../screens/admin/AdminProfileScreen";
 
 type AdminTab = "dashboard" | "students" | "academics" | "reports" | "profile";
-type AdminSubScreen = "teachers" | "courses" | "batches" | "fees";
+type AdminSubScreen =
+  | "students"
+  | "teachers"
+  | "courses"
+  | "subjects"
+  | "batches"
+  | "rooms"
+  | "timetable"
+  | "materials"
+  | "fees";
 
 const ADMIN_TABS = [
   { id: "dashboard", label: "Dashboard", icon: "📊" },
   { id: "students", label: "Students", icon: "👨‍🎓" },
   { id: "academics", label: "Academics", icon: "📚" },
-  { id: "reports", label: "Reports", icon: "📋" },
+  { id: "reports", label: "Fees", icon: "💳" },
   { id: "profile", label: "Profile", icon: "⚙️" },
 ];
 
@@ -29,25 +42,36 @@ export const AdminNavigator: React.FC = () => {
   const { logout } = useAuth();
   const [currentTab, setCurrentTab] = useState<AdminTab>("dashboard");
   const [subScreen, setSubScreen] = useState<AdminSubScreen | null>(null);
-  const [screenParams, setScreenParams] = useState<any>({});
 
-  const navigateTo = (screen: string, params?: any) => {
-    setScreenParams(params || {});
+  const navigateTo = (screen: string) => {
     setSubScreen(screen as AdminSubScreen);
   };
 
   const goBack = () => {
     setSubScreen(null);
-    setScreenParams({});
   };
 
   const renderScreen = () => {
     if (subScreen) {
       switch (subScreen) {
-        case "teachers": return <AdminTeachersScreen onBack={goBack} />;
-        case "courses": return <AdminCoursesScreen onBack={goBack} />;
-        case "batches": return <AdminBatchesScreen onBack={goBack} />;
-        case "fees": return <AdminFeesScreen onBack={goBack} />;
+        case "students":
+          return <AdminStudentsScreen onBack={goBack} />;
+        case "teachers":
+          return <AdminTeachersScreen onBack={goBack} />;
+        case "courses":
+          return <AdminCoursesScreen onBack={goBack} />;
+        case "subjects":
+          return <AdminSubjectsScreen onBack={goBack} />;
+        case "batches":
+          return <AdminBatchesScreen onBack={goBack} />;
+        case "rooms":
+          return <AdminRoomsScreen onBack={goBack} />;
+        case "timetable":
+          return <AdminTimetableScreen onBack={goBack} />;
+        case "materials":
+          return <AdminMaterialsScreen onBack={goBack} />;
+        case "fees":
+          return <AdminFeesScreen onBack={goBack} />;
       }
     }
 

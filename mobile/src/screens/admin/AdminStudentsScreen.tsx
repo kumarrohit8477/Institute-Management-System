@@ -1,520 +1,373 @@
-// IMS Mobile — Admin Students Screen
-// Searchable, filterable list of all enrolled students
-
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  TextInput,
-  RefreshControl,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { PageHeader } from "../../components/Header";
+import { Input } from "../../components/shared/Input";
+import { SelectPicker } from "../../components/shared/SelectPicker";
+import { StatusBadge } from "../../components/shared/StatusBadge";
+import { EmptyState } from "../../components/shared/EmptyState";
+import { LoadingScreen } from "../../components/shared/LoadingScreen";
+import { FormModal } from "../../components/shared/FormModal";
+import { ConfirmDialog } from "../../components/shared/ConfirmDialog";
 import { Colors } from "../../theme/colors";
 import { Typography, Spacing, Radius } from "../../theme/typography";
-import { StatusBadge, getStatusVariant } from "../../components/shared/StatusBadge";
-import { EmptyState } from "../../components/shared/EmptyState";
-import { MobileAdminService } from "../../services/adminService";
+import { MobileAdminService, StudentItem, BatchItem } from "../../services/adminService";
 
-interface Props {
-  onBack: () => void;
-}
-
-type FilterStatus = "ALL" | "ACTIVE" | "INACTIVE";
-
-interface Student {
-  id: string;
-  firstName: string;
-  lastName: string;
-  admissionNumber: string;
-  email: string;
-  phone?: string;
-  status: string;
-  batch?: { name: string };
-  batches?: Array<{ name: string }>;
-}
-
-export const AdminStudentsScreen: React.FC<Props> = ({ onBack }) => {
-  const [students, setStudents] = useState<Student[]>([]);
+export const AdminStudentsScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+  const [students, setStudents] = useState<StudentItem[]>([]);
+  const [batches, setBatches] = useState<BatchItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<FilterStatus>("ALL");
-  const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
+  const [search, setSearch] = useState("");
 
-  const loadStudents = useCallback(
-    async (search = searchQuery, pg = 1, isRefresh = false) => {
-      try {
-        setError(null);
-        if (!isRefresh && pg === 1) setLoading(true);
-        const data = await MobileAdminService.getStudents({ search, page: pg });
-        const list: Student[] = Array.isArray(data)
-          ? data
-          : data?.students ?? data?.data ?? data?.items ?? [];
-        const total = data?.total ?? data?.totalCount ?? list.length;
-        if (pg === 1) {
-          setStudents(list);
-        } else {
-          setStudents((prev) => [...prev, ...list]);
-        }
-        setTotalCount(total);
-        setPage(pg);
-      } catch (err: any) {
-        setError(err?.message || "Failed to load students");
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    },
-    [searchQuery]
-  );
-
-  useEffect(() => {
-    const debounce = setTimeout(() => {
-      loadStudents(searchQuery, 1);
-    }, 400);
-    return () => clearTimeout(debounce);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    loadStudents("", 1);
-  }, []);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadStudents(searchQuery, 1, true);
-  }, [searchQuery, loadStudents]);
-
-  const filteredStudents = students.filter((s) => {
-    if (filterStatus === "ALL") return true;
-    return s.status?.toUpperCase() === filterStatus;
+  // Modal State
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<StudentItem | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    admissionNumber: "",
+    password: "",
+    batchId: "",
   });
 
-  const getBatchName = (student: Student): string => {
-    if (student.batch?.name) return student.batch.name;
-    if (student.batches && student.batches.length > 0) return student.batches[0].name;
-    return "—";
+  // Delete Confirm State
+  const [deleteTarget, setDeleteTarget] = useState<StudentItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const [stRes, btRes] = await Promise.all([
+        MobileAdminService.getStudents({ search: search.trim() || undefined }),
+        MobileAdminService.getBatches(),
+      ]);
+      setStudents(stRes || []);
+      setBatches(btRes || []);
+    } catch (err) {
+      console.warn("Failed loading students:", err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
+
+  const handleOpenAdd = () => {
+    setEditingStudent(null);
+    setForm({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      admissionNumber: `STU${Math.floor(1000 + Math.random() * 9000)}`,
+      password: "password123",
+      batchId: batches.length > 0 ? batches[0].id : "",
+    });
+    setModalVisible(true);
+  };
+
+  const handleOpenEdit = (st: StudentItem) => {
+    setEditingStudent(st);
+    setForm({
+      firstName: st.firstName,
+      lastName: st.lastName,
+      email: st.email,
+      phone: st.phone || "",
+      admissionNumber: st.admissionNumber,
+      password: "",
+      batchId: st.batch?.id || "",
+    });
+    setModalVisible(true);
+  };
+
+  const handleSave = async () => {
+    if (!form.firstName || !form.lastName || !form.email || !form.admissionNumber) {
+      Alert.alert("Validation Error", "Please fill in all required fields.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      if (editingStudent) {
+        await MobileAdminService.updateStudent(editingStudent.id, {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          phone: form.phone,
+        });
+        Alert.alert("Success", "Student updated successfully!");
+      } else {
+        await MobileAdminService.createStudent(form);
+        Alert.alert("Success", "Student created successfully!");
+      }
+      setModalVisible(false);
+      loadData();
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Failed saving student");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await MobileAdminService.deleteStudent(deleteTarget.id);
+      Alert.alert("Success", "Student deleted.");
+      setDeleteTarget(null);
+      loadData();
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Failed deleting student");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={onBack} activeOpacity={0.7}>
-          <Text style={styles.backIcon}>‹</Text>
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Students</Text>
-          <Text style={styles.headerSub}>
-            {totalCount > 0 ? `${totalCount} total` : "Loading..."}
-          </Text>
-        </View>
-        <View style={styles.headerRight} />
-      </View>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <PageHeader title="Students Directory" onBack={onBack} />
 
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by name, admission no..."
-            placeholderTextColor={Colors.textMuted}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
+      <View style={styles.topBar}>
+        <View style={{ flex: 1 }}>
+          <Input
+            placeholder="Search student name, email, admission #..."
+            value={search}
+            onChangeText={setSearch}
+            onSubmitEditing={loadData}
             returnKeyType="search"
-            autoCorrect={false}
           />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery("")} activeOpacity={0.7}>
-              <Text style={styles.clearIcon}>✕</Text>
-            </TouchableOpacity>
-          )}
         </View>
+        <TouchableOpacity style={styles.addBtn} onPress={handleOpenAdd}>
+          <Text style={styles.addBtnText}>+ Add Student</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Filter Tabs */}
-      <View style={styles.filterRow}>
-        {(["ALL", "ACTIVE", "INACTIVE"] as FilterStatus[]).map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={[styles.filterTab, filterStatus === tab && styles.filterTabActive]}
-            onPress={() => setFilterStatus(tab)}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={[styles.filterTabText, filterStatus === tab && styles.filterTabTextActive]}
-            >
-              {tab}
-            </Text>
-          </TouchableOpacity>
-        ))}
-        <View style={styles.countPill}>
-          <Text style={styles.countPillText}>{filteredStudents.length}</Text>
-        </View>
-      </View>
-
-      {/* Content */}
-      {loading && !refreshing ? (
-        <View style={styles.loadingCenter}>
-          <ActivityIndicator size="large" color={Colors.admin.primary} />
-          <Text style={styles.loadingText}>Loading students...</Text>
-        </View>
-      ) : error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
-          <Text style={styles.errorTitle}>Something went wrong</Text>
-          <Text style={styles.errorSub}>{error}</Text>
-          <TouchableOpacity
-            style={styles.retryBtn}
-            onPress={() => loadStudents(searchQuery, 1)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.retryBtnText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
+      {loading ? (
+        <LoadingScreen message="Loading student records..." />
       ) : (
-        <ScrollView
+        <FlatList
+          data={students}
+          keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={[Colors.admin.primary]}
-              tintColor={Colors.admin.primary}
-            />
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.admin.primary]} />}
+          ListEmptyComponent={
+            <EmptyState icon="👨‍🎓" title="No Students Found" message="No student records match your search query." />
           }
-        >
-          {filteredStudents.length === 0 ? (
-            <EmptyState
-              icon="🎓"
-              title="No students found"
-              subtitle={
-                searchQuery
-                  ? `No results for "${searchQuery}"`
-                  : "No students in this category yet."
-              }
-            />
-          ) : (
-            filteredStudents.map((student) => (
-              <View key={student.id} style={styles.studentCard}>
-                <View style={styles.cardTop}>
-                  {/* Avatar */}
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>
-                      {(student.firstName?.[0] || "?").toUpperCase()}
-                    </Text>
-                  </View>
-                  {/* Info */}
-                  <View style={styles.studentInfo}>
-                    <Text style={styles.studentName}>
-                      {student.firstName} {student.lastName}
-                    </Text>
-                    <Text style={styles.admissionNo}>
-                      📋 {student.admissionNumber || "—"}
-                    </Text>
-                  </View>
-                  {/* Status */}
-                  <StatusBadge
-                    label={student.status || "UNKNOWN"}
-                    variant={getStatusVariant(student.status)}
-                  />
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <View>
+                  <Text style={styles.studentName}>{item.firstName} {item.lastName}</Text>
+                  <Text style={styles.subText}>Adm #: {item.admissionNumber} • {item.email}</Text>
                 </View>
-
-                {/* Metadata row */}
-                <View style={styles.cardMeta}>
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaIcon}>🏫</Text>
-                    <Text style={styles.metaText} numberOfLines={1}>
-                      {getBatchName(student)}
-                    </Text>
-                  </View>
-                  <View style={styles.metaDivider} />
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaIcon}>✉️</Text>
-                    <Text style={styles.metaText} numberOfLines={1}>
-                      {student.email || "—"}
-                    </Text>
-                  </View>
-                </View>
+                <StatusBadge status={item.status || "ACTIVE"} />
               </View>
-            ))
-          )}
 
-          {/* Load more hint */}
-          {filteredStudents.length > 0 && filteredStudents.length < totalCount && (
-            <TouchableOpacity
-              style={styles.loadMoreBtn}
-              onPress={() => loadStudents(searchQuery, page + 1)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.loadMoreText}>Load more students</Text>
-            </TouchableOpacity>
+              <View style={styles.infoRow}>
+                <Text style={styles.batchBadge}>Batch: {item.batch?.name || "Unassigned"}</Text>
+                {item.phone && <Text style={styles.phoneText}>📞 {item.phone}</Text>}
+              </View>
+
+              <View style={styles.actionsRow}>
+                <TouchableOpacity style={styles.editBtn} onPress={() => handleOpenEdit(item)}>
+                  <Text style={styles.editBtnText}>✏️ Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.deleteBtn} onPress={() => setDeleteTarget(item)}>
+                  <Text style={styles.deleteBtnText}>🗑️ Delete</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           )}
-        </ScrollView>
+        />
       )}
+
+      {/* Add / Edit Student Form Modal */}
+      <FormModal
+        visible={modalVisible}
+        title={editingStudent ? `Edit Student` : `Register New Student`}
+        onClose={() => setModalVisible(false)}
+        onSubmit={handleSave}
+        loading={submitting}
+        submitText={editingStudent ? "Update Record" : "Register Student"}
+      >
+        <Input
+          label="First Name"
+          placeholder="e.g. Rahul"
+          value={form.firstName}
+          onChangeText={(v) => setForm({ ...form, firstName: v })}
+          required
+        />
+        <Input
+          label="Last Name"
+          placeholder="e.g. Sharma"
+          value={form.lastName}
+          onChangeText={(v) => setForm({ ...form, lastName: v })}
+          required
+        />
+        <Input
+          label="Email Address"
+          placeholder="e.g. rahul@gmail.com"
+          keyboardType="email-address"
+          value={form.email}
+          onChangeText={(v) => setForm({ ...form, email: v })}
+          required
+        />
+        <Input
+          label="Phone Number"
+          placeholder="e.g. +91 9876543210"
+          keyboardType="phone-pad"
+          value={form.phone}
+          onChangeText={(v) => setForm({ ...form, phone: v })}
+        />
+        <Input
+          label="Admission Number"
+          placeholder="e.g. STU1001"
+          value={form.admissionNumber}
+          onChangeText={(v) => setForm({ ...form, admissionNumber: v })}
+          required
+          editable={!editingStudent}
+        />
+        {!editingStudent && (
+          <Input
+            label="Initial Password"
+            placeholder="Account password"
+            secureTextEntry
+            value={form.password}
+            onChangeText={(v) => setForm({ ...form, password: v })}
+            required
+          />
+        )}
+        {batches.length > 0 && !editingStudent && (
+          <SelectPicker
+            label="Assign Initial Batch"
+            options={batches.map((b) => ({ label: `${b.name} (${b.code})`, value: b.id }))}
+            selectedValue={form.batchId}
+            onSelect={(v) => setForm({ ...form, batchId: v })}
+          />
+        )}
+      </FormModal>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        visible={!!deleteTarget}
+        title="Delete Student Record"
+        message={`Are you sure you want to delete ${deleteTarget?.firstName} ${deleteTarget?.lastName}? This action cannot be undone.`}
+        confirmText="Delete"
+        loading={deleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: Colors.background,
   },
-  // Header
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.admin.light,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  backIcon: {
-    fontSize: 22,
-    color: Colors.admin.dark,
-    fontWeight: "700",
-    marginTop: -2,
-  },
-  headerCenter: {
-    flex: 1,
-    alignItems: "center",
-  },
-  headerTitle: {
-    ...Typography.h3,
-    color: Colors.textPrimary,
-  },
-  headerSub: {
-    ...Typography.caption,
-    color: Colors.textMuted,
-  },
-  headerRight: {
-    width: 36,
-  },
-  // Search
-  searchContainer: {
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.surface,
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Colors.background,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    gap: Spacing.sm,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  searchIcon: {
-    fontSize: 16,
-  },
-  searchInput: {
-    flex: 1,
-    ...Typography.body,
-    color: Colors.textPrimary,
-    padding: 0,
-  },
-  clearIcon: {
-    fontSize: 14,
-    color: Colors.textMuted,
-    paddingHorizontal: 4,
-  },
-  // Filter tabs
-  filterRow: {
+  topBar: {
     flexDirection: "row",
     paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    paddingVertical: Spacing.xs,
     gap: Spacing.sm,
     alignItems: "center",
   },
-  filterTab: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs + 2,
-    borderRadius: Radius.full,
-    backgroundColor: Colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  filterTabActive: {
+  addBtn: {
     backgroundColor: Colors.admin.primary,
-    borderColor: Colors.admin.primary,
-  },
-  filterTabText: {
-    ...Typography.label,
-    fontSize: 11,
-    color: Colors.textSecondary,
-  },
-  filterTabTextActive: {
-    color: Colors.surface,
-  },
-  countPill: {
-    marginLeft: "auto",
-    backgroundColor: Colors.admin.light,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
-    borderRadius: Radius.full,
-  },
-  countPillText: {
-    ...Typography.labelSmall,
-    color: Colors.admin.dark,
-  },
-  // Loading / Error
-  loadingCenter: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: Spacing.md,
-    paddingVertical: Spacing["3xl"],
-  },
-  loadingText: {
-    ...Typography.body,
-    color: Colors.textMuted,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: Spacing.xl,
-    gap: Spacing.sm,
-  },
-  errorIcon: {
-    fontSize: 40,
-  },
-  errorTitle: {
-    ...Typography.h3,
-    color: Colors.textPrimary,
-  },
-  errorSub: {
-    ...Typography.body,
-    color: Colors.textMuted,
-    textAlign: "center",
-  },
-  retryBtn: {
-    marginTop: Spacing.sm,
-    backgroundColor: Colors.admin.primary,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.base,
+    height: 48,
     borderRadius: Radius.md,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  retryBtnText: {
+  addBtnText: {
     ...Typography.button,
     color: Colors.surface,
   },
-  // List
   listContent: {
     padding: Spacing.base,
-    gap: Spacing.sm,
-    paddingBottom: Spacing["3xl"],
+    gap: Spacing.base,
   },
-  // Student Card
-  studentCard: {
+  card: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
+    padding: Spacing.base,
     borderWidth: 1,
     borderColor: Colors.border,
-    overflow: "hidden",
-    shadowColor: Colors.shadowColor,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  cardTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: Spacing.base,
     gap: Spacing.md,
   },
-  avatar: {
-    width: 46,
-    height: 46,
-    borderRadius: Radius.full,
-    backgroundColor: Colors.admin.light,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: Colors.admin.primary + "40",
-  },
-  avatarText: {
-    ...Typography.h3,
-    color: Colors.admin.dark,
-  },
-  studentInfo: {
-    flex: 1,
-    gap: 3,
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
   studentName: {
     ...Typography.h4,
     color: Colors.textPrimary,
   },
-  admissionNo: {
+  subText: {
     ...Typography.caption,
-    color: Colors.textSecondary,
+    color: Colors.textMuted,
+    marginTop: 2,
   },
-  // Card Meta
-  cardMeta: {
+  infoRow: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.surfaceElevated,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-    gap: Spacing.sm,
   },
-  metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    flex: 1,
-  },
-  metaDivider: {
-    width: 1,
-    height: 14,
-    backgroundColor: Colors.border,
-  },
-  metaIcon: {
-    fontSize: 12,
-  },
-  metaText: {
+  batchBadge: {
     ...Typography.caption,
-    color: Colors.textSecondary,
-    flex: 1,
-  },
-  // Load more
-  loadMoreBtn: {
-    paddingVertical: Spacing.base,
-    alignItems: "center",
-    borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: Colors.admin.primary + "60",
+    fontWeight: "700",
+    color: Colors.admin.primary,
     backgroundColor: Colors.admin.light,
-    marginTop: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 2,
+    borderRadius: Radius.pill,
   },
-  loadMoreText: {
-    ...Typography.button,
-    color: Colors.admin.dark,
+  phoneText: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+  },
+  actionsRow: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+    justifyContent: "flex-end",
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    paddingTop: Spacing.sm,
+  },
+  editBtn: {
+    backgroundColor: Colors.surfaceVariant,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.md,
+  },
+  editBtnText: {
+    ...Typography.caption,
+    fontWeight: "600",
+    color: Colors.textPrimary,
+  },
+  deleteBtn: {
+    backgroundColor: "#FEE2E2",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.md,
+  },
+  deleteBtnText: {
+    ...Typography.caption,
+    fontWeight: "600",
+    color: Colors.error,
   },
 });

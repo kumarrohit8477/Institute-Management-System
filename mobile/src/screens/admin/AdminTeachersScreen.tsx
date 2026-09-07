@@ -1,536 +1,457 @@
-// IMS Mobile — Admin Teachers Screen
-// Searchable list of all teachers with full profile details
-
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  TextInput,
-  RefreshControl,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { PageHeader } from "../../components/Header";
+import { Input } from "../../components/shared/Input";
+import { SelectPicker } from "../../components/shared/SelectPicker";
+import { StatusBadge } from "../../components/shared/StatusBadge";
+import { EmptyState } from "../../components/shared/EmptyState";
+import { LoadingScreen } from "../../components/shared/LoadingScreen";
+import { FormModal } from "../../components/shared/FormModal";
+import { ConfirmDialog } from "../../components/shared/ConfirmDialog";
 import { Colors } from "../../theme/colors";
 import { Typography, Spacing, Radius } from "../../theme/typography";
-import { StatusBadge, getStatusVariant } from "../../components/shared/StatusBadge";
-import { EmptyState } from "../../components/shared/EmptyState";
-import { MobileAdminService } from "../../services/adminService";
+import { MobileAdminService, TeacherItem, SubjectItem } from "../../services/adminService";
 
-interface Props {
-  onBack: () => void;
-}
-
-interface Teacher {
-  id: string;
-  firstName: string;
-  lastName: string;
-  employeeCode?: string;
-  email: string;
-  phone?: string;
-  specialization?: string;
-  experience?: number;
-  status: string;
-  subjects?: Array<{ name: string }>;
-  qualifications?: string;
-  designation?: string;
-}
-
-export const AdminTeachersScreen: React.FC<Props> = ({ onBack }) => {
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
+export const AdminTeachersScreen: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+  const [teachers, setTeachers] = useState<TeacherItem[]>([]);
+  const [subjects, setSubjects] = useState<SubjectItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [search, setSearch] = useState("");
 
-  const loadTeachers = useCallback(async (search = "") => {
+  // Add/Edit Form State
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingTeacher, setEditingTeacher] = useState<TeacherItem | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    employeeCode: "",
+    qualification: "",
+    specialization: "",
+    password: "",
+  });
+
+  // Assign Subject State
+  const [assignModalVisible, setAssignModalVisible] = useState(false);
+  const [selectedTeacherForAssign, setSelectedTeacherForAssign] = useState<TeacherItem | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState("");
+
+  // Delete Confirm State
+  const [deleteTarget, setDeleteTarget] = useState<TeacherItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const loadData = async () => {
     try {
-      setError(null);
-      const data = await MobileAdminService.getTeachers({ search });
-      const list: Teacher[] = Array.isArray(data)
-        ? data
-        : data?.teachers ?? data?.data ?? data?.items ?? [];
-      setTeachers(list);
-    } catch (err: any) {
-      setError(err?.message || "Failed to load teachers");
+      const [tRes, sRes] = await Promise.all([
+        MobileAdminService.getTeachers({ search: search.trim() || undefined }),
+        MobileAdminService.getSubjects(),
+      ]);
+      setTeachers(tRes || []);
+      setSubjects(sRes || []);
+    } catch (err) {
+      console.warn("Failed loading teachers:", err);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
-
-  useEffect(() => {
-    loadTeachers();
-  }, []);
-
-  useEffect(() => {
-    const debounce = setTimeout(() => {
-      if (!loading) loadTeachers(searchQuery);
-    }, 400);
-    return () => clearTimeout(debounce);
-  }, [searchQuery]);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadTeachers(searchQuery);
-  }, [searchQuery, loadTeachers]);
-
-  const getExperienceLabel = (years?: number): string => {
-    if (!years) return "—";
-    return years === 1 ? "1 yr exp" : `${years} yrs exp`;
   };
 
-  const getInitials = (first: string, last: string): string => {
-    return `${first?.[0] || ""}${last?.[0] || ""}`.toUpperCase() || "?";
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
+
+  const handleOpenAdd = () => {
+    setEditingTeacher(null);
+    setForm({
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      employeeCode: `EMP${Math.floor(100 + Math.random() * 900)}`,
+      qualification: "M.Tech / Ph.D",
+      specialization: "Computer Science",
+      password: "password123",
+    });
+    setModalVisible(true);
+  };
+
+  const handleOpenEdit = (t: TeacherItem) => {
+    setEditingTeacher(t);
+    setForm({
+      firstName: t.firstName,
+      lastName: t.lastName,
+      email: t.email,
+      phone: t.phone || "",
+      employeeCode: t.employeeCode || "",
+      qualification: t.qualification || "",
+      specialization: t.specialization || "",
+      password: "",
+    });
+    setModalVisible(true);
+  };
+
+  const handleSave = async () => {
+    if (!form.firstName || !form.lastName || !form.email) {
+      Alert.alert("Validation Error", "Please fill in all required fields.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      if (editingTeacher) {
+        await MobileAdminService.updateTeacher(editingTeacher.id, {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          phone: form.phone,
+          qualification: form.qualification,
+          specialization: form.specialization,
+        });
+        Alert.alert("Success", "Faculty record updated.");
+      } else {
+        await MobileAdminService.createTeacher(form);
+        Alert.alert("Success", "Faculty member created.");
+      }
+      setModalVisible(false);
+      loadData();
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Failed saving teacher");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleOpenAssign = (t: TeacherItem) => {
+    setSelectedTeacherForAssign(t);
+    setSelectedSubjectId(subjects.length > 0 ? subjects[0].id : "");
+    setAssignModalVisible(true);
+  };
+
+  const handleAssignSubject = async () => {
+    if (!selectedTeacherForAssign || !selectedSubjectId) return;
+    setSubmitting(true);
+    try {
+      await MobileAdminService.assignTeacherSubject(selectedTeacherForAssign.id, selectedSubjectId);
+      Alert.alert("Success", "Subject assigned to teacher.");
+      setAssignModalVisible(false);
+      loadData();
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Failed assigning subject");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await MobileAdminService.deleteTeacher(deleteTarget.id);
+      Alert.alert("Success", "Teacher record deleted.");
+      setDeleteTarget(null);
+      loadData();
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Failed deleting teacher");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={onBack} activeOpacity={0.7}>
-          <Text style={styles.backIcon}>‹</Text>
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Teachers</Text>
-          <Text style={styles.headerSub}>
-            {teachers.length > 0 ? `${teachers.length} total` : "Loading..."}
-          </Text>
-        </View>
-        <View style={styles.headerRight} />
-      </View>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <PageHeader title="Faculty & Teachers" onBack={onBack} />
 
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by name, employee code..."
-            placeholderTextColor={Colors.textMuted}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
+      <View style={styles.topBar}>
+        <View style={{ flex: 1 }}>
+          <Input
+            placeholder="Search faculty name, email..."
+            value={search}
+            onChangeText={setSearch}
+            onSubmitEditing={loadData}
             returnKeyType="search"
-            autoCorrect={false}
           />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery("")} activeOpacity={0.7}>
-              <Text style={styles.clearIcon}>✕</Text>
-            </TouchableOpacity>
-          )}
         </View>
+        <TouchableOpacity style={styles.addBtn} onPress={handleOpenAdd}>
+          <Text style={styles.addBtnText}>+ Add Teacher</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Summary Bar */}
-      {!loading && !error && (
-        <View style={styles.summaryBar}>
-          <Text style={styles.summaryText}>
-            Showing <Text style={styles.summaryCount}>{teachers.length}</Text> teachers
-          </Text>
-          <View style={styles.activeCount}>
-            <View style={styles.activeDot} />
-            <Text style={styles.activeCountText}>
-              {teachers.filter((t) => t.status?.toUpperCase() === "ACTIVE").length} Active
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {/* Content */}
-      {loading && !refreshing ? (
-        <View style={styles.loadingCenter}>
-          <ActivityIndicator size="large" color={Colors.teacher.primary} />
-          <Text style={styles.loadingText}>Loading teachers...</Text>
-        </View>
-      ) : error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
-          <Text style={styles.errorTitle}>Something went wrong</Text>
-          <Text style={styles.errorSub}>{error}</Text>
-          <TouchableOpacity
-            style={styles.retryBtn}
-            onPress={() => loadTeachers(searchQuery)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.retryBtnText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
+      {loading ? (
+        <LoadingScreen message="Loading faculty directory..." />
       ) : (
-        <ScrollView
+        <FlatList
+          data={teachers}
+          keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={[Colors.teacher.primary]}
-              tintColor={Colors.teacher.primary}
-            />
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.admin.primary]} />}
+          ListEmptyComponent={
+            <EmptyState icon="👨‍🏫" title="No Teachers Found" message="No faculty records match your search query." />
           }
-        >
-          {teachers.length === 0 ? (
-            <EmptyState
-              icon="👨‍🏫"
-              title="No teachers found"
-              subtitle={
-                searchQuery
-                  ? `No results for "${searchQuery}"`
-                  : "No teachers have been added yet."
-              }
-            />
-          ) : (
-            teachers.map((teacher) => (
-              <View key={teacher.id} style={styles.teacherCard}>
-                {/* Card Header */}
-                <View style={styles.cardHeader}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>
-                      {getInitials(teacher.firstName, teacher.lastName)}
-                    </Text>
-                  </View>
-                  <View style={styles.teacherInfo}>
-                    <Text style={styles.teacherName}>
-                      {teacher.firstName} {teacher.lastName}
-                    </Text>
-                    {teacher.designation ? (
-                      <Text style={styles.designation}>{teacher.designation}</Text>
-                    ) : null}
-                    <Text style={styles.employeeCode}>
-                      🪪 {teacher.employeeCode || "N/A"}
-                    </Text>
-                  </View>
-                  <StatusBadge
-                    label={teacher.status || "UNKNOWN"}
-                    variant={getStatusVariant(teacher.status)}
-                  />
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <View>
+                  <Text style={styles.teacherName}>{item.firstName} {item.lastName}</Text>
+                  <Text style={styles.subText}>Emp #: {item.employeeCode || "N/A"} • {item.email}</Text>
                 </View>
-
-                {/* Specialization & Experience */}
-                <View style={styles.cardChips}>
-                  {teacher.specialization ? (
-                    <View style={styles.chip}>
-                      <Text style={styles.chipIcon}>🎯</Text>
-                      <Text style={styles.chipText} numberOfLines={1}>
-                        {teacher.specialization}
-                      </Text>
-                    </View>
-                  ) : null}
-                  <View style={styles.chip}>
-                    <Text style={styles.chipIcon}>⏱️</Text>
-                    <Text style={styles.chipText}>
-                      {getExperienceLabel(teacher.experience)}
-                    </Text>
-                  </View>
-                  {teacher.subjects && teacher.subjects.length > 0 ? (
-                    <View style={[styles.chip, styles.chipHighlight]}>
-                      <Text style={styles.chipIcon}>📖</Text>
-                      <Text style={[styles.chipText, styles.chipTextHighlight]}>
-                        {teacher.subjects.length} Subject{teacher.subjects.length !== 1 ? "s" : ""}
-                      </Text>
-                    </View>
-                  ) : null}
-                </View>
-
-                {/* Contact row */}
-                <View style={styles.cardMeta}>
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaIcon}>✉️</Text>
-                    <Text style={styles.metaText} numberOfLines={1}>
-                      {teacher.email || "—"}
-                    </Text>
-                  </View>
-                  {teacher.phone ? (
-                    <>
-                      <View style={styles.metaDivider} />
-                      <View style={styles.metaItem}>
-                        <Text style={styles.metaIcon}>📞</Text>
-                        <Text style={styles.metaText}>{teacher.phone}</Text>
-                      </View>
-                    </>
-                  ) : null}
-                </View>
+                <StatusBadge status={item.status || "ACTIVE"} />
               </View>
-            ))
+
+              <View style={styles.infoGrid}>
+                {item.qualification && <Text style={styles.infoTag}>🎓 {item.qualification}</Text>}
+                {item.specialization && <Text style={styles.infoTag}>⭐ {item.specialization}</Text>}
+              </View>
+
+              {item.subjects && item.subjects.length > 0 && (
+                <View style={styles.subjectsRow}>
+                  <Text style={styles.subjectsLabel}>Subjects:</Text>
+                  {item.subjects.map((sub: any, idx: number) => (
+                    <Text key={idx} style={styles.subjectPill}>
+                      {sub.subject?.name || sub.name}
+                    </Text>
+                  ))}
+                </View>
+              )}
+
+              <View style={styles.actionsRow}>
+                <TouchableOpacity style={styles.actionBtn} onPress={() => handleOpenAssign(item)}>
+                  <Text style={styles.actionBtnText}>📖 Assign Subject</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.editBtn} onPress={() => handleOpenEdit(item)}>
+                  <Text style={styles.editBtnText}>✏️ Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.deleteBtn} onPress={() => setDeleteTarget(item)}>
+                  <Text style={styles.deleteBtnText}>🗑️ Delete</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           )}
-        </ScrollView>
+        />
       )}
+
+      {/* Add / Edit Form Modal */}
+      <FormModal
+        visible={modalVisible}
+        title={editingTeacher ? `Edit Faculty Record` : `Add New Teacher`}
+        onClose={() => setModalVisible(false)}
+        onSubmit={handleSave}
+        loading={submitting}
+        submitText={editingTeacher ? "Save Changes" : "Create Faculty"}
+      >
+        <Input
+          label="First Name"
+          placeholder="e.g. Dr. Amit"
+          value={form.firstName}
+          onChangeText={(v) => setForm({ ...form, firstName: v })}
+          required
+        />
+        <Input
+          label="Last Name"
+          placeholder="e.g. Verma"
+          value={form.lastName}
+          onChangeText={(v) => setForm({ ...form, lastName: v })}
+          required
+        />
+        <Input
+          label="Email Address"
+          placeholder="e.g. amit@institute.com"
+          keyboardType="email-address"
+          value={form.email}
+          onChangeText={(v) => setForm({ ...form, email: v })}
+          required
+        />
+        <Input
+          label="Phone Number"
+          placeholder="e.g. +91 9876543210"
+          keyboardType="phone-pad"
+          value={form.phone}
+          onChangeText={(v) => setForm({ ...form, phone: v })}
+        />
+        <Input
+          label="Qualification"
+          placeholder="e.g. Ph.D Computer Science"
+          value={form.qualification}
+          onChangeText={(v) => setForm({ ...form, qualification: v })}
+        />
+        <Input
+          label="Specialization"
+          placeholder="e.g. Machine Learning, Data Structures"
+          value={form.specialization}
+          onChangeText={(v) => setForm({ ...form, specialization: v })}
+        />
+        {!editingTeacher && (
+          <Input
+            label="Initial Password"
+            placeholder="Account password"
+            secureTextEntry
+            value={form.password}
+            onChangeText={(v) => setForm({ ...form, password: v })}
+            required
+          />
+        )}
+      </FormModal>
+
+      {/* Assign Subject Modal */}
+      <FormModal
+        visible={assignModalVisible}
+        title={`Assign Subject to ${selectedTeacherForAssign?.firstName || ""}`}
+        onClose={() => setAssignModalVisible(false)}
+        onSubmit={handleAssignSubject}
+        loading={submitting}
+        submitText="Assign Subject"
+      >
+        <SelectPicker
+          label="Select Subject to Assign"
+          options={subjects.map((s) => ({ label: `${s.name} (${s.code})`, value: s.id }))}
+          selectedValue={selectedSubjectId}
+          onSelect={setSelectedSubjectId}
+          required
+        />
+      </FormModal>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        visible={!!deleteTarget}
+        title="Delete Teacher Record"
+        message={`Are you sure you want to remove ${deleteTarget?.firstName} ${deleteTarget?.lastName} from the faculty list?`}
+        confirmText="Delete"
+        loading={deleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: Colors.background,
   },
-  // Header
-  header: {
+  topBar: {
     flexDirection: "row",
-    alignItems: "center",
     paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.teacher.light,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  backIcon: {
-    fontSize: 22,
-    color: Colors.teacher.dark,
-    fontWeight: "700",
-    marginTop: -2,
-  },
-  headerCenter: {
-    flex: 1,
-    alignItems: "center",
-  },
-  headerTitle: {
-    ...Typography.h3,
-    color: Colors.textPrimary,
-  },
-  headerSub: {
-    ...Typography.caption,
-    color: Colors.textMuted,
-  },
-  headerRight: {
-    width: 36,
-  },
-  // Search
-  searchContainer: {
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.surface,
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Colors.background,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.xs,
     gap: Spacing.sm,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  searchIcon: {
-    fontSize: 16,
-  },
-  searchInput: {
-    flex: 1,
-    ...Typography.body,
-    color: Colors.textPrimary,
-    padding: 0,
-  },
-  clearIcon: {
-    fontSize: 14,
-    color: Colors.textMuted,
-    paddingHorizontal: 4,
-  },
-  // Summary bar
-  summaryBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+  },
+  addBtn: {
+    backgroundColor: Colors.admin.primary,
     paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  summaryText: {
-    ...Typography.caption,
-    color: Colors.textMuted,
-  },
-  summaryCount: {
-    fontWeight: "700",
-    color: Colors.textPrimary,
-  },
-  activeCount: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
-  activeDot: {
-    width: 7,
-    height: 7,
-    borderRadius: Radius.full,
-    backgroundColor: Colors.success,
-  },
-  activeCountText: {
-    ...Typography.caption,
-    color: Colors.successDark,
-    fontWeight: "600",
-  },
-  // Loading / Error
-  loadingCenter: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: Spacing.md,
-    paddingVertical: Spacing["3xl"],
-  },
-  loadingText: {
-    ...Typography.body,
-    color: Colors.textMuted,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: Spacing.xl,
-    gap: Spacing.sm,
-  },
-  errorIcon: {
-    fontSize: 40,
-  },
-  errorTitle: {
-    ...Typography.h3,
-    color: Colors.textPrimary,
-  },
-  errorSub: {
-    ...Typography.body,
-    color: Colors.textMuted,
-    textAlign: "center",
-  },
-  retryBtn: {
-    marginTop: Spacing.sm,
-    backgroundColor: Colors.teacher.primary,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
+    height: 48,
     borderRadius: Radius.md,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  retryBtnText: {
+  addBtnText: {
     ...Typography.button,
     color: Colors.surface,
   },
-  // List
   listContent: {
     padding: Spacing.base,
-    gap: Spacing.sm,
-    paddingBottom: Spacing["3xl"],
+    gap: Spacing.base,
   },
-  // Teacher Card
-  teacherCard: {
+  card: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
+    padding: Spacing.base,
     borderWidth: 1,
     borderColor: Colors.border,
-    overflow: "hidden",
-    shadowColor: Colors.shadowColor,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
+    gap: Spacing.md,
   },
   cardHeader: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "flex-start",
-    padding: Spacing.base,
-    gap: Spacing.md,
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: Radius.full,
-    backgroundColor: Colors.teacher.light,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: Colors.teacher.primary + "40",
-  },
-  avatarText: {
-    ...Typography.h3,
-    color: Colors.teacher.dark,
-  },
-  teacherInfo: {
-    flex: 1,
-    gap: 2,
   },
   teacherName: {
     ...Typography.h4,
     color: Colors.textPrimary,
   },
-  designation: {
+  subText: {
     ...Typography.caption,
-    color: Colors.teacher.primary,
-    fontWeight: "600",
+    color: Colors.textMuted,
+    marginTop: 2,
   },
-  employeeCode: {
-    ...Typography.caption,
-    color: Colors.textSecondary,
-  },
-  // Chips
-  cardChips: {
+  infoGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingHorizontal: Spacing.base,
-    paddingBottom: Spacing.sm,
     gap: Spacing.xs,
   },
-  chip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: Colors.surfaceElevated,
+  infoTag: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+    backgroundColor: Colors.surfaceVariant,
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: Radius.full,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    paddingVertical: 2,
+    borderRadius: Radius.sm,
   },
-  chipHighlight: {
-    backgroundColor: Colors.teacher.light,
-    borderColor: Colors.teacher.primary + "40",
+  subjectsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: Spacing.xs,
   },
-  chipIcon: {
-    fontSize: 12,
-  },
-  chipText: {
+  subjectsLabel: {
     ...Typography.caption,
-    color: Colors.textSecondary,
-    fontWeight: "500",
-  },
-  chipTextHighlight: {
-    color: Colors.teacher.dark,
     fontWeight: "700",
+    color: Colors.textMuted,
   },
-  // Card Meta
-  cardMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.surfaceElevated,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-    gap: Spacing.sm,
-  },
-  metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    flex: 1,
-  },
-  metaDivider: {
-    width: 1,
-    height: 14,
-    backgroundColor: Colors.border,
-  },
-  metaIcon: {
-    fontSize: 12,
-  },
-  metaText: {
+  subjectPill: {
     ...Typography.caption,
-    color: Colors.textSecondary,
-    flex: 1,
+    color: Colors.admin.primary,
+    backgroundColor: Colors.admin.light,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Radius.pill,
+  },
+  actionsRow: {
+    flexDirection: "row",
+    gap: Spacing.xs,
+    justifyContent: "flex-end",
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    paddingTop: Spacing.sm,
+  },
+  actionBtn: {
+    backgroundColor: Colors.admin.light,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.md,
+  },
+  actionBtnText: {
+    ...Typography.caption,
+    fontWeight: "600",
+    color: Colors.admin.primary,
+  },
+  editBtn: {
+    backgroundColor: Colors.surfaceVariant,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.md,
+  },
+  editBtnText: {
+    ...Typography.caption,
+    fontWeight: "600",
+    color: Colors.textPrimary,
+  },
+  deleteBtn: {
+    backgroundColor: "#FEE2E2",
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.md,
+  },
+  deleteBtnText: {
+    ...Typography.caption,
+    fontWeight: "600",
+    color: Colors.error,
   },
 });

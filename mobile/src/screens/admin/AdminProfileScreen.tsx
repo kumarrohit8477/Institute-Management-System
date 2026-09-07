@@ -1,45 +1,115 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Header, Card, Button } from "../../components/Header";
+import { RoleBanner } from "../../components/Header";
+import { FormModal } from "../../components/shared/FormModal";
+import { Input } from "../../components/shared/Input";
 import { Colors } from "../../theme/colors";
 import { Typography, Spacing, Radius } from "../../theme/typography";
 import { useAuth } from "../../hooks/useAuth";
+import { MobileAdminService } from "../../services/adminService";
+import { getApiBaseUrl, setCustomApiBaseUrl } from "../../services/api";
 
 export const AdminProfileScreen: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-  const { user, institute } = useAuth();
+  const { user } = useAuth();
+  const [instInfo, setInstInfo] = useState<any>(null);
+  const [currentUrl, setCurrentUrl] = useState("");
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [customIp, setCustomIp] = useState("");
+
+  useEffect(() => {
+    MobileAdminService.getInstituteInfo().then(setInstInfo).catch(() => null);
+    getApiBaseUrl().then(setCurrentUrl);
+  }, []);
+
+  const handleSaveIp = async () => {
+    const trimmed = customIp.trim();
+    if (!trimmed) {
+      await setCustomApiBaseUrl(null);
+    } else {
+      let formatted = trimmed;
+      if (!formatted.startsWith("http")) {
+        formatted = `http://${formatted}`;
+      }
+      if (!formatted.endsWith("/api/v1")) {
+        formatted = formatted.endsWith("/") ? `${formatted}api/v1` : `${formatted}/api/v1`;
+      }
+      await setCustomApiBaseUrl(formatted);
+    }
+    const newUrl = await getApiBaseUrl();
+    setCurrentUrl(newUrl);
+    setModalVisible(false);
+    Alert.alert("API Endpoint Saved", `Current Base URL:\n${newUrl}`);
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <Header title="Institute Profile" subtitle="Admin Portal" accentColor={Colors.admin.primary} />
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Card style={styles.profileCard}>
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarEmoji}>🛡️</Text>
-          </View>
-          <Text style={styles.nameText}>{user?.name || "Institute Admin"}</Text>
-          <Text style={styles.roleTag}>Role: Administrator</Text>
-          <Text style={styles.instituteTag}>🏫 {institute?.name || "Institute Management System"}</Text>
-        </Card>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <RoleBanner role="admin" title="Institute Admin Profile" subtitle="Account Settings & Campus Metadata" />
 
-        <Card style={styles.detailsCard}>
-          <Text style={styles.sectionTitle}>Institute Details</Text>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Institute Code</Text>
-            <Text style={styles.infoValue}>{institute?.code || "INST001"}</Text>
+        <View style={styles.profileCard}>
+          <View style={styles.avatarBadge}>
+            <Text style={styles.avatarText}>⚙️</Text>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Admin Email</Text>
-            <Text style={styles.infoValue}>{user?.email || "admin@institute.local"}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Status</Text>
-            <Text style={styles.infoValue}>{institute?.status || "ACTIVE"}</Text>
-          </View>
-        </Card>
+          <Text style={styles.userName}>{user?.name || user?.email || "Institute Admin"}</Text>
+          <Text style={styles.userRole}>ROLE: INSTITUTE ADMIN</Text>
+          <Text style={styles.userEmail}>{user?.email}</Text>
+        </View>
 
-        <Button title="Logout" variant="danger" onPress={onLogout} style={{ marginTop: Spacing.md }} />
+        {instInfo && (
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Institute Profile</Text>
+            <View style={styles.rowItem}>
+              <Text style={styles.rowLabel}>Institute Name:</Text>
+              <Text style={styles.rowValue}>{instInfo.name || "My Institute"}</Text>
+            </View>
+            <View style={styles.rowItem}>
+              <Text style={styles.rowLabel}>Institute Code:</Text>
+              <Text style={styles.rowValue}>{instInfo.code || "INST"}</Text>
+            </View>
+            {instInfo.email && (
+              <View style={styles.rowItem}>
+                <Text style={styles.rowLabel}>Contact Email:</Text>
+                <Text style={styles.rowValue}>{instInfo.email}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>System Connection</Text>
+          <View style={styles.rowItem}>
+            <Text style={styles.rowLabel}>API Base URL:</Text>
+            <Text style={styles.rowValue} numberOfLines={1}>{currentUrl}</Text>
+          </View>
+          <TouchableOpacity style={styles.ipBtn} onPress={() => setModalVisible(true)}>
+            <Text style={styles.ipBtnText}>⚙️ Configure Custom Backend IP</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.logoutBtn} onPress={onLogout} activeOpacity={0.8}>
+          <Text style={styles.logoutText}>🚪 Log Out</Text>
+        </TouchableOpacity>
       </ScrollView>
+
+      <FormModal
+        visible={modalVisible}
+        title="Configure Backend IP"
+        onClose={() => setModalVisible(false)}
+        onSubmit={handleSaveIp}
+        submitText="Save IP"
+      >
+        <Text style={styles.modalSub}>
+          Enter local IP address of backend (e.g. 192.168.1.100:5000). Leave empty for auto-detected IP.
+        </Text>
+        <Input
+          label="Backend IP / URL"
+          placeholder="e.g. 192.168.1.5:5000"
+          value={customIp}
+          onChangeText={setCustomIp}
+        />
+      </FormModal>
     </SafeAreaView>
   );
 };
@@ -54,59 +124,94 @@ const styles = StyleSheet.create({
     gap: Spacing.base,
   },
   profileCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.lg,
+    padding: Spacing.xl,
     alignItems: "center",
-    paddingVertical: Spacing.xl,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    gap: Spacing.xs,
   },
-  avatarCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  avatarBadge: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: Colors.admin.light,
-    justifyContent: "center",
     alignItems: "center",
-    marginBottom: Spacing.md,
+    justifyContent: "center",
+    marginBottom: Spacing.xs,
   },
-  avatarEmoji: {
-    fontSize: 40,
+  avatarText: {
+    fontSize: 36,
   },
-  nameText: {
+  userName: {
     ...Typography.h2,
     color: Colors.textPrimary,
   },
-  roleTag: {
+  userRole: {
     ...Typography.caption,
     fontWeight: "700",
     color: Colors.admin.primary,
-    marginTop: 2,
+    backgroundColor: Colors.admin.light,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 2,
+    borderRadius: Radius.pill,
   },
-  instituteTag: {
+  userEmail: {
     ...Typography.bodySmall,
-    color: Colors.textMuted,
-    marginTop: 4,
+    color: Colors.textSecondary,
   },
-  detailsCard: {
+  sectionCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.lg,
+    padding: Spacing.base,
+    borderWidth: 1,
+    borderColor: Colors.border,
     gap: Spacing.md,
   },
   sectionTitle: {
     ...Typography.h4,
     color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
   },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-    paddingBottom: Spacing.sm,
+  rowItem: {
+    gap: 4,
   },
-  infoLabel: {
+  rowLabel: {
     ...Typography.caption,
     color: Colors.textMuted,
   },
-  infoValue: {
+  rowValue: {
+    ...Typography.bodySmall,
+    color: Colors.textPrimary,
+    fontWeight: "600",
+  },
+  ipBtn: {
+    backgroundColor: Colors.surfaceVariant,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.md,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  ipBtnText: {
     ...Typography.bodySmall,
     fontWeight: "600",
     color: Colors.textPrimary,
+  },
+  logoutBtn: {
+    backgroundColor: Colors.error,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.md,
+    alignItems: "center",
+    marginTop: Spacing.md,
+  },
+  logoutText: {
+    ...Typography.button,
+    color: Colors.surface,
+  },
+  modalSub: {
+    ...Typography.bodySmall,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.xs,
   },
 });
