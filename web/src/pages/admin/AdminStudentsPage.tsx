@@ -23,7 +23,11 @@ import {
   Phone,
   Mail,
   ArrowRight,
-  ShieldAlert
+  ShieldAlert,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  Key
 } from "lucide-react";
 
 export const AdminStudentsPage: React.FC = () => {
@@ -46,16 +50,27 @@ export const AdminStudentsPage: React.FC = () => {
   const [selectedBatchId, setSelectedBatchId] = useState<string>("");
   const [rollNumber, setRollNumber] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    password: "Password123!",
+    password: "StudentPassword123!",
     admissionNumber: "",
     phone: "",
     gender: "MALE",
   });
+
+  const handleGeneratePassword = () => {
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$";
+    let generated = "";
+    for (let i = 0; i < 10; i++) {
+      generated += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setForm((prev) => ({ ...prev, password: generated }));
+    setShowPassword(true);
+  };
 
   // Manage Enrollments Modal for Existing Student
   const [manageStudent, setManageStudent] = useState<AdminStudent | null>(null);
@@ -139,11 +154,12 @@ export const AdminStudentsPage: React.FC = () => {
         firstName: "",
         lastName: "",
         email: "",
-        password: "Password123!",
+        password: "StudentPassword123!",
         admissionNumber: "",
         phone: "",
         gender: "MALE",
       });
+      setShowPassword(false);
       setSelectedCourseId("");
       setSelectedBatchId("");
       setRollNumber("");
@@ -881,6 +897,73 @@ export const AdminStudentsPage: React.FC = () => {
                       <option value="OTHER">Other</option>
                     </select>
                   </div>
+                </div>
+
+                {/* Account Password Field */}
+                <div style={{ marginTop: "0.75rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.25rem" }}>
+                    <label style={{ fontSize: "0.8rem", fontWeight: 600, margin: 0, display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                      <Key size={14} color="#2563eb" /> Initial Account Password *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleGeneratePassword}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#2563eb",
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.25rem"
+                      }}
+                    >
+                      <RefreshCw size={12} /> Auto-generate
+                    </button>
+                  </div>
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      placeholder="Enter student password (min 6 characters)"
+                      minLength={6}
+                      style={{
+                        width: "100%",
+                        padding: "0.55rem 2.25rem 0.55rem 0.75rem",
+                        borderRadius: "6px",
+                        border: "1px solid #cbd5e1",
+                        fontSize: "0.85rem",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{
+                        position: "absolute",
+                        right: "8px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "transparent",
+                        border: "none",
+                        color: "#64748b",
+                        cursor: "pointer",
+                        padding: "4px",
+                        display: "flex",
+                        alignItems: "center"
+                      }}
+                      title={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <p style={{ fontSize: "0.72rem", color: "#64748b", marginTop: "0.25rem", marginBottom: 0 }}>
+                    The student will use this password alongside their Email or Admission Number to log in.
+                  </p>
                 </div>
               </div>
 

@@ -104,6 +104,10 @@ export const AdminTeachersScreen: React.FC<{ onBack: () => void }> = ({ onBack }
       Alert.alert("Validation Error", "Please fill in all required fields.");
       return;
     }
+    if (!editingTeacher && form.password && form.password.length < 6) {
+      Alert.alert("Validation Error", "Initial password must be at least 6 characters.");
+      return;
+    }
     setSubmitting(true);
     try {
       if (editingTeacher) {

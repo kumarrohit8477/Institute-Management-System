@@ -1,0 +1,212 @@
+.teacher-sidebar__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: teacher-sidebar-fade-in 0.2s ease;
+}
+
+.teacher-sidebar {
+  width: 290px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-right: 1px solid #e8edf5;
+  box-shadow: 4px 0 20px rgba(15, 23, 42, 0.02);
+  color: #1e293b;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.teacher-sidebar__mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 64px;
+  padding: 0 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.teacher-sidebar__close-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.teacher-sidebar__close-button:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.teacher-sidebar__navigation {
+  flex: 1;
+  padding: 1.5rem 0.75rem;
+  overflow-y: auto;
+}
+
+.teacher-sidebar__navigation::-webkit-scrollbar {
+  width: 4px;
+}
+
+.teacher-sidebar__navigation::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.teacher-sidebar__section-title {
+  padding: 0 0.75rem;
+  margin-bottom: 0.75rem;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.teacher-sidebar__nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.teacher-sidebar__nav-item {
+  margin: 0;
+}
+
+.teacher-sidebar__nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 46px;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.teacher-sidebar__nav-link:hover {
+  background: #f8fafc;
+  border-color: #edf1f7;
+  color: #1e293b;
+  transform: translateX(2px);
+}
+
+.teacher-sidebar__nav-link--active {
+  background: #e0e7ff;
+  color: #4f46e5;
+  font-weight: 700;
+}
+
+.teacher-sidebar__nav-link--active:hover {
+  background: #c7d2fe;
+}
+
+.teacher-sidebar__nav-icon {
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.teacher-sidebar__nav-icon--active {
+  color: #4f46e5;
+}
+
+.teacher-sidebar__nav-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.teacher-sidebar__footer {
+  flex-shrink: 0;
+  padding: 1rem 1.25rem;
+  background: rgba(248, 250, 252, 0.7);
+  border-top: 1px solid #e8edf5;
+}
+
+.teacher-sidebar__term-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.teacher-sidebar__status-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  background: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+.teacher-sidebar__status-text {
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.teacher-sidebar__session {
+  padding-left: 1rem;
+  color: #94a3b8;
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+@keyframes teacher-sidebar-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (min-width: 1024px) {
+  .teacher-sidebar {
+    position: sticky;
+    top: 72px;
+    height: calc(100vh - 72px);
+    overflow: hidden;
+    transform: none !important;
+    z-index: 30;
+  }
+
+  .teacher-sidebar__overlay,
+  .teacher-sidebar__mobile-header {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .teacher-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(290px, 85vw);
+    height: 100vh;
+    z-index: 50;
+    transform: translateX(-100%);
+    box-shadow: 12px 0 35px rgba(15, 23, 42, 0.15);
+  }
+
+  .teacher-sidebar--open {
+    transform: translateX(0);
+  }
+}

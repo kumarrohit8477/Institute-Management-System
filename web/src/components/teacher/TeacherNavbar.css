@@ -1,0 +1,182 @@
+.teacher-navbar {
+  height: 72px;
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid #e8edf5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: relative;
+  z-index: 40;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+}
+
+.teacher-navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.teacher-navbar__menu-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.teacher-navbar__menu-button:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.teacher-navbar__logo-image {
+  height: 40px;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.teacher-navbar__logo-fallback {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+.teacher-navbar__brand-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.teacher-navbar__brand-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.teacher-navbar__brand-subtitle {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.teacher-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.teacher-navbar__user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.85rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  transition: all 0.2s ease;
+}
+
+.teacher-navbar__user-profile:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.teacher-navbar__user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #e0e7ff;
+  color: #4f46e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.teacher-navbar__user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.teacher-navbar__user-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.teacher-navbar__user-role {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.teacher-navbar__role-badge {
+  padding: 0.2rem 0.5rem;
+  background: #e0e7ff;
+  color: #4f46e5;
+  font-size: 0.65rem;
+  font-weight: 800;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+}
+
+.teacher-navbar__logout-button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #fee2e2;
+  border-radius: 12px;
+  background: #fff5f5;
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.teacher-navbar__logout-button:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+
+@media (min-width: 1024px) {
+  .teacher-navbar__menu-button {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .teacher-navbar {
+    padding: 0 1rem;
+  }
+  .teacher-navbar__user-info,
+  .teacher-navbar__role-badge {
+    display: none;
+  }
+  .teacher-navbar__logout-button span {
+    display: none;
+  }
+}

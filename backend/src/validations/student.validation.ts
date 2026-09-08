@@ -6,7 +6,7 @@ export const createStudentSchema = z.object({
     firstName: z.string({ required_error: "First name is required" }).min(2),
     lastName: z.string({ required_error: "Last name is required" }).min(1),
     email: z.string({ required_error: "Email is required" }).email(),
-    password: z.string().min(6).optional(), // Auto-generated if not provided
+    password: z.string().min(6, "Password must be at least 6 characters").optional().or(z.literal("")), // Auto-generated/default if not provided or empty
     admissionNumber: z.string().optional(), // Auto-generated if not provided
     phone: z.string().optional().nullable(),
     dateOfBirth: z.string().optional().nullable(),

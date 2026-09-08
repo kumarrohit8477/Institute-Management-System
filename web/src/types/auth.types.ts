@@ -1,6 +1,18 @@
 export type UserRole = "SUPER_ADMIN" | "ADMIN" | "TEACHER" | "STUDENT";
 export type UserStatus = "ACTIVE" | "INACTIVE" | "BLOCKED";
 
+export interface TeacherProfile {
+  id: string;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string | null;
+  qualification?: string | null;
+  specialization?: string | null;
+  avatarUrl?: string | null;
+}
+
 export interface User {
   id: string;
   name?: string;
@@ -9,13 +21,7 @@ export interface User {
   status: UserStatus;
   mustChangePassword?: boolean;
   lastLoginAt?: string | null;
-  teacher?: {
-    id: string;
-    employeeCode: string;
-    firstName: string;
-    lastName: string;
-    specialization?: string;
-  } | null;
+  teacher?: TeacherProfile | null;
 }
 
 export interface Institute {
@@ -44,13 +50,7 @@ export interface AuthResponse {
   user: User;
   institute?: Institute | null;
   student?: StudentProfile | null;
-  teacher?: {
-    id: string;
-    employeeCode: string;
-    firstName: string;
-    lastName: string;
-    specialization?: string;
-  } | null;
+  teacher?: TeacherProfile | null;
   tokens: {
     accessToken: string;
     refreshToken: string;

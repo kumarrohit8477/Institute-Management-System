@@ -162,4 +162,14 @@ export class StudentApiService {
     ).toString();
     return ApiService.request<StudentAttendanceResponse>(`/attendance/my${query ? `?${query}` : ""}`);
   }
+
+  /**
+   * Change user password
+   */
+  static async changePassword(data: { currentPassword: string; newPassword: string; confirmPassword: string }): Promise<any> {
+    return ApiService.request("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
 }

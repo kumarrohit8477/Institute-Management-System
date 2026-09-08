@@ -95,6 +95,13 @@ export class MobileAuthService {
     return MobileApiService.request("/auth/me");
   }
 
+  static async changePassword(data: { currentPassword: string; newPassword: string; confirmPassword: string }): Promise<any> {
+    return MobileApiService.request("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
   static async logout(): Promise<void> {
     try {
       const refreshToken = await StorageService.getItem("ims_mobile_refresh_token");

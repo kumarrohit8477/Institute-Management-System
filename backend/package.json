@@ -14,6 +14,7 @@
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
+    "seed:demo-student": "tsx src/scripts/create-demo-student.ts",
     "db:test": "tsx src/scripts/test-db.ts",
     "clean": "rimraf dist"
   },

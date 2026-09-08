@@ -161,13 +161,28 @@ export class MobileApiService {
           });
         }
       }
-      const data = await response.json();
+      let data: any;
+      try {
+        const text = await response.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (jsonErr) {
+        if (!response.ok) {
+          throw new Error(`Server returned HTTP ${response.status}`);
+        }
+        data = {};
+      }
+
       if (!response.ok) {
         throw new Error(data.message || `Request failed with status ${response.status}`);
       }
       return data.data !== undefined ? data.data : data;
     } catch (err: any) {
-      if (err.message === "Network request failed" || err.name === "TypeError") {
+      if (
+        err.message === "Network request failed" ||
+        err.name === "TypeError" ||
+        err.name === "SyntaxError" ||
+        err.message?.includes("Network")
+      ) {
         throw new Error(`Cannot connect to server at ${baseUrl}. Tap the gear ⚙️ icon to check or change backend IP.`);
       }
       throw err;

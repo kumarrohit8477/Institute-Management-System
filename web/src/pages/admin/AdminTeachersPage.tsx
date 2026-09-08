@@ -21,6 +21,9 @@ import {
   Award,
   BookOpen,
   UserCheck,
+  Key,
+  EyeOff,
+  RefreshCw,
 } from "lucide-react";
 
 export const AdminTeachersPage: React.FC = () => {
@@ -50,6 +53,7 @@ export const AdminTeachersPage: React.FC = () => {
     lastName: "",
     email: "",
     phone: "",
+    password: "Teacher@123",
     employeeCode: "",
     gender: "MALE",
     qualification: "",
@@ -62,6 +66,17 @@ export const AdminTeachersPage: React.FC = () => {
   };
 
   const [addForm, setAddForm] = useState(initialFormState);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const handleGenerateTeacherPassword = () => {
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$";
+    let generated = "";
+    for (let i = 0; i < 10; i++) {
+      generated += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setAddForm((prev) => ({ ...prev, password: generated }));
+    setShowPassword(true);
+  };
 
   // Edit Teacher Form
   const [editForm, setEditForm] = useState({
@@ -146,6 +161,7 @@ export const AdminTeachersPage: React.FC = () => {
       lastName: addForm.lastName.trim(),
       email: addForm.email.trim().toLowerCase(),
       phone: addForm.phone.trim(),
+      password: addForm.password.trim() || undefined,
       employeeCode: addForm.employeeCode.trim() || undefined,
       gender: addForm.gender || undefined,
       qualification: addForm.qualification.trim() || undefined,
@@ -164,6 +180,7 @@ export const AdminTeachersPage: React.FC = () => {
         `Faculty member ${payload.firstName} ${payload.lastName} registered successfully!`
       );
       setIsAddModalOpen(false);
+      setShowPassword(false);
       setAddForm(initialFormState);
       await loadData();
     } catch (err: any) {
@@ -1098,6 +1115,73 @@ export const AdminTeachersPage: React.FC = () => {
                       style={{ width: "100%", padding: "0.55rem 0.75rem", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "0.85rem", textTransform: "uppercase" }}
                     />
                   </div>
+                </div>
+
+                {/* Initial Account Password Field */}
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.3rem" }}>
+                    <label style={{ fontSize: "0.8rem", fontWeight: 600, margin: 0, display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                      <Key size={14} color="#6d28d9" /> Initial Account Password *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleGenerateTeacherPassword}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#6d28d9",
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.25rem"
+                      }}
+                    >
+                      <RefreshCw size={12} /> Auto-generate
+                    </button>
+                  </div>
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={addForm.password}
+                      onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
+                      placeholder="Set teacher password (min 6 characters)"
+                      minLength={6}
+                      style={{
+                        width: "100%",
+                        padding: "0.55rem 2.25rem 0.55rem 0.75rem",
+                        borderRadius: "8px",
+                        border: "1px solid #cbd5e1",
+                        fontSize: "0.85rem",
+                        boxSizing: "border-box"
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{
+                        position: "absolute",
+                        right: "8px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "transparent",
+                        border: "none",
+                        color: "#64748b",
+                        cursor: "pointer",
+                        padding: "4px",
+                        display: "flex",
+                        alignItems: "center"
+                      }}
+                      title={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <p style={{ fontSize: "0.72rem", color: "#64748b", marginTop: "0.25rem", margin: "0.25rem 0 0 0" }}>
+                    The teacher will use this password alongside their Email or Employee Code to log into the Faculty Portal.
+                  </p>
                 </div>
 
                 {/* Professional Qualifications */}

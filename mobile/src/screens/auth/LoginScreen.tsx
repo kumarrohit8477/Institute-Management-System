@@ -150,7 +150,55 @@ export const LoginScreen: React.FC = () => {
               Sign in to access your portal — Students, Teachers, Admins &amp; Super Admins
             </Text>
 
+            {/* Quick Fill Options */}
+            <View style={styles.quickFillContainer}>
+              <Text style={styles.quickFillHeader}>Quick Fill Demo Account:</Text>
+              <View style={styles.roleHints}>
+                <TouchableOpacity
+                  style={[styles.roleChip, { backgroundColor: "#EFF6FF" }]}
+                  onPress={() => {
+                    setInstituteCode("");
+                    setIdentifier("superadmin@ims.local");
+                    setPassword("SuperAdminSecure2026!");
+                  }}
+                >
+                  <Text style={[styles.roleChipText, { color: "#1D4ED8" }]}>⚡ Super Admin</Text>
+                </TouchableOpacity>
 
+                <TouchableOpacity
+                  style={[styles.roleChip, { backgroundColor: "#F3E8FF" }]}
+                  onPress={() => {
+                    setInstituteCode("INST001");
+                    setIdentifier("admin@institute.local");
+                    setPassword("AdminSecurePassword123!");
+                  }}
+                >
+                  <Text style={[styles.roleChipText, { color: "#6B21A8" }]}>💼 Admin</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.roleChip, { backgroundColor: "#ECFDF5" }]}
+                  onPress={() => {
+                    setInstituteCode("INST001");
+                    setIdentifier("teacher@institute.local");
+                    setPassword("TeacherPassword123!");
+                  }}
+                >
+                  <Text style={[styles.roleChipText, { color: "#047857" }]}>👨‍🏫 Teacher</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.roleChip, { backgroundColor: "#FEF3C7" }]}
+                  onPress={() => {
+                    setInstituteCode("INST001");
+                    setIdentifier("student@institute.local");
+                    setPassword("StudentPassword123!");
+                  }}
+                >
+                  <Text style={[styles.roleChipText, { color: "#B45309" }]}>🎓 Student</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
 
             {error ? (
               <View style={styles.errorBox}>

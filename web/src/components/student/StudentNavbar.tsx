@@ -214,7 +214,7 @@ export const StudentNavbar: React.FC<StudentNavbarProps> = ({
           )}
         </div>
 
-        <div className="student-navbar__user-profile">
+        <Link to="/student/profile" className="student-navbar__user-profile" style={{ textDecoration: "none" }}>
           <div className="student-navbar__user-avatar">
             {studentInitial || <UserIcon size={18} />}
           </div>
@@ -229,7 +229,7 @@ export const StudentNavbar: React.FC<StudentNavbarProps> = ({
                 "Student Workspace"}
             </span>
           </div>
-        </div>
+        </Link>
 
         <button
           type="button"

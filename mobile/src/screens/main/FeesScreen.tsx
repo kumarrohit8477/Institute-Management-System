@@ -17,6 +17,9 @@ import {
 } from "../../services/feeService";
 import { useAuth } from "../../hooks/useAuth";
 import { Header, Card, Badge, Button } from "../../components/Header";
+import { MobileAuthService } from "../../services/authService";
+import { Input } from "../../components/shared/Input";
+import { FormModal } from "../../components/shared/FormModal";
 
 export const FeesScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [feeData, setFeeData] = useState<StudentFeeOverviewResponse | null>(null);
@@ -355,10 +358,48 @@ export const NotificationsScreen: React.FC<{ onBack?: () => void }> = ({ onBack 
 
 export const ProfileScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const { student, user, institute, logout } = useAuth();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [changing, setChanging] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const handleChangePassword = async () => {
+    if (!passwordForm.currentPassword) {
+      Alert.alert("Validation Error", "Please enter your current password.");
+      return;
+    }
+    if (passwordForm.newPassword.length < 8) {
+      Alert.alert("Validation Error", "New password must be at least 8 characters long.");
+      return;
+    }
+    if (!/[A-Z]/.test(passwordForm.newPassword) || !/[a-z]/.test(passwordForm.newPassword) || !/[0-9]/.test(passwordForm.newPassword)) {
+      Alert.alert("Validation Error", "New password must contain uppercase, lowercase, and a number.");
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      Alert.alert("Validation Error", "New password and confirm password do not match.");
+      return;
+    }
+
+    setChanging(true);
+    try {
+      await MobileAuthService.changePassword(passwordForm);
+      Alert.alert("Success", "Password updated successfully!");
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setModalOpen(false);
+    } catch (err: any) {
+      Alert.alert("Error", err.message || "Failed to update password. Please check your current password.");
+    } finally {
+      setChanging(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Header title="Student Profile" subtitle="Account details & session" onBack={onBack} />
+      <Header title="Student Profile" subtitle="Account details & security" onBack={onBack} />
 
       <ScrollView contentContainerStyle={styles.scrollList} showsVerticalScrollIndicator={false}>
         {/* Avatar & Name Card */}
@@ -406,6 +447,19 @@ export const ProfileScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
           </View>
         </Card>
 
+        {/* Security & Password Action */}
+        <Card style={styles.detailsCard}>
+          <Text style={styles.detailsSectionTitle}>ACCOUNT SECURITY</Text>
+          <Text style={{ fontSize: 12, color: "#64748b", marginBottom: 12 }}>
+            Keep your login credentials secure. You can update your account password at any time.
+          </Text>
+          <Button
+            title="🔑 Change / Reset Password"
+            variant="outline"
+            onPress={() => setModalOpen(true)}
+          />
+        </Card>
+
         <Button
           title="Sign Out of Student Account 🚪"
           variant="danger"
@@ -413,6 +467,41 @@ export const ProfileScreen: React.FC<{ onBack?: () => void }> = ({ onBack }) => 
           style={{ marginTop: 8 }}
         />
       </ScrollView>
+
+      {/* Change Password Modal */}
+      <FormModal
+        visible={modalOpen}
+        title="Reset Account Password"
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleChangePassword}
+        loading={changing}
+        submitText="Update Password"
+      >
+        <Input
+          label="Current Password"
+          placeholder="Enter current password"
+          secureTextEntry
+          value={passwordForm.currentPassword}
+          onChangeText={(v) => setPasswordForm({ ...passwordForm, currentPassword: v })}
+          required
+        />
+        <Input
+          label="New Password"
+          placeholder="Min 8 chars (A-Z, a-z, 0-9)"
+          secureTextEntry
+          value={passwordForm.newPassword}
+          onChangeText={(v) => setPasswordForm({ ...passwordForm, newPassword: v })}
+          required
+        />
+        <Input
+          label="Confirm New Password"
+          placeholder="Re-enter new password"
+          secureTextEntry
+          value={passwordForm.confirmPassword}
+          onChangeText={(v) => setPasswordForm({ ...passwordForm, confirmPassword: v })}
+          required
+        />
+      </FormModal>
     </View>
   );
 };

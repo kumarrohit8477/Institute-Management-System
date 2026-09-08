@@ -13,6 +13,7 @@ import {
   FileCheck2,
   Trophy,
   CreditCard,
+  User,
   X,
 } from "lucide-react";
 import "./StudentSidebar.css";
@@ -77,6 +78,11 @@ export const StudentSidebar: React.FC<StudentSidebarProps> = ({
       to: "/student/fees",
       label: "Fees & Invoices",
       icon: CreditCard,
+    },
+    {
+      to: "/student/profile",
+      label: "My Profile",
+      icon: User,
     },
   ];
 

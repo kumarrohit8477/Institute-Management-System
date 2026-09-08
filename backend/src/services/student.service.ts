@@ -15,7 +15,6 @@ export class StudentService {
       firstName,
       lastName,
       email,
-      password = "StudentPassword123!",
       phone,
       dateOfBirth,
       gender,
@@ -27,6 +26,8 @@ export class StudentService {
       batchId,
       rollNumber
     } = input;
+
+    const initialPassword = input.password && input.password.trim().length > 0 ? input.password.trim() : "StudentPassword123!";
 
     // Check if email already exists in institute
     const existingUser = await prisma.user.findUnique({
@@ -68,7 +69,7 @@ export class StudentService {
     }
 
     // Hash password for User account
-    const passwordHash = await PasswordUtil.hash(password);
+    const passwordHash = await PasswordUtil.hash(initialPassword);
 
     // Determine whether to auto-generate admission number
     const providedAdmissionNumber = input.admissionNumber;
@@ -132,7 +133,7 @@ export class StudentService {
           role: user.role,
           status: user.status
         },
-        initialPassword: password
+        initialPassword: initialPassword
       };
     });
 
@@ -157,7 +158,7 @@ export class StudentService {
           toEmail: result.email,
           studentName: `${result.firstName} ${result.lastName}`,
           admissionNumber: result.admissionNumber,
-          password: password,
+          password: initialPassword,
           instituteName: institute?.name || "Institute Management System",
           batchName
         });

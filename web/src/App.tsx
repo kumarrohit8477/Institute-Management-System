@@ -42,6 +42,7 @@ import { TeacherLayout } from "@/src/components/teacher/TeacherLayout";
 import { TeacherDashboardPage } from "@/src/pages/teacher/TeacherDashboardPage";
 import { TeacherBatchesPage } from "@/src/pages/teacher/TeacherBatchesPage";
 import { TeacherTimetablePage } from "@/src/pages/teacher/TeacherTimetablePage";
+import { TeacherProfilePage } from "@/src/pages/teacher/TeacherProfilePage";
 
 // Student Pages
 import { StudentDashboard } from "@/src/pages/student/StudentDashboard";
@@ -56,6 +57,7 @@ import { OnlineExamInterfacePage } from "@/src/pages/student/OnlineExamInterface
 import { StudentResultsPage } from "@/src/pages/student/StudentResultsPage";
 import { StudentFeesPage } from "@/src/pages/student/StudentFeesPage";
 import { StudentNotificationsPage } from "@/src/pages/student/StudentNotificationsPage";
+import { StudentProfilePage } from "@/src/pages/student/StudentProfilePage";
 
 /**
  * Keyed by the authenticated user's id so that switching accounts (login as
@@ -126,6 +128,7 @@ const AppRoutes: React.FC = () => {
             <Route path="dashboard" element={<TeacherDashboardPage />} />
             <Route path="batches" element={<TeacherBatchesPage />} />
             <Route path="timetable" element={<TeacherTimetablePage />} />
+            <Route path="profile" element={<TeacherProfilePage />} />
           </Route>
         </Route>
       </Route>
@@ -154,6 +157,7 @@ const AppRoutes: React.FC = () => {
             <Route path="results/:testId" element={<StudentResultsPage />} />
             <Route path="fees" element={<StudentFeesPage />} />
             <Route path="notifications" element={<StudentNotificationsPage />} />
+            <Route path="profile" element={<StudentProfilePage />} />
           </Route>
         </Route>
       </Route>
