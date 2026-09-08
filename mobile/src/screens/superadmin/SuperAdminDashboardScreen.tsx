@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { RoleBanner, SectionHeader } from "../../components/Header";
 import { StatCard } from "../../components/shared/StatCard";
 import { StatusBadge } from "../../components/shared/StatusBadge";
@@ -50,14 +51,14 @@ export const SuperAdminDashboardScreen: React.FC<{ onNavigate: (screen: string, 
             <SectionHeader title="Platform Performance" />
             <View style={styles.statsGrid}>
               <StatCard
-                icon="🏫"
+                icon="business-outline"
                 label="Total Institutes"
                 value={stats?.totalInstitutes ?? 0}
                 color={Colors.superadmin.primary}
                 lightColor={Colors.superadmin.light}
               />
               <StatCard
-                icon="✅"
+                icon="checkmark-circle-outline"
                 label="Active Tenants"
                 value={stats?.activeInstitutes ?? 0}
                 color={Colors.success}
@@ -67,14 +68,14 @@ export const SuperAdminDashboardScreen: React.FC<{ onNavigate: (screen: string, 
 
             <View style={[styles.statsGrid, { marginTop: Spacing.sm }]}>
               <StatCard
-                icon="💵"
+                icon="cash-outline"
                 label="Monthly Revenue"
                 value={`₹${(stats?.monthlyRevenue || 0).toLocaleString()}`}
                 color={Colors.info}
                 lightColor={Colors.infoLight}
               />
               <StatCard
-                icon="💰"
+                icon="wallet-outline"
                 label="Total Lifetime"
                 value={`₹${(stats?.totalRevenue || 0).toLocaleString()}`}
                 color={Colors.warning}
@@ -85,30 +86,36 @@ export const SuperAdminDashboardScreen: React.FC<{ onNavigate: (screen: string, 
             <SectionHeader title="Quick Management" />
             <View style={styles.quickGrid}>
               <TouchableOpacity style={styles.quickCard} onPress={() => onNavigate("institutes")} activeOpacity={0.75}>
-                <Text style={styles.quickIcon}>🏫</Text>
+                <View style={[styles.iconBox, { backgroundColor: Colors.superadmin.light }]}>
+                  <Ionicons name="business-outline" size={24} color={Colors.superadmin.primary} />
+                </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.quickTitle}>Manage Institutes</Text>
                   <Text style={styles.quickSubtitle}>View, onboard & activate tenant accounts</Text>
                 </View>
-                <Text style={styles.arrow}>➔</Text>
+                <Ionicons name="chevron-forward" size={20} color={Colors.superadmin.primary} />
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.quickCard} onPress={() => onNavigate("plans")} activeOpacity={0.75}>
-                <Text style={styles.quickIcon}>💎</Text>
+                <View style={[styles.iconBox, { backgroundColor: Colors.infoLight }]}>
+                  <Ionicons name="ribbon-outline" size={24} color={Colors.info} />
+                </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.quickTitle}>Subscription Plans</Text>
                   <Text style={styles.quickSubtitle}>Starter, Growth & Enterprise tiers</Text>
                 </View>
-                <Text style={styles.arrow}>➔</Text>
+                <Ionicons name="chevron-forward" size={20} color={Colors.superadmin.primary} />
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.quickCard} onPress={() => onNavigate("billing")} activeOpacity={0.75}>
-                <Text style={styles.quickIcon}>🧾</Text>
+                <View style={[styles.iconBox, { backgroundColor: Colors.successLight }]}>
+                  <Ionicons name="receipt-outline" size={24} color={Colors.success} />
+                </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.quickTitle}>Platform Invoices</Text>
                   <Text style={styles.quickSubtitle}>Track subscriptions & mark payments</Text>
                 </View>
-                <Text style={styles.arrow}>➔</Text>
+                <Ionicons name="chevron-forward" size={20} color={Colors.superadmin.primary} />
               </TouchableOpacity>
             </View>
 
@@ -161,6 +168,13 @@ const styles = StyleSheet.create({
   },
   quickIcon: {
     fontSize: 28,
+  },
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: Radius.md,
+    justifyContent: "center",
+    alignItems: "center",
   },
   quickTitle: {
     ...Typography.h4,

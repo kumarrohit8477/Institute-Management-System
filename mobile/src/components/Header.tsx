@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   TextInput,
 } from "react-native";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import { Colors, RoleColor } from "../theme/colors";
 import { Typography, Spacing, Radius } from "../theme/typography";
 
@@ -29,7 +30,7 @@ export const Header: React.FC<{
         {onBack && (
           <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
             <View style={[styles.backCircle, { backgroundColor: accentColor + "15" }]}>
-              <Text style={[styles.backIcon, { color: accentColor }]}>←</Text>
+              <Ionicons name="arrow-back" size={20} color={accentColor} />
             </View>
           </TouchableOpacity>
         )}
@@ -256,7 +257,7 @@ export const SearchBar: React.FC<{
   placeholder?: string;
 }> = ({ value, onChangeText, placeholder = "Search..." }) => (
   <View style={styles.searchContainer}>
-    <Text style={styles.searchIcon}>🔍</Text>
+    <Ionicons name="search-outline" size={18} color={Colors.textMuted} />
     <TextInput
       style={styles.searchInput}
       value={value}
@@ -267,7 +268,7 @@ export const SearchBar: React.FC<{
     />
     {value.length > 0 && (
       <TouchableOpacity onPress={() => onChangeText("")} activeOpacity={0.7}>
-        <Text style={styles.searchClear}>✕</Text>
+        <Ionicons name="close-circle" size={18} color={Colors.textMuted} />
       </TouchableOpacity>
     )}
   </View>

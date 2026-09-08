@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "../../theme/colors";
 import { Typography } from "../../theme/typography";
 
@@ -10,11 +11,16 @@ interface EmptyStateProps {
   message?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({ icon = "📭", title, subtitle, message }) => {
+export const EmptyState: React.FC<EmptyStateProps> = ({ icon = "folder-open-outline", title, subtitle, message }) => {
   const sub = subtitle || message;
+  const isVector = icon && (icon.includes("-") || (Ionicons.glyphMap as any)[icon]);
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>{icon}</Text>
+      {isVector ? (
+        <Ionicons name={icon as any} size={48} color={Colors.textMuted} style={{ marginBottom: 16 }} />
+      ) : (
+        <Text style={styles.icon}>{icon}</Text>
+      )}
       <Text style={styles.title}>{title}</Text>
       {sub ? <Text style={styles.subtitle}>{sub}</Text> : null}
     </View>

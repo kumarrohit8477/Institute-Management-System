@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Linking
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../hooks/useAuth";
 import { MobileStudentService } from "../../services/studentService";
 import { Card, Badge } from "../../components/Header";
@@ -43,10 +44,10 @@ export const DashboardScreen: React.FC<{ onNavigate: (screen: string, params?: a
   const attPercentage = attendance?.statistics?.attendancePercentage ?? 0;
 
   const quickActions = [
-    { label: "Timetable", icon: "📅", screen: "timetable" },
-    { label: "Materials", icon: "📖", screen: "materials" },
-    { label: "Tests", icon: "📝", screen: "tests" },
-    { label: "Attendance", icon: "✅", screen: "attendance" }
+    { label: "Timetable", icon: "calendar-outline", color: "#3b82f6", screen: "timetable" },
+    { label: "Materials", icon: "book-outline", color: "#8b5cf6", screen: "materials" },
+    { label: "Tests", icon: "document-text-outline", color: "#ec4899", screen: "tests" },
+    { label: "Attendance", icon: "checkmark-done-circle-outline", color: "#10b981", screen: "attendance" }
   ];
 
   return (
@@ -57,7 +58,7 @@ export const DashboardScreen: React.FC<{ onNavigate: (screen: string, params?: a
           {institute?.name || "Institute Portal"}
         </Text>
         <Text style={styles.greeting}>
-          Hello, {student?.firstName || "Student"}! 👋
+          Hello, {student?.firstName || "Student"}!
         </Text>
         <View style={styles.badgeRow}>
           {student?.admissionNumber ? (
@@ -85,7 +86,9 @@ export const DashboardScreen: React.FC<{ onNavigate: (screen: string, params?: a
             style={styles.gridItem}
             activeOpacity={0.7}
           >
-            <Text style={styles.gridIcon}>{item.icon}</Text>
+            <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: item.color + "15", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
+              <Ionicons name={item.icon as any} size={22} color={item.color} />
+            </View>
             <Text style={styles.gridLabel}>{item.label}</Text>
           </TouchableOpacity>
         ))}

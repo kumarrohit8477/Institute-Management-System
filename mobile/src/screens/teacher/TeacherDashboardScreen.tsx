@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "../../theme/colors";
 import { Typography, Spacing, Radius } from "../../theme/typography";
 import { StatCard } from "../../components/shared/StatCard";
@@ -25,7 +26,7 @@ const QUICK_ACTIONS = [
   {
     id: "batches",
     label: "My Batches",
-    icon: "🎓",
+    icon: "people-outline",
     screen: "TeacherBatches",
     color: Colors.teacher.primary,
     light: Colors.teacher.light,
@@ -33,7 +34,7 @@ const QUICK_ACTIONS = [
   {
     id: "attendance",
     label: "Attendance",
-    icon: "✅",
+    icon: "checkmark-done-circle-outline",
     screen: "TeacherAttendance",
     color: Colors.info,
     light: Colors.infoLight,
@@ -41,7 +42,7 @@ const QUICK_ACTIONS = [
   {
     id: "timetable",
     label: "Timetable",
-    icon: "📅",
+    icon: "calendar-outline",
     screen: "TeacherTimetable",
     color: Colors.warning,
     light: Colors.warningLight,
@@ -49,7 +50,7 @@ const QUICK_ACTIONS = [
   {
     id: "profile",
     label: "Profile",
-    icon: "👤",
+    icon: "person-outline",
     screen: "TeacherProfile",
     color: Colors.primary,
     light: Colors.primaryLight,
@@ -192,7 +193,7 @@ export const TeacherDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
         <Text style={styles.sectionTitle}>Overview</Text>
         <View style={styles.statsRow}>
           <StatCard
-            icon="🎓"
+            icon="people-outline"
             label="Batches"
             value={stats.batches}
             color={Colors.teacher.primary}
@@ -200,14 +201,14 @@ export const TeacherDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
             onPress={() => onNavigate("TeacherBatches")}
           />
           <StatCard
-            icon="📚"
+            icon="book-outline"
             label="Subjects"
             value={stats.subjects}
             color={Colors.info}
             lightColor={Colors.infoLight}
           />
           <StatCard
-            icon="🕐"
+            icon="time-outline"
             label="Today"
             value={stats.todayClasses}
             color={Colors.warning}
@@ -226,7 +227,7 @@ export const TeacherDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
 
         {schedule.length === 0 ? (
           <View style={styles.noScheduleCard}>
-            <Text style={styles.noScheduleIcon}>🎉</Text>
+            <Ionicons name="sparkles-outline" size={32} color={Colors.teacher.primary} style={{ marginBottom: 8 }} />
             <Text style={styles.noScheduleText}>No classes today. Enjoy your day!</Text>
           </View>
         ) : (
@@ -238,11 +239,11 @@ export const TeacherDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
                 <Text style={styles.classBatch}>{cls.batch || cls.batchName}</Text>
                 <View style={styles.classMeta}>
                   <Text style={styles.classTime}>
-                    🕐 {cls.startTime} – {cls.endTime}
+                    {cls.startTime} – {cls.endTime}
                   </Text>
                   <View style={[styles.roomTag, cls.isOnline && styles.roomTagOnline]}>
                     <Text style={[styles.roomText, cls.isOnline && styles.roomTextOnline]}>
-                      {cls.isOnline ? "🌐 Online" : `🏫 ${cls.room}`}
+                      {cls.isOnline ? "Online" : `Room ${cls.room || ""}`}
                     </Text>
                   </View>
                 </View>
@@ -284,7 +285,7 @@ export const TeacherDashboardScreen: React.FC<Props> = ({ onNavigate }) => {
               onPress={() => onNavigate(action.screen)}
             >
               <View style={[styles.actionIcon, { backgroundColor: action.color }]}>
-                <Text style={styles.actionEmoji}>{action.icon}</Text>
+                <Ionicons name={action.icon as any} size={24} color="#FFFFFF" />
               </View>
               <Text style={[styles.actionLabel, { color: action.color }]}>{action.label}</Text>
             </TouchableOpacity>

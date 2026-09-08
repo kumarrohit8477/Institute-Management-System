@@ -1,10 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "../../theme/colors";
 import { Typography, Spacing, Radius } from "../../theme/typography";
 
 interface StatCardProps {
-  icon: string;
+  icon: string | React.ReactNode;
   label: string;
   value: string | number;
   color?: string;
@@ -32,7 +33,15 @@ export const StatCard: React.FC<StatCardProps> = ({
       activeOpacity={0.75}
     >
       <View style={[styles.iconBg, { backgroundColor: lightColor }]}>
-        <Text style={styles.icon}>{icon}</Text>
+        {typeof icon === "string" ? (
+          icon.length > 2 || (Ionicons.glyphMap as any)[icon] ? (
+            <Ionicons name={icon as any} size={22} color={color} />
+          ) : (
+            <Text style={styles.icon}>{icon}</Text>
+          )
+        ) : (
+          icon
+        )}
       </View>
       <Text style={[styles.value, { color }]}>{value}</Text>
       <Text style={styles.label}>{label}</Text>
